@@ -1,0 +1,82 @@
+@model PBL3.DTO.Buyer.Buyer_ThongTinCaNhanDTO
+@{
+    ViewBag.Title = "Thông tin tài khoản";
+    Layout = "~/Views/Shared/_BuyerMenuLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .profile-info-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 32px 24px;
+            margin: 32px auto;
+            max-width: 600px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .profile-title {
+            color: #27ae60;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .profile-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .profile-label {
+            width: 160px;
+            color: #111;
+            font-weight: 600;
+        }
+        .profile-value {
+            color: #222;
+            font-size: 1.1rem;
+        }
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #27ae60;
+            margin-bottom: 18px;
+        }
+    </style>
+}
+
+<div class="profile-info-container">
+    <div class="text-center">
+        @if (Model.Avatar != null && Model.Avatar.Length > 0)
+        {
+            var base64 = Convert.ToBase64String(Model.Avatar);
+            <img class="profile-avatar" src="data:image/png;base64,@base64" alt="Avatar" />
+        }
+        else
+        {
+            <img class="profile-avatar" src="~/images/avatar-default.png" alt="Avatar" />
+        }
+    </div>
+    <div class="profile-title">Thông tin cá nhân</div>
+    <div class="profile-row">
+        <div class="profile-label">Tên đăng nhập:</div>
+        <div class="profile-value">@Model.UserName</div>
+    </div>
+    <div class="profile-row">
+        <div class="profile-label">Giới tính:</div>
+        <div class="profile-value">@Model.Sex</div>
+    </div>
+    <div class="profile-row">
+        <div class="profile-label">Ngày sinh:</div>
+        <div class="profile-value">@Model.Date.ToString("dd/MM/yyyy")</div>
+    </div>
+    <div class="profile-row">
+        <div class="profile-label">Số điện thoại:</div>
+        <div class="profile-value">@Model.PhoneNumber</div>
+    </div>
+    <div class="profile-row">
+        <div class="profile-label">Địa chỉ:</div>
+        <div class="profile-value">@Model.AddressBuyer</div>
+    </div>
+</div> 

@@ -27,10 +27,12 @@ builder.Services.AddScoped<ICartItemRepositories, CartItemRepositories>();
 builder.Services.AddScoped<IAddressBuyerRepositories, AddressBuyerRepositories>();
 builder.Services.AddScoped<IBankRepositories, BankRepositories>();
 builder.Services.AddScoped<IVoucherRepositories, VoucherRepositories>();
+builder.Services.AddScoped<IVoucher_BuyerRepositories, Voucher_BuyerRepositories>();
 
 // Đăng ký các Service
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<BuyerService>();
 
 var app = builder.Build();
 
