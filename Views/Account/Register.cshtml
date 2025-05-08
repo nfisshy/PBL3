@@ -1,0 +1,165 @@
+@model PBL3.DTO.Shared.RegisterDTO
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    body {
+        background-image: url('/images/home.jpg');
+        background-size: cover;
+        background-position: center;
+        backdrop-filter: blur(3px);
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .register-card {
+        max-width: 450px;
+        margin: 60px auto;
+        background-color: rgba(20, 20, 20, 0.85);
+        padding: 35px;
+        border-radius: 15px;
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .register-card h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: 600;
+        font-size: 24px;
+    }
+    .form-control {
+        background-color: #2d2d2d;
+        border: none;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        padding: 12px;
+    }
+    .form-control::placeholder {
+        color: #ccc;
+    }
+    .btn-register {
+        width: 100%;
+        background: linear-gradient(to right, #00c853, #64dd17);
+        border: none;
+        padding: 12px;
+        font-weight: bold;
+        color: white;
+        border-radius: 10px;
+        transition: 0.3s ease;
+    }
+    .btn-register:hover {
+        background: linear-gradient(to right, #00bfa5, #1de9b6);
+    }
+    .footer-text {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+    .footer-text a {
+        color: #64dd17;
+        text-decoration: none;
+    }
+    .footer-text a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="register-card">
+    <h2>Đăng ký tài khoản mới</h2>
+
+    @{
+        var globalErrors = ViewData.ModelState[""]?.Errors;
+    }
+    @if (globalErrors != null && globalErrors.Count > 0)
+    {
+        <div class="text-danger" style="margin-bottom:16px;">
+            @foreach (var error in globalErrors)
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-action="Register" method="post">
+        @{
+            var accountError = ViewData.ModelState["Account"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var passwordError = ViewData.ModelState["Password"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var rePasswordError = ViewData.ModelState["RePassword"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var nameError = ViewData.ModelState["Name"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var sexError = ViewData.ModelState["Sex"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var phoneError = ViewData.ModelState["PhoneNumber"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            var roleError = ViewData.ModelState["RoleName"]?.Errors.FirstOrDefault()?.ErrorMessage;
+            string firstError = null;
+            if (!string.IsNullOrEmpty(accountError)) firstError = accountError;
+            else if (!string.IsNullOrEmpty(passwordError)) firstError = passwordError;
+            else if (!string.IsNullOrEmpty(rePasswordError)) firstError = rePasswordError;
+            else if (!string.IsNullOrEmpty(nameError)) firstError = nameError;
+            else if (!string.IsNullOrEmpty(sexError)) firstError = sexError;
+            else if (!string.IsNullOrEmpty(phoneError)) firstError = phoneError;
+            else if (!string.IsNullOrEmpty(roleError)) firstError = roleError;
+        }
+        <input asp-for="Account" class="form-control" placeholder="Tên đăng nhập" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(accountError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <input asp-for="Password" class="form-control" placeholder="Mật khẩu" type="password" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(accountError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <input asp-for="RePassword" class="form-control" placeholder="Nhập lại mật khẩu" type="password" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(rePasswordError) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <input asp-for="Name" class="form-control" placeholder="Họ tên" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(nameError) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(rePasswordError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <input asp-for="Date" class="form-control" type="date" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(ViewData.ModelState["Date"]?.Errors.FirstOrDefault()?.ErrorMessage) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(rePasswordError) && string.IsNullOrEmpty(nameError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <select asp-for="Sex" class="form-control">
+            <option value="">-- Chọn giới tính --</option>
+            <option value="0">Nam</option>
+            <option value="1">Nữ</option>
+            <option value="2">Khác</option>
+        </select>
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(sexError) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(rePasswordError) && string.IsNullOrEmpty(nameError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <input asp-for="PhoneNumber" class="form-control" placeholder="Số điện thoại" />
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(phoneError) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(rePasswordError) && string.IsNullOrEmpty(nameError) && string.IsNullOrEmpty(sexError))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <select asp-for="RoleName" class="form-control">
+            <option value="">-- Chọn vai trò --</option>
+            <option value="Buyer">Người mua</option>
+            <option value="Seller">Người bán</option>
+        </select>
+        @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(roleError) && string.IsNullOrEmpty(accountError) && string.IsNullOrEmpty(passwordError) && string.IsNullOrEmpty(rePasswordError) && string.IsNullOrEmpty(nameError) && string.IsNullOrEmpty(sexError) && string.IsNullOrEmpty(phoneError) && string.IsNullOrEmpty(ViewData.ModelState["Date"]?.Errors.FirstOrDefault()?.ErrorMessage))
+        {
+            <span class="text-danger">@firstError</span>
+        }
+
+        <button type="submit" class="btn-register">Đăng ký</button>
+    </form>
+
+    <div class="footer-text">
+        Đã có tài khoản? <a asp-controller="Account" asp-action="Login">Đăng nhập ngay</a>
+    </div>
+</div> 

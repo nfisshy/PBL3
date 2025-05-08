@@ -1,0 +1,45 @@
+@using PBL3.Enums
+@model List<TypeProduct>
+
+@functions {
+    string ToVietnamese(TypeProduct type)
+    {
+        switch(type)
+        {
+            case TypeProduct.Thoitrangnu: return "Thời trang nữ";
+            case TypeProduct.Thoitrangnam: return "Thời trang nam";
+            case TypeProduct.Giaydep: return "Giày dép";
+            case TypeProduct.Tuithoitrangnu: return "Túi thời trang nữ";
+            case TypeProduct.Tuithoitrangnam: return "Túi thời trang nam";
+            case TypeProduct.BaloVali: return "Balo & Vali";
+            case TypeProduct.Donghotrangsuc: return "Đồng hồ & Trang sức";
+            case TypeProduct.Dochoime_be: return "Đồ chơi mẹ & bé";
+            case TypeProduct.Dienthoai_maytinhbang: return "Điện thoại & Máy tính bảng";
+            case TypeProduct.Lamdep_suckhoe: return "Làm đẹp & Sức khỏe";
+            case TypeProduct.Diengiadung: return "Điện gia dụng";
+            case TypeProduct.Laptop_mayvitinh_linhkien: return "Laptop & Linh kiện";
+            case TypeProduct.Oto_xemay_xedap: return "Ô tô, xe máy, xe đạp";
+            case TypeProduct.Sachvo: return "Sách vở";
+            case TypeProduct.Dientu_dienlanh: return "Điện tử & Điện lạnh";
+            case TypeProduct.Mayanh_mayquayphim: return "Máy ảnh & Máy quay";
+            default: return type.ToString();
+        }
+    }
+}
+
+<div class="sidebar shadow-sm">
+    <h5>Danh mục</h5>
+    <ul class="list-group">
+        @if (Model != null)
+        {
+            foreach (var category in Model)
+            {
+                <li class="list-group-item">
+                    <a href="@Url.Action("Category", new { category = category })" class="text-decoration-none">
+                        <i class="fas fa-tag me-2"></i> @ToVietnamese(category)
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</div>

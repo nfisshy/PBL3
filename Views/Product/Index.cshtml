@@ -1,0 +1,114 @@
+@model List<PBL3.DTO.Buyer.Buyer_SanPhamDTO>
+@using PBL3.Enums
+@{
+    ViewBag.Title = "Trang chủ";
+    var categories = ViewBag.Categories as List<TypeProduct>;
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .sidebar {
+            background: #e6f3eb; border-radius: 16px; padding: 20px 10px; min-height: 500px;
+        }
+        .sidebar h5 { color: #219150; font-weight: bold; margin-bottom: 1rem; }
+        .sidebar .list-group-item { border: none; background: transparent; color: #219150; font-size: 1.05rem; }
+        .sidebar .list-group-item:hover, .sidebar .list-group-item.active { background: #27ae60; color: #fff; }
+        .banner { border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; }
+        .product-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px #0001; }
+        .product-card .card-title { color: #0d3f2e; font-weight: 500; }
+        .product-card .card-text { color: #27ae60; font-weight: bold; }
+        .product-card .btn { background: #27ae60; border: none; }
+        .product-card .btn:hover { background: #219150; }
+        .star { color: #ffc107; }
+        media (max-width: 991px) {
+            .sidebar { min-height: unset; margin-bottom: 1rem; }
+        }
+    </style>
+}
+
+<div class="row">
+    <!-- Sidebar danh mục -->
+    <div class="col-lg-2 col-md-3 mb-3">
+        @Html.Partial("~/Views/Shared/_TypeProductLayout.cshtml", categories)
+    </div>
+    <!-- Main content -->
+    <div class="col-lg-10 col-md-9">
+        <!-- Thông báo lỗi -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <!-- Danh sách sản phẩm -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+                @foreach (var product in Model)
+                {
+                    <div class="col">
+                        <div class="card product-card h-100">
+                            @if (product.Image != null)
+                            {
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Image)" class="card-img-top" alt="@product.ProductName" style="height: 180px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <img src="~/images/no-image.jpg" class="card-img-top" alt="No image" style="height: 180px; object-fit: cover;">
+                            }
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate">@product.ProductName</h6>
+                                <p class="card-text">@product.Price.ToString("N0") đ</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div>
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= product.Rating)
+                                            {
+                                                <i class="fas fa-star star"></i>
+                                            }
+                                            else if (i - 0.5 <= product.Rating)
+                                            {
+                                                <i class="fas fa-star-half-alt star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star star"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <small class="text-muted ms-2">(@product.Rating.ToString("F1"))</small>
+                                </div>
+                                <a href="@Url.Action("Details", new { id = product.ProductId })" class="btn btn-success w-100">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-4">
+                <h4>Không tìm thấy sản phẩm nào</h4>
+                <p>Vui lòng thử lại với từ khóa khác hoặc chọn danh mục khác</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Xử lý đóng thông báo lỗi
+        document.addEventListener('DOMContentLoaded', function () {
+            var alertList = document.querySelectorAll('.alert');
+            alertList.forEach(function (alert) {
+                setTimeout(function () {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+    </script>
+}

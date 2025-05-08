@@ -1,0 +1,159 @@
+@model PBL3.DTO.Buyer.Buyer_ChiTietSanPhamDTO
+@{
+    ViewBag.Title = Model.ProductName;
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body { background: #101820; }
+        .product-detail-container { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px #0001; padding: 32px 24px; margin-bottom: 32px; }
+        .product-images { text-align: center; background: #101820; border-radius: 12px; }
+        .product-images img { border-radius: 12px; max-width: 100%; max-height: 350px; box-shadow: 0 2px 8px #0002; background: #101820; }
+        .product-info h2 { color: #219150; font-weight: bold; }
+        .product-info .price { color: #e53935; font-size: 2rem; font-weight: bold; }
+        .product-info .rating { color: #ffc107; font-size: 1.2rem; }
+        .product-info .desc { margin-top: 16px; color: #333; }
+        .buy-box { background: #e6f3eb; border-radius: 16px; padding: 24px; }
+        .buy-box .price { color: #e53935; font-size: 1.5rem; font-weight: bold; }
+        .buy-box .btn-buy { background: #219150; color: #fff; font-weight: bold; border-radius: 2rem; width: 100%; margin-bottom: 8px; }
+        .buy-box .btn-cart { background: #101820; color: #fff; border-radius: 2rem; width: 100%; margin-bottom: 8px; }
+        .buy-box .btn-buy:hover { background: #27ae60; }
+        .buy-box .btn-cart:hover { background: #27ae60; }
+        .buy-box .quantity-box { display: flex; align-items: center; margin-bottom: 16px; }
+        .buy-box .quantity-box input { width: 60px; text-align: center; margin: 0 8px; }
+        .shop-info {
+            background: #101820;
+            color: #fff;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .shop-info .btn { border-radius: 2rem; }
+        .product-detail-section { background: #f8f9fa; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section-title {
+            color: #219150;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+        }
+        .review-section { background: #fff; border-radius: 12px; padding: 24px; }
+        .review-rating { color: #219150; font-size: 2rem; font-weight: bold; }
+        .review-star { color: #ffc107; }
+    </style>
+}
+
+<div class="container product-detail-container">
+    <div class="row">
+        <!-- Ảnh sản phẩm -->
+        <div class="col-md-5 product-images d-flex flex-column align-items-center justify-content-center">
+            <img src="@(Model.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="@Model.ProductName" />
+            <!-- Nếu có nhiều ảnh, có thể thêm slider/thumbnails ở đây -->
+        </div>
+        <!-- Thông tin sản phẩm -->
+        <div class="col-md-4 product-info">
+            <h2>@Model.ProductName</h2>
+            <div>
+                <span class="price">@Model.Price.ToString("N0") đ</span>
+            </div>
+            <div class="mt-2">
+                <span class="rating">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Model.Rating)
+                        {
+                            <i class="fas fa-star"></i>
+                        }
+                        else if (i - 0.5 <= Model.Rating)
+                        {
+                            <i class="fas fa-star-half-alt"></i>
+                        }
+                        else
+                        {
+                            <i class="far fa-star"></i>
+                        }
+                    }
+                </span>
+                <span class="text-muted ms-2">(@Model.Rating.ToString("F1"))</span>
+            </div>
+            <div class="desc mt-3">
+                <strong>Mô tả:</strong> @Model.Description
+            </div>
+            <div class="mt-3">
+                <strong>Cửa hàng:</strong> <span style="color:#219150">@Model.StoreName</span>
+            </div>
+        </div>
+        <!-- Box mua hàng -->
+        <div class="col-md-3">
+            <div class="buy-box shadow-sm">
+                <div class="price mb-2">@Model.Price.ToString("N0") đ</div>
+                <form asp-action="AddToCart" method="post">
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <div class="quantity-box">
+                        <label for="quantity">Số lượng:</label>
+                        <button type="button" class="btn btn-light btn-sm" onclick="changeQty(-1)">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="@Model.Quantity" class="form-control d-inline-block" style="width:60px;" />
+                        <button type="button" class="btn btn-light btn-sm" onclick="changeQty(1)">+</button>
+                        <span class="ms-2 text-muted">(@Model.Quantity) có sẵn</span>
+                    </div>
+                    <button type="submit" class="btn btn-buy">Mua ngay</button>
+                    <button type="submit" formaction="@Url.Action("AddToCart")" class="btn btn-cart">Thêm vào giỏ hàng</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin shop -->
+    <div class="row mt-4">
+        <div class="col-12 shop-info d-flex align-items-center">
+            <img src="~/images/shop-avatar-default.png" alt="Shop Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;margin-right:16px;">
+            <div>
+                <strong style="font-size:1.2rem;">@Model.StoreName</strong>
+                <span class="badge bg-success ms-2">Mall</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chi tiết sản phẩm -->
+    <div class="row mt-4">
+        <div class="col-12 product-detail-section">
+            <div class="section-title">CHI TIẾT SẢN PHẨM</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div><strong>Kho:</strong> @Model.Quantity</div>
+                    <div><strong>Tên shop:</strong> @Model.StoreName</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mô tả sản phẩm -->
+    <div class="row mt-4">
+        <div class="col-12 product-detail-section">
+            <div class="section-title">MÔ TẢ SẢN PHẨM</div>
+            <div>@Model.Description</div>
+        </div>
+    </div>
+
+    <!-- Đánh giá sản phẩm (nếu có) -->
+    <div class="row mt-4">
+        <div class="col-12 review-section">
+            <div class="section-title">ĐÁNH GIÁ SẢN PHẨM</div>
+            <div class="review-rating">@Model.Rating <span class="review-star">★</span></div>
+            <!-- Có thể render danh sách đánh giá ở đây nếu có -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function changeQty(delta) {
+            var qty = document.getElementById('quantity');
+            var val = parseInt(qty.value) + delta;
+            if (val < 1) val = 1;
+            if (val > @Model.Quantity) val = @Model.Quantity;
+            qty.value = val;
+        }
+    </script>
+}
