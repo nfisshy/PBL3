@@ -1,23 +1,43 @@
 @model PBL3.DTO.Buyer.Buyer_ThongTinCaNhanDTO
 @{
     ViewBag.Title = "Thông tin tài khoản";
-    Layout = "~/Views/Shared/_BuyerMenuLayout.cshtml";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
 }
 
 @section Styles {
     <style>
-        .profile-info-container {
+        .sidebar {
+            background: #e6f3eb;
+            border-radius: 16px;
+            padding: 20px 10px;
+            min-height: 500px;
+        }
+        .sidebar h5 {
+            color: #219150;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .sidebar .list-group-item {
+            border: none;
+            background: transparent;
+            color: #219150;
+            font-size: 1.05rem;
+        }
+        .sidebar .list-group-item:hover, .sidebar .list-group-item.active {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .profile-container {
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 2px 8px #0001;
             padding: 32px 24px;
-            margin: 32px auto;
-            max-width: 600px;
-            font-family: 'Montserrat', Arial, sans-serif;
+            margin-bottom: 24px;
         }
         .profile-title {
             color: #27ae60;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 24px;
         }
@@ -25,6 +45,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 18px;
+            justify-content: flex-start; /* Chỉnh sửa để căn trái */
         }
         .profile-label {
             width: 160px;
@@ -34,49 +55,118 @@
         .profile-value {
             color: #222;
             font-size: 1.1rem;
+            flex: 1;
         }
         .profile-avatar {
-            width: 90px;
-            height: 90px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #27ae60;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
+        }
+        .edit-button {
+            background-color: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .edit-button:hover {
+            background-color: #219150;
+        }
+
+        .address-container {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Effect nổi lên */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%; /* Chiếm toàn bộ chiều rộng */
+        }
+
+        .address-container:hover {
+            transform: translateY(-5px); /* Hiệu ứng nổi lên khi hover */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Hiệu ứng shadow khi hover */
+        }
+
+        .address-container .edit-button {
+            margin-top: 10px;
+            display: block; /* Nút sẽ là block để ở dưới cùng */
+        }
+
+        .address-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            resize: none;
+            background-color: #fff;
+        }
+
+        media (max-width: 991px) {
+            .sidebar {
+                min-height: unset;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 }
 
-<div class="profile-info-container">
-    <div class="text-center">
-        @if (Model.Avatar != null && Model.Avatar.Length > 0)
-        {
-            var base64 = Convert.ToBase64String(Model.Avatar);
-            <img class="profile-avatar" src="data:image/png;base64,@base64" alt="Avatar" />
-        }
-        else
-        {
-            <img class="profile-avatar" src="~/images/avatar-default.png" alt="Avatar" />
-        }
+<div class="row">
+    <!-- Sidebar menu -->
+    <div class="col-lg-2 col-md-3 mb-3">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
     </div>
-    <div class="profile-title">Thông tin cá nhân</div>
-    <div class="profile-row">
-        <div class="profile-label">Tên đăng nhập:</div>
-        <div class="profile-value">@Model.UserName</div>
+
+    <!-- Main content -->
+    <div class="col-lg-10 col-md-9">
+        <div class="profile-container">
+            <div class="text-center">
+                @if (Model.Avatar != null && Model.Avatar.Length > 0)
+                {
+                    var base64 = Convert.ToBase64String(Model.Avatar);
+                    <img class="profile-avatar" src="data:image/png;base64,@base64" alt="Avatar" />
+                }
+                else
+                {
+                    <img class="profile-avatar" src="~/images/avatar-default.png" alt="Avatar" />
+                }
+            </div>
+            <div class="profile-title text-center">Thông tin cá nhân</div>
+            <div class="profile-row">
+                <div class="profile-label">Tên đăng nhập:</div>
+                <div class="profile-value">@Model.UserName</div>
+            </div>
+            <div class="profile-row">
+                <div class="profile-label">Giới tính:</div>
+                <div class="profile-value">@Model.Sex</div>
+            </div>
+            <div class="profile-row">
+                <div class="profile-label">Ngày sinh:</div>
+                <div class="profile-value">@Model.Date.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div class="profile-row">
+                <div class="profile-label">Số điện thoại:</div>
+                <div class="profile-value">@Model.PhoneNumber</div>
+            </div>
+            <div class="profile-row">
+                <div class="profile-label">Địa chỉ:</div>
+                <div class="address-container">
+                    <!-- Ô nhập thông tin địa chỉ -->
+                    <textarea class="address-textarea" readonly>@Model.AddressBuyer</textarea>
+                    <!-- Nút chỉnh sửa nằm dưới ô nhập -->
+                    <a href="@Url.Action("EditAddress", "Buyer")" class="edit-button">Chỉnh sửa</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="profile-row">
-        <div class="profile-label">Giới tính:</div>
-        <div class="profile-value">@Model.Sex</div>
-    </div>
-    <div class="profile-row">
-        <div class="profile-label">Ngày sinh:</div>
-        <div class="profile-value">@Model.Date.ToString("dd/MM/yyyy")</div>
-    </div>
-    <div class="profile-row">
-        <div class="profile-label">Số điện thoại:</div>
-        <div class="profile-value">@Model.PhoneNumber</div>
-    </div>
-    <div class="profile-row">
-        <div class="profile-label">Địa chỉ:</div>
-        <div class="profile-value">@Model.AddressBuyer</div>
-    </div>
-</div> 
+</div>

@@ -18,8 +18,9 @@ namespace PBL3.Controllers
         }
 
         // Trang thông tin tài khoản buyer
-        public IActionResult ThongTinTaiKhoan(int buyerId)
+        public IActionResult ThongTinTaiKhoan()
         {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             try
             {
                 var model = _buyerService.GetThongTinCaNhan(buyerId);

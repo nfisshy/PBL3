@@ -1,6 +1,6 @@
 @{
     var userName = ViewBag.UserName as string;
-    var cartCount = (int)ViewBag.CartCount;
+    var cartCount = ViewBag.CartCount as int? ?? 0;
     var searchTerm = ViewBag.SearchTerm as string;
 }
 
