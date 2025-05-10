@@ -45,6 +45,7 @@ namespace PBL_3.Controllers
         // Xử lý nút tài khoản
         public IActionResult Account()
         {
+
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
                 return RedirectToAction("Login", "Account");
             return RedirectToAction("ThongTinTaiKhoan", "Buyer");

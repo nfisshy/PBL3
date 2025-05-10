@@ -24,12 +24,12 @@ namespace PBL3.Services
         {
             try
             {
-                if (string.IsNullOrEmpty(loginDTO.Account) || string.IsNullOrEmpty(loginDTO.Password))
+                if (string.IsNullOrEmpty(loginDTO.Username) || string.IsNullOrEmpty(loginDTO.Password))
                 {
                     throw new ArgumentException("Tài khoản và mật khẩu không được để trống");
                 }
 
-                var user = _userRepository.GetByUsername(loginDTO.Account);
+                var user = _userRepository.GetByUsername(loginDTO.Username);
 
                 if (user == null || user.Password != loginDTO.Password)
                 {

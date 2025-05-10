@@ -33,6 +33,7 @@ namespace PBL_3.Controllers
                 // Lưu thông tin vào session
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("Username", user.Username);
+
                 HttpContext.Session.SetString("Role", user.RoleName.ToString());    
                 if(user.RoleName.ToString() == "Buyer"){
                     return RedirectToAction("Index", "Product");
@@ -40,7 +41,6 @@ namespace PBL_3.Controllers
                 else {
                     return RedirectToAction("Dashboard", "Seller");
                 }
-                
             }
             catch (Exception ex)
             {

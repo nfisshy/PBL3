@@ -8,7 +8,7 @@ namespace PBL3.DTO.Shared
     public class LoginDTO
     {
         [Required(ErrorMessage = "Vui lòng nhập tài khoản")]
-        public string Account { get; set; }
+        public string Username { get; set; }
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         public string Password { get; set; }
     }

@@ -24,9 +24,13 @@ namespace PBL3.DTO.Buyer
         public decimal Price { get; set; }
         public string Description { get; set; }
         public byte[] Image { get; set; }
-        public int Quantity { get; set; }  // so luong mua hoac them vao gio hang
+        public int Quantity { get; set; }  
+
+        public int AddQuantity {get; set; }
         public double Rating { get; set; } 
         public string StoreName { get; set; }
-        public byte[] ImageStore { get; set; }
+        public byte[] StoreAvatar { get; set; }
+
+        public List<Buyer_DanhGiaDTO> Comments { get; set; }
     }
 }

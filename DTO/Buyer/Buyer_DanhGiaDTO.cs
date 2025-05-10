@@ -8,6 +8,7 @@ namespace PBL3.DTO.Buyer
         {
             public int ProductId { get; set; }
             public int BuyerId { get; set; }
+            public string BuyerName { get; set; }
             public string Content { get; set; }
             public int Rating { get; set; } 
             public DateTime DateReview { get; set; }

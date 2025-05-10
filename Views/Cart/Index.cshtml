@@ -1,0 +1,131 @@
+@model PBL3.DTO.Buyer.Buyer_CartDTO
+@{
+    ViewBag.Title = "Giỏ hàng";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+@section Styles {
+    <style>
+        .cart-container { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px #0001; padding: 24px; margin-bottom: 32px; }
+        .cart-header { font-size: 1.5rem; font-weight: bold; color: #219150; margin-bottom: 18px; }
+        .cart-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        .cart-row { background: #fafbfc; border-radius: 12px; box-shadow: 0 1px 4px #0001; vertical-align: middle; }
+        .cart-checkbox { width: 36px; text-align: center; }
+        .cart-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; background: #f8f9fa; }
+        .cart-title { font-weight: 600; color: #101820; font-size: 1.08rem; }
+        .cart-price { color: #e53935; font-weight: bold; font-size: 1.08rem; }
+        .cart-qty { display: flex; align-items: center; gap: 6px; }
+        .cart-remove { color: #e53935; background: none; border: none; font-size: 1.2rem; }
+        .cart-remove:hover { color: #b71c1c; }
+        .cart-total { font-size: 1.2rem; color: #219150; font-weight: bold; margin-top: 18px; text-align: right; }
+        .cart-select-all { margin-right: 8px; }
+    </style>
+}
+<div class="container cart-container">
+    <div class="cart-header">Giỏ hàng của bạn</div>
+    @if (Model.CartItems != null && Model.CartItems.Any())
+    {
+        <form id="cartForm">
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th class="cart-checkbox"><input type="checkbox" id="selectAll" class="cart-select-all" checked onchange="toggleAll(this)"></th>
+                    <th></th>
+                    <th>Sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Thành tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @for (int i = 0; i < Model.CartItems.Count; i++)
+            {
+                var item = Model.CartItems[i];
+                <tr class="cart-row">
+                    <td class="cart-checkbox">
+                        <input type="checkbox" name="selected" value="@item.ProductId" class="cart-item-checkbox" checked onchange="updateTotal()">
+                    </td>
+                    <td>
+                        <img src="@(item.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Image)}" : Url.Content("~/images/no-image.jpg"))" class="cart-img" />
+                    </td>
+                    <td>
+                        <div class="cart-title">@item.ProductName</div>
+                    </td>
+                    <td>
+                        <div class="cart-price">@item.Price.ToString("N0") đ</div>
+                    </td>
+                    <td>
+                        <div class="cart-qty">
+                            <button type="button" class="btn btn-light btn-sm" onclick="changeQty(@item.ProductId, -1)" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
+                            <input type="number" id="qty-@item.ProductId" value="@item.Quantity" min="1" style="width:40px;text-align:center;" onchange="setQty(@item.ProductId, this.value)">
+                            <button type="button" class="btn btn-light btn-sm" onclick="changeQty(@item.ProductId, 1)">+</button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cart-price" id="total-@item.ProductId">@(item.TotalPrice.ToString("N0")) đ</div>
+                    </td>
+                    <td>
+                        <button type="button" class="cart-remove" onclick="removeItem(@item.ProductId)"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </form>
+        <div class="cart-total" id="cartTotal">Tổng cộng: @Model.TotalPrice.ToString("N0") đ</div>
+    }
+    else
+    {
+        <div class="text-center text-muted">Giỏ hàng của bạn đang trống.</div>
+    }
+</div>
+@section Scripts {
+    <script src="https://kit.fontawesome.com/4e5b2b1b7b.js" crossorigin="anonymous"></script>
+    <script>
+        function changeQty(productId, delta) {
+            var qtyInput = document.getElementById('qty-' + productId);
+            var qty = parseInt(qtyInput.value) + delta;
+            if (qty < 1) return;
+            $.post('@Url.Action("UpdateQuantity", "Cart")', { productId: productId, quantity: qty }, function() {
+                qtyInput.value = qty;
+                updateLineTotal(productId, qty);
+                updateTotal();
+            });
+        }
+        function setQty(productId, qty) {
+            qty = parseInt(qty);
+            if (qty < 1) qty = 1;
+            $.post('@Url.Action("UpdateQuantity", "Cart")', { productId: productId, quantity: qty }, function() {
+                updateLineTotal(productId, qty);
+                updateTotal();
+            });
+        }
+        function removeItem(productId) {
+            if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+                $.post('@Url.Action("Remove", "Cart")', { productId: productId }, function() {
+                    location.reload();
+                });
+            }
+        }
+        function toggleAll(checkbox) {
+            var items = document.querySelectorAll('.cart-item-checkbox');
+            items.forEach(function(cb) { cb.checked = checkbox.checked; });
+            updateTotal();
+        }
+        function updateLineTotal(productId, qty) {
+            var price = parseInt(document.querySelector('#qty-' + productId).closest('tr').querySelector('.cart-price').innerText.replace(/\D/g, ''));
+            var total = price * qty;
+            document.getElementById('total-' + productId).innerText = total.toLocaleString() + ' đ';
+        }
+        function updateTotal() {
+            var total = 0;
+            document.querySelectorAll('input.cart-item-checkbox:checked').forEach(function(cb) {
+                var row = cb.closest('tr');
+                var qty = parseInt(row.querySelector('input[type=number]').value);
+                var price = parseInt(row.querySelector('.cart-price').innerText.replace(/\D/g, ''));
+                total += price * qty;
+            });
+            document.getElementById('cartTotal').innerText = 'Tổng cộng: ' + total.toLocaleString() + ' đ';
+        }
+    </script>
+} 
