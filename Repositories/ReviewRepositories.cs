@@ -1,6 +1,10 @@
-﻿using PBL3.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using PBL3.Entity;
 using PBL3.Dbcontext;
 using PBL3.Enums;
+using PBL3.DTO.Seller;
 
 namespace PBL3.Repositories 
 {
@@ -42,6 +46,22 @@ namespace PBL3.Repositories
         public IEnumerable<Review> GetByProductId(int productId)
         {
             return _context.Reviews.Where(r => r.ProductId == productId).ToList();
+        }
+
+        public IEnumerable<Seller_TopSanPhamDTO> GetTopRatedProducts(int sellerId, int limit)
+        {
+            return _context.Reviews
+                .Where(r => r.Product.SellerId == sellerId)
+                .GroupBy(r => new { r.Product.ProductId, r.Product.ProductName })
+                .Select(g => new Seller_TopSanPhamDTO
+                {
+                    ProductName = g.Key.ProductName,
+                    TotalSold = g.Count(), // Số lượng đánh giá
+                    TotalRevenue = (decimal)g.Average(r => r.Rating) // Chuyển đổi double sang decimal
+                })
+                .OrderByDescending(p => p.TotalRevenue)
+                .Take(limit)
+                .ToList();
         }
     }
 }

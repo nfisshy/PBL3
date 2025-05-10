@@ -65,7 +65,7 @@ namespace PBL3.Services
 
                 // Kiểm tra tài khoản đã tồn tại
                 var existingUser = _userRepository.GetByUsername(registerDTO.Account);
-                if (existingUser != null)
+                if (existingUser != null )
                     throw new Exception("Tài khoản đã tồn tại");
 
                 // Kiểm tra số điện thoại đã tồn tại

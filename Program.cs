@@ -33,6 +33,7 @@ builder.Services.AddScoped<IVoucher_BuyerRepositories, Voucher_BuyerRepositories
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<BuyerService>();
+builder.Services.AddScoped<SellerService>();
 
 var app = builder.Build();
 

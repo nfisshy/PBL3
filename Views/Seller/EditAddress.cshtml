@@ -1,0 +1,129 @@
+@model PBL3.DTO.Seller.Seller_SignUpAdjustDTO
+
+@{
+    ViewData["Title"] = "Chỉnh sửa địa chỉ";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: none;
+            padding: 2rem 1rem 1rem 1rem;
+        }
+
+        .card-header h3 {
+            font-weight: 700;
+            color: #219150;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        label.control-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            padding: 0.75rem;
+        }
+
+        .form-control:focus {
+            border-color: #219150;
+            box-shadow: 0 0 0 0.2rem rgba(33, 145, 80, 0.25);
+        }
+
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn-primary {
+            background-color: #219150;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 2rem;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-secondary {
+            border-radius: 8px;
+            padding: 0.6rem 2rem;
+            font-weight: 500;
+        }
+
+        .d-flex {
+            gap: 1rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Chỉnh sửa địa chỉ</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditAddress" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Provine" class="control-label">Tỉnh/Thành phố</label>
+                            <input asp-for="Provine" class="form-control" />
+                            <span asp-validation-for="Provine" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="District" class="control-label">Quận/Huyện</label>
+                            <input asp-for="District" class="form-control" />
+                            <span asp-validation-for="District" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Commune" class="control-label">Phường/Xã</label>
+                            <input asp-for="Commune" class="form-control" />
+                            <span asp-validation-for="Commune" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="DetailAddress" class="control-label">Địa chỉ chi tiết</label>
+                            <input asp-for="DetailAddress" class="form-control" />
+                            <span asp-validation-for="DetailAddress" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="CompleteProfile" class="btn btn-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-primary">Xác nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

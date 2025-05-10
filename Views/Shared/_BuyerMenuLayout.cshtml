@@ -77,9 +77,24 @@
         </div>
     </div>
     <ul class="buyer-menu-list">
-        <li><a class="buyer-menu-link active" href="#">Thông tin tài khoản</a></li>
-        <li><a class="buyer-menu-link" href="#">Đổi mật khẩu</a></li>
-        <li><a class="buyer-menu-link" href="#">Thông báo của tôi</a></li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ThongTinTaiKhoan" ? "active" : "")"
+            href="@Url.Action("ThongTinTaiKhoan", "Buyer")">
+            Thông tin tài khoản
+            </a>
+        </li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "DoiMatKhau" ? "active" : "")"
+            href="@Url.Action("DoiMatKhau", "Buyer")">
+            Đổi mật khẩu
+            </a>
+        </li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ThongBao" ? "active" : "")"
+            href="@Url.Action("ThongBao", "Buyer")">
+            Thông báo
+            </a>
+        </li>
         <li><a class="buyer-menu-link" href="#">Quản lý đơn hàng</a></li>
         <li><a class="buyer-menu-link" href="#">Sổ địa chỉ</a></li>
         <li><a class="buyer-menu-link" href="#">Ví</a></li>

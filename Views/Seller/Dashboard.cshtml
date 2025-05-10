@@ -1,0 +1,138 @@
+@model PBL3.DTO.Seller.Seller_DashboardDTO
+@{
+    ViewBag.Title = "Bảng điều khiển";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .dashboard-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .dashboard-card h3 {
+            color: #219150;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: #e6f3eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .metric-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #219150;
+        }
+        .metric-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .product-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .product-stats {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .date-range {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <!-- Business Metrics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h3>Hiệu quả kinh doanh (7 ngày gần nhất)</h3>
+                <div class="date-range">
+                    Từ @Model.BusinessMetrics.StartDate.ToString("dd/MM/yyyy") đến @Model.BusinessMetrics.EndDate.ToString("dd/MM/yyyy")
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <div class="value">@Model.BusinessMetrics.TotalRevenue.ToString("N0") đ</div>
+                            <div class="label">Tổng doanh số</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <div class="value">@Model.BusinessMetrics.TotalOrders</div>
+                            <div class="label">Số đơn hàng</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Top Selling Products -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h3>Top 3 sản phẩm bán chạy nhất</h3>
+                <ul class="product-list">
+                    @foreach (var product in Model.TopSellingProducts)
+                    {
+                        <li class="product-item">
+                            <div class="product-info">
+                                <div class="product-name">@product.ProductName</div>
+                                <div class="product-stats">
+                                    Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Top Rated Products -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h3>Top 3 sản phẩm được đánh giá cao nhất</h3>
+                <ul class="product-list">
+                    @foreach (var product in Model.TopRatedProducts)
+                    {
+                        <li class="product-item">
+                            <div class="product-info">
+                                <div class="product-name">@product.ProductName</div>
+                                <div class="product-stats">
+                                    Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,142 @@
+@model PBL3.DTO.Seller.Seller_SignUpDTO
+@{
+    ViewBag.Title = "Hoàn thiện thông tin người bán";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .signup-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px #0001;
+        }
+
+        .signup-title {
+            color: #219150;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-section {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            color: #333;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #219150;
+            box-shadow: 0 0 0 0.2rem rgba(33, 145, 80, 0.25);
+        }
+
+        .btn-submit {
+            background: #219150;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background: #27ae60;
+        }
+
+        .validation-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .readonly-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 60px; /* tăng chiều cao theo ý bạn */
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+        }
+
+        .edit-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: #219150;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .edit-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+}
+
+<div class="signup-container">
+    <h2 class="signup-title">Hoàn thiện thông tin người bán</h2>
+
+    <form asp-action="CompleteProfile" method="post">
+        <div asp-validation-summary="ModelOnly" class="validation-message"></div>
+
+        <div class="form-section">
+            <!-- Cột trái -->
+            <div class="form-group">
+                <label asp-for="StoreName" class="form-label"></label>
+                <input asp-for="StoreName" class="form-control" />
+                <span asp-validation-for="StoreName" class="validation-message"></span>
+            </div>
+
+            <!-- Cột phải -->
+            <div class="form-group">
+                <label asp-for="EmailGeneral" class="form-label"></label>
+                <input asp-for="EmailGeneral" type="email" class="form-control" />
+                <span asp-validation-for="EmailGeneral" class="validation-message"></span>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label asp-for="AddressSeller" class="form-label"></label>
+            <div class="readonly-box">
+                @if (TempData["TempAddress"] != null)
+                {
+                    @TempData["TempAddress"]
+                }
+                else
+                {
+                    @Model.AddressSeller
+                }
+            </div>
+            <a href="@Url.Action("EditAddress", "Seller")" class="edit-link">Chỉnh sửa địa chỉ</a>
+        </div>
+
+        <button type="submit" class="btn btn-submit">Hoàn tất</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

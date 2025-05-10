@@ -33,10 +33,14 @@ namespace PBL_3.Controllers
                 // Lưu thông tin vào session
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Role", user.RoleName.ToString());
-
-                // Chuyển hướng về trang chủ hoặc dashboard
-                return RedirectToAction("Index", "Product");
+                HttpContext.Session.SetString("Role", user.RoleName.ToString());    
+                if(user.RoleName.ToString() == "Buyer"){
+                    return RedirectToAction("Index", "Product");
+                }
+                else {
+                    return RedirectToAction("Dashboard", "Seller");
+                }
+                
             }
             catch (Exception ex)
             {

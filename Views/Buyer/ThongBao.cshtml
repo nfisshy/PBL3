@@ -1,0 +1,193 @@
+@model PBL3.DTO.Buyer.ThongBaoViewModel
+@{
+    ViewBag.Title = "Thông báo của tôi";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .notification-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .notification-title {
+            color: #219150;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e6f3eb;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e6f3eb;
+            transition: background 0.2s;
+        }
+        .order-item:hover {
+            background: #f8f9fa;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-id {
+            font-weight: 600;
+            color: #333;
+            margin-right: 16px;
+        }
+        .order-date {
+            color: #666;
+            margin-right: 16px;
+        }
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .voucher-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e6f3eb;
+            transition: background 0.2s;
+        }
+        .voucher-item:hover {
+            background: #f8f9fa;
+        }
+        .voucher-item:last-child {
+            border-bottom: none;
+        }
+        .voucher-name {
+            font-weight: 600;
+            color: #333;
+            margin-right: 16px;
+        }
+        .voucher-date {
+            color: #666;
+            margin-right: 16px;
+        }
+        .voucher-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            padding: 32px;
+            font-style: italic;
+        }
+    </style>
+}
+
+<div class="row">
+    <!-- Sidebar menu -->
+    <div class="col-lg-2 col-md-3 mb-3">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+
+    <!-- Main content -->
+    <div class="col-lg-10 col-md-9">
+        <!-- Trạng thái đơn hàng -->
+        <div class="notification-container">
+            <h2 class="notification-title">Trạng thái đơn hàng</h2>
+            @if (Model.DonHang != null && Model.DonHang.Any())
+            {
+                foreach (var order in Model.DonHang)
+                {
+                    <div class="order-item">
+                        <span class="order-id">Đơn hàng #@order.OrderId</span>
+                        <span class="order-date">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span class="order-status @GetStatusClass(order.OrderStatus)">
+                            @GetStatusText(order.OrderStatus)
+                        </span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-message">Bạn chưa có đơn hàng nào</div>
+            }
+        </div>
+
+        <!-- Thông báo voucher -->
+        <div class="notification-container">
+            <h2 class="notification-title">Voucher của tôi</h2>
+            @if (Model.Voucher != null && Model.Voucher.Any())
+            {
+                foreach (var v in Model.Voucher)
+                {
+                    <div class="voucher-item">
+                        <span class="voucher-id">@v.VoucherId</span>
+                        <span class="voucher-date">Hết hạn: @v.EndDate.ToString("dd/MM/yyyy")</span>
+                        <span class="voucher-status @(v.IsActive ? "status-active" : "status-expired")">
+                            @(v.IsActive ? "Còn hiệu lực" : "Đã hết hạn")
+                        </span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-message">Bạn chưa có voucher nào</div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(PBL3.Enums.OrdStatus status)
+    {
+        return status switch
+        {
+            PBL3.Enums.OrdStatus.WaitConfirm => "status-WaitConfirm",
+            PBL3.Enums.OrdStatus.Pending => "status-Pending",
+            PBL3.Enums.OrdStatus.Delivering => "status-Delivering",
+            PBL3.Enums.OrdStatus.Completed => "status-Completed",
+            PBL3.Enums.OrdStatus.Canceled => "status-Canceled",
+            _ => ""
+        };
+    }
+
+    string GetStatusText(PBL3.Enums.OrdStatus status)
+    {
+        return status switch
+        {
+            PBL3.Enums.OrdStatus.WaitConfirm => "Chờ xác nhận",
+            PBL3.Enums.OrdStatus.Pending => "Đang xử lí",
+            PBL3.Enums.OrdStatus.Delivering => "Đang giao hàng",
+            PBL3.Enums.OrdStatus.Completed => "Đã hoàn thành",
+            PBL3.Enums.OrdStatus.Canceled => "Đã hủy",
+            _ => status.ToString()
+        };
+    }
+} 

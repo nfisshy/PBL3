@@ -8,7 +8,6 @@ namespace PBL3.Repositories
     {
         User GetById(int id);
         User GetByUsername(string username);
-
         User GetByPhone(string phone);
         void Add(User user);
         void Update(User user);
