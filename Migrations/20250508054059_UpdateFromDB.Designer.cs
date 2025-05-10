@@ -12,8 +12,8 @@ using PBL3.Dbcontext;
 namespace PBL_3.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250507150852_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250508054059_UpdateFromDB")]
+    partial class UpdateFromDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -343,6 +343,9 @@ namespace PBL_3.Migrations
                     b.Property<string>("VoucherId")
                         .HasColumnType("nvarchar(450)")
                         .HasColumnOrder(0);
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
 
                     b.HasKey("BuyerId", "VoucherId");
 

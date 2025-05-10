@@ -21,6 +21,7 @@ namespace PBL3.Controllers
 
         public IActionResult Index()
         {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             try
             {
                 var products = _productService.GetAllProducts();

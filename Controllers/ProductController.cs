@@ -45,9 +45,10 @@ namespace PBL_3.Controllers
         // Xử lý nút tài khoản
         public IActionResult Account()
         {
-            if (HttpContext.Session.GetInt32("BuyerId") == null)
+
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
                 return RedirectToAction("Login", "Account");
-            return RedirectToAction("Buyer", "ThongTinTaiKhoan");
+            return RedirectToAction("ThongTinTaiKhoan", "Buyer");
         }
 
         // Xử lý nút giỏ hàng

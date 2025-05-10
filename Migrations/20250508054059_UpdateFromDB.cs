@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PBL_3.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UpdateFromDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -303,7 +303,8 @@ namespace PBL_3.Migrations
                 columns: table => new
                 {
                     VoucherId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    BuyerId = table.Column<int>(type: "int", nullable: false)
+                    BuyerId = table.Column<int>(type: "int", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

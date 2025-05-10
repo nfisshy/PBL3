@@ -341,6 +341,9 @@ namespace PBL_3.Migrations
                         .HasColumnType("nvarchar(450)")
                         .HasColumnOrder(0);
 
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
                     b.HasKey("BuyerId", "VoucherId");
 
                     b.HasIndex("VoucherId");
