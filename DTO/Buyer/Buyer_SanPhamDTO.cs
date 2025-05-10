@@ -29,8 +29,8 @@ namespace PBL3.DTO.Buyer
         public int AddQuantity {get; set; }
         public double Rating { get; set; } 
         public string StoreName { get; set; }
-        public byte[] ImageStore { get; set; }
+        public byte[] StoreAvatar { get; set; }
 
-        public List<Buyer_DanhGiaDTO> comment;
+        public List<Buyer_DanhGiaDTO> Comments { get; set; }
     }
 }

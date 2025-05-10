@@ -11,6 +11,7 @@
         backdrop-filter: blur(3px);
         margin: 0;
         font-family: 'Segoe UI', sans-serif;
+        height: 100vh;
     }
 
     .login-card {
@@ -104,7 +105,7 @@
                 firstError = passwordError;
             }
         }   
-        <input asp-for="Account" class="form-control" placeholder="Tên đăng nhập hoặc Email" />
+        <input asp-for="Username" class="form-control" placeholder="Tên đăng nhập hoặc Email" />
         @if (!string.IsNullOrEmpty(firstError) && !string.IsNullOrEmpty(accountError))
         {
             <span class="text-danger">@firstError</span>

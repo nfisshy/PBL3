@@ -36,7 +36,7 @@ namespace PBL_3.Controllers
                 HttpContext.Session.SetString("Role", user.RoleName.ToString());
 
                 // Chuyển hướng về trang chủ hoặc dashboard
-                return RedirectToAction("Index", "Product");
+                return RedirectToAction("Index", "Buyer");
             }
             catch (Exception ex)
             {

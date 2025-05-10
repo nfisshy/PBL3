@@ -7,143 +7,322 @@
 @section Styles {
     <style>
         body { background: #101820; }
-        .product-detail-container { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px #0001; padding: 32px 24px; margin-bottom: 32px; }
-        .product-images { text-align: center; background: #101820; border-radius: 12px; }
-        .product-images img { border-radius: 12px; max-width: 100%; max-height: 350px; box-shadow: 0 2px 8px #0002; background: #101820; }
-        .product-info h2 { color: #219150; font-weight: bold; }
-        .product-info .price { color: #e53935; font-size: 2rem; font-weight: bold; }
-        .product-info .rating { color: #ffc107; font-size: 1.2rem; }
-        .product-info .desc { margin-top: 16px; color: #333; }
-        .buy-box { background: #e6f3eb; border-radius: 16px; padding: 24px; }
-        .buy-box .price { color: #e53935; font-size: 1.5rem; font-weight: bold; }
-        .buy-box .btn-buy { background: #219150; color: #fff; font-weight: bold; border-radius: 2rem; width: 100%; margin-bottom: 8px; }
-        .buy-box .btn-cart { background: #101820; color: #fff; border-radius: 2rem; width: 100%; margin-bottom: 8px; }
-        .buy-box .btn-buy:hover { background: #27ae60; }
-        .buy-box .btn-cart:hover { background: #27ae60; }
-        .buy-box .quantity-box { display: flex; align-items: center; margin-bottom: 16px; }
-        .buy-box .quantity-box input { width: 60px; text-align: center; margin: 0 8px; }
-        .shop-info {
-            background: #101820;
-            color: #fff;
-            border-radius: 12px;
-            padding: 16px 24px;
-            margin-bottom: 24px;
+        .product-main-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px #0002;
+            padding: 32px 28px 24px 28px;
+            margin-bottom: 32px;
+        }
+        .product-main-row { display: flex; flex-wrap: wrap; }
+        .product-main-left {
+            flex: 0 0 240px;
+            max-width: 240px;
+            margin-right: 32px;
+            display: flex;
+            flex-direction: column;
             align-items: center;
         }
-        .shop-info .btn { border-radius: 2rem; }
-        .product-detail-section { background: #f8f9fa; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
-        .section-title {
-            color: #219150;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 16px;
+        .product-main-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 16px;
+            background: #101820;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 18px;
         }
-        .review-section { background: #fff; border-radius: 12px; padding: 24px; }
-        .review-rating { color: #219150; font-size: 2rem; font-weight: bold; }
-        .review-star { color: #ffc107; }
+        .product-main-image img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+            background: #101820;
+        }
+        .product-thumbnails {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .product-thumbnails img {
+            width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 2px solid #e6f3eb;
+        }
+        .product-main-right {
+            flex: 1 1 320px;
+            min-width: 320px;
+        }
+        .product-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #101820;
+            margin-bottom: 8px;
+        }
+        .product-rating {
+            color: #ffc107;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        .product-rating .text-muted { color: #888 !important; font-size: 1rem; }
+        .product-price {
+            color: #e53935;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .product-quantity {
+            color: #219150;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .product-desc-short {
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .product-shop {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .shop-avatar {
+            width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #e6f3eb; margin-right: 12px;
+        }
+        .shop-name {
+            color: #219150; font-weight: 600; font-size: 1.1rem;
+        }
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .btn-buy, .btn-cart {
+            border-radius: 2rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 28px;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-buy { background: #219150; color: #fff; }
+        .btn-buy:hover { background: #27ae60; }
+        .btn-cart { background: #101820; color: #fff; }
+        .btn-cart:hover { background: #27ae60; }
+        .quantity-box {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+        }
+        .quantity-box input {
+            width: 60px; text-align: center; border-radius: 8px; border: 1px solid #e6f3eb; padding: 4px 0;
+        }
+        .product-share {
+            margin-top: 10px;
+            color: #888;
+            font-size: 1.1rem;
+        }
+        .product-share i { margin-right: 8px; }
+        media (max-width: 991px) {
+            .product-main-row { flex-direction: column; }
+            .product-main-left { margin-right: 0; margin-bottom: 24px; }
+        }
     </style>
 }
 
-<div class="container product-detail-container">
-    <div class="row">
-        <!-- Ảnh sản phẩm -->
-        <div class="col-md-5 product-images d-flex flex-column align-items-center justify-content-center">
-            <img src="@(Model.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="@Model.ProductName" />
-            <!-- Nếu có nhiều ảnh, có thể thêm slider/thumbnails ở đây -->
-        </div>
-        <!-- Thông tin sản phẩm -->
-        <div class="col-md-4 product-info">
-            <h2>@Model.ProductName</h2>
-            <div>
-                <span class="price">@Model.Price.ToString("N0") đ</span>
+<div class="container product-main-container">
+    <div class="product-main-row">
+        <!-- Left: Product Image -->
+        <div class="product-main-left">
+            <div class="product-main-image">
+                <img src="@(Model.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="@Model.ProductName" />
             </div>
-            <div class="mt-2">
-                <span class="rating">
-                    @for (int i = 1; i <= 5; i++)
+            <!-- Thumbnails: nếu có nhiều ảnh, có thể render thêm ở đây -->
+            @* <div class="product-thumbnails">
+                <img src="..." />
+                ...
+            </div> *@
+        </div>
+        <!-- Right: Product Info -->
+        <div class="product-main-right">
+            <div class="product-title">@Model.ProductName</div>
+            <div class="product-rating">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i <= Model.Rating)
                     {
-                        if (i <= Model.Rating)
-                        {
-                            <i class="fas fa-star"></i>
-                        }
-                        else if (i - 0.5 <= Model.Rating)
-                        {
-                            <i class="fas fa-star-half-alt"></i>
-                        }
-                        else
-                        {
-                            <i class="far fa-star"></i>
-                        }
+                        <i class="fas fa-star"></i>
                     }
-                </span>
+                    else if (i - 0.5 <= Model.Rating)
+                    {
+                        <i class="fas fa-star-half-alt"></i>
+                    }
+                    else
+                    {
+                        <i class="far fa-star"></i>
+                    }
+                }
                 <span class="text-muted ms-2">(@Model.Rating.ToString("F1"))</span>
             </div>
-            <div class="desc mt-3">
-                <strong>Mô tả:</strong> @Model.Description
-            </div>
-            <div class="mt-3">
-                <strong>Cửa hàng:</strong> <span style="color:#219150">@Model.StoreName</span>
-            </div>
-        </div>
-        <!-- Box mua hàng -->
-        <div class="col-md-3">
-            <div class="buy-box shadow-sm">
-                <div class="price mb-2">@Model.Price.ToString("N0") đ</div>
-                <form asp-action="AddToCart" method="post">
-                    <input type="hidden" name="productId" value="@Model.ProductId" />
-                    <div class="quantity-box">
-                        <label for="quantity">Số lượng:</label>
-                        <button type="button" class="btn btn-light btn-sm" onclick="changeQty(-1)">-</button>
-                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="@Model.Quantity" class="form-control d-inline-block" style="width:60px;" />
-                        <button type="button" class="btn btn-light btn-sm" onclick="changeQty(1)">+</button>
-                        <span class="ms-2 text-muted">(@Model.Quantity) có sẵn</span>
-                    </div>
-                    <button type="submit" class="btn btn-buy">Mua ngay</button>
-                    <button type="submit" formaction="@Url.Action("AddToCart")" class="btn btn-cart">Thêm vào giỏ hàng</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thông tin shop -->
-    <div class="row mt-4">
-        <div class="col-12 shop-info d-flex align-items-center">
-            <img src="~/images/shop-avatar-default.png" alt="Shop Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;margin-right:16px;">
-            <div>
-                <strong style="font-size:1.2rem;">@Model.StoreName</strong>
-                <span class="badge bg-success ms-2">Mall</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chi tiết sản phẩm -->
-    <div class="row mt-4">
-        <div class="col-12 product-detail-section">
-            <div class="section-title">CHI TIẾT SẢN PHẨM</div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div><strong>Kho:</strong> @Model.Quantity</div>
-                    <div><strong>Tên shop:</strong> @Model.StoreName</div>
+            <div class="product-price">@Model.Price.ToString("N0") đ</div>
+            <div class="product-quantity">Kho: <b>@Model.Quantity</b> sản phẩm</div>
+            <form id="addToCartForm" onsubmit="return addToCartAjax(event);">
+                <input type="hidden" name="productId" value="@Model.ProductId" />
+                <div class="quantity-box">
+                    <label for="quantity">Số lượng:</label>
+                    <button type="button" class="btn btn-light btn-sm" onclick="changeQty(-1)">-</button>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="@Model.Quantity" />
+                    <button type="button" class="btn btn-light btn-sm" onclick="changeQty(1)">+</button>
                 </div>
+                <div class="product-actions">
+                    <button type="submit" class="btn btn-cart">Thêm vào giỏ hàng</button>
+                    <button type="submit" formaction="@Url.Action("BuyNow")" class="btn btn-buy">Mua ngay</button>
+                </div>
+            </form>
+            <div id="addToCartMsg" class="mt-2"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Shop Info Container -->
+<div class="container shop-info-mall-container mt-3 mb-4 p-3" style="background:#fff; border-radius:14px; box-shadow:0 2px 8px #0001; display:flex; align-items:center;">
+    <div style="display:flex; align-items:center;">
+        <img src="@(Model.StoreAvatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.StoreAvatar)}" : Url.Content("~/images/shop-avatar-default.png"))" alt="@Model.StoreName" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+        <div style="margin-left:18px;">
+            <div style="font-size:1.25rem;font-weight:700;color:#222;">@Model.StoreName</div>
+            <div class="mt-2">
+                <a href="#" class="btn btn-outline-dark btn-sm">Xem Shop</a>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Mô tả sản phẩm -->
-    <div class="row mt-4">
-        <div class="col-12 product-detail-section">
-            <div class="section-title">MÔ TẢ SẢN PHẨM</div>
-            <div>@Model.Description</div>
+<!-- Product Detail Table Container -->
+<div class="container product-detail-table-container mb-4 p-4" style="background:#fff; border-radius:14px; box-shadow:0 2px 8px #0001;">
+    <div style="font-size:1.15rem;font-weight:600;color:#222;margin-bottom:18px;">CHI TIẾT SẢN PHẨM</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row mb-2">
+                <div class="col-5 text-secondary">Tên sản phẩm</div>
+                <div class="col-7">@Model.ProductName</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-5 text-secondary">Giá</div>
+                <div class="col-7">@Model.Price.ToString("N0") đ</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-5 text-secondary">Kho</div>
+                <div class="col-7">@Model.Quantity</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-5 text-secondary">Tên shop</div>
+                <div class="col-7">@Model.StoreName</div>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Đánh giá sản phẩm (nếu có) -->
-    <div class="row mt-4">
-        <div class="col-12 review-section">
-            <div class="section-title">ĐÁNH GIÁ SẢN PHẨM</div>
-            <div class="review-rating">@Model.Rating <span class="review-star">★</span></div>
-            <!-- Có thể render danh sách đánh giá ở đây nếu có -->
+<!-- Product Description Container -->
+<div class="container product-description-container mb-4 p-4" style="background:#fff; border-radius:14px; box-shadow:0 2px 8px #0001;">
+    <div style="font-size:1.15rem;font-weight:600;color:#222;margin-bottom:18px;">MÔ TẢ SẢN PHẨM</div>
+    <div style="color:#333; font-size:1.05rem; line-height:1.7;">
+        @Model.Description
+    </div>
+</div>
+
+<!-- Đánh giá sản phẩm -->
+<div class="container product-review-container mb-4 p-4" style="background:#fff; border-radius:14px; box-shadow:0 2px 8px #0001;">
+    <div style="font-size:1.15rem;font-weight:600;color:#222;margin-bottom:18px;">Khách hàng đánh giá</div>
+    <div class="row mb-3">
+        <div class="col-md-2 text-center">
+            <div style="font-size:2.5rem;font-weight:700;color:#222;">@Model.Rating.ToString("0.0")</div>
+            <div>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i <= Math.Round(Model.Rating))
+                    {
+                        <i class="fas fa-star" style="color:#ffc107;font-size:1.3rem;"></i>
+                    }
+                    else
+                    {
+                        <i class="far fa-star" style="color:#ffc107;font-size:1.3rem;"></i>
+                    }
+                }
+            </div>
+            <div style="color:#888;font-size:1rem;">(@(Model.Comments?.Count ?? 0) đánh giá)</div>
+        </div>
+        <div class="col-md-10">
+            <!-- Biểu đồ số lượng sao (placeholder, có thể tính toán nếu muốn) -->
+            <div class="d-flex align-items-center mb-1">
+                <span class="me-2">5 sao</span>
+                <div style="background:#e6e6e6;width:120px;height:10px;border-radius:5px;overflow:hidden;">
+                    <div style="background:#ffc107;width:80%;height:100%;"></div>
+                </div>
+                <span class="ms-2" style="color:#e53935;">@(Model.Comments?.Count(c=>c.Rating==5) ?? 0)</span>
+            </div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="me-2">4 sao</span>
+                <div style="background:#e6e6e6;width:120px;height:10px;border-radius:5px;overflow:hidden;">
+                    <div style="background:#ffc107;width:10%;height:100%;"></div>
+                </div>
+                <span class="ms-2" style="color:#e53935;">@(Model.Comments?.Count(c=>c.Rating==4) ?? 0)</span>
+            </div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="me-2">3 sao</span>
+                <div style="background:#e6e6e6;width:120px;height:10px;border-radius:5px;overflow:hidden;">
+                    <div style="background:#ffc107;width:5%;height:100%;"></div>
+                </div>
+                <span class="ms-2" style="color:#e53935;">@(Model.Comments?.Count(c=>c.Rating==3) ?? 0)</span>
+            </div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="me-2">2 sao</span>
+                <div style="background:#e6e6e6;width:120px;height:10px;border-radius:5px;overflow:hidden;">
+                    <div style="background:#ffc107;width:3%;height:100%;"></div>
+                </div>
+                <span class="ms-2" style="color:#e53935;">@(Model.Comments?.Count(c=>c.Rating==2) ?? 0)</span>
+            </div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="me-2">1 sao</span>
+                <div style="background:#e6e6e6;width:120px;height:10px;border-radius:5px;overflow:hidden;">
+                    <div style="background:#ffc107;width:2%;height:100%;"></div>
+                </div>
+                <span class="ms-2" style="color:#e53935;">@(Model.Comments?.Count(c=>c.Rating==1) ?? 0)</span>
+            </div>
         </div>
     </div>
+    <hr />
+    <!-- Danh sách đánh giá -->
+    @if (Model.Comments != null && Model.Comments.Any())
+    {
+        foreach (var cmt in Model.Comments.OrderByDescending(c=>c.DateReview))
+        {
+            <div class="mb-4 p-3" style="background:#f8f9fa;border-radius:10px;">
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:40px;height:40px;border-radius:50%;background:#e6e6e6;display:flex;align-items:center;justify-content:center;font-weight:600;color:#219150;font-size:1.1rem;">
+                        @((cmt.BuyerId.ToString().Length > 2 ? cmt.BuyerId.ToString().Substring(0,2) : cmt.BuyerId.ToString()))
+                    </div>
+                    <div class="ms-3">
+                        <span style="font-weight:600;">@cmt.BuyerName</span>
+                        <span class="ms-2" style="color:#ffc107;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= cmt.Rating)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                            }
+                        </span>
+                        <span class="ms-2 text-muted" style="font-size:0.95rem;">@cmt.DateReview.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+                <div style="margin-left:56px;">@cmt.Content</div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted">Chưa có đánh giá nào cho sản phẩm này.</div>
+    }
 </div>
 
 @section Scripts {
@@ -154,6 +333,32 @@
             if (val < 1) val = 1;
             if (val > @Model.Quantity) val = @Model.Quantity;
             qty.value = val;
+        }
+        function addToCartAjax(e) {
+            e.preventDefault();
+            var form = document.getElementById('addToCartForm');
+            var productId = form.productId.value;
+            var quantity = form.quantity.value;
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}&quantity=${quantity}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                var msg = document.getElementById('addToCartMsg');
+                if (data.requireLogin) {
+                    window.location.href = '/Account/Login';
+                } else if (data.success) {
+                    msg.innerHTML = '<span class="text-success">Đã thêm vào giỏ hàng!</span>';
+                } else {
+                    msg.innerHTML = '<span class="text-danger">Có lỗi xảy ra!</span>';
+                }
+            })
+            .catch(() => {
+                document.getElementById('addToCartMsg').innerHTML = '<span class="text-danger">Có lỗi xảy ra!</span>';
+            });
+            return false;
         }
     </script>
 }

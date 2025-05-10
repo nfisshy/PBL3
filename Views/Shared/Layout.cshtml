@@ -1,6 +1,5 @@
 @{
     var searchTerm = ViewBag.SearchTerm as string;
-    var username = ViewBag.Username;
 }
 
 <!DOCTYPE html>
@@ -15,6 +14,7 @@
         body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .main-header {
             background: #222; color: #fff; border-radius: 0 0 16px 16px; padding: 0.5rem 0;
+            position: absolute;
             z-index: 2;
         }
         .main-header .search-bar { border-radius: 2rem; border: none; width: 350px; }
@@ -39,25 +39,11 @@
                 <button type="submit" class="btn btn-search">Tìm kiếm</button>
             </form>
             <div class="d-flex align-items-center">
-            <div class="dropdown me-2">
-                <button class="btn btn-header dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    Tài khoản
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="@Url.Action("Profile", "Account")">Thông tin tài khoản</a></li>
-                    <li><a class="dropdown-item" href="@Url.Action("Wallet", "Account")">Ví</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item text-danger" href="@Url.Action("Index", "Home")">Đăng xuất</a></li>
-                </ul>
-            </div>
-                <a href="@Url.Action("Index", "Cart")" class="btn btn-header position-relative me-2">
-                    <i class="fas fa-shopping-cart"></i>
-                    @if (ViewBag.CartCount > 0)
-                    {
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
-                            @ViewBag.CartCount
-                        </span>
-                    }
+                <a href="@Url.Action("Login")" class="btn btn-header me-2">
+                    Đăng nhập
+                </a>
+                <a href="@Url.Action("Register")" class="btn btn-header me-2">
+                    Đăng ký
                 </a>
             </div>
         </div>

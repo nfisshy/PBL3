@@ -13,15 +13,18 @@ namespace PBL3.Services
         private readonly IProductRepositories _productRepository;
         private readonly IReviewRepositories _reviewRepository;
         private readonly ISellerRepositories _sellerRepository;
+        private readonly IBuyerRepositories _buyerRepository;
 
         public ProductService(
             IProductRepositories productRepository,
             IReviewRepositories reviewRepository,
-            ISellerRepositories sellerRepository)
+            ISellerRepositories sellerRepository,
+            IBuyerRepositories buyerRepository)
         {
             _productRepository = productRepository;
             _reviewRepository = reviewRepository;
             _sellerRepository = sellerRepository;
+            _buyerRepository = buyerRepository;
         }
 
         // Hiển thị toàn bộ sản phẩm của hệ thống
@@ -110,12 +113,26 @@ namespace PBL3.Services
                 {
                     throw new KeyNotFoundException($"Không tìm thấy sản phẩm với ID: {productId}");
                 }
-
                 var seller = _sellerRepository.GetById(product.SellerId);
                 if (seller == null)
                 {
                     throw new KeyNotFoundException($"Không tìm thấy thông tin người bán cho sản phẩm ID: {productId}");
                 }
+
+                // Lấy danh sách đánh giá
+                var reviews = _reviewRepository.GetByProductId(productId);
+                var reviewDTOs = reviews?.Select(r => {
+                    var buyer = _buyerRepository.GetById(r.BuyerId);
+                    return new Buyer_DanhGiaDTO
+                    {
+                        ProductId = r.ProductId,
+                        BuyerId = r.BuyerId,
+                        BuyerName = buyer != null ? buyer.Name : $"Người dùng {r.BuyerId}",
+                        Content = r.Comment,
+                        Rating = r.Rating,
+                        DateReview = r.DateReview
+                    };
+                }).ToList() ?? new List<Buyer_DanhGiaDTO>();
 
                 return new Buyer_ChiTietSanPhamDTO
                 {
@@ -126,7 +143,8 @@ namespace PBL3.Services
                     Image = product.ProductImage,
                     Quantity = product.ProductQuantity,
                     Rating = CalculateAverageRating(productId),
-                    StoreName = seller.StoreName
+                    StoreName = seller.StoreName,
+                    Comments = reviewDTOs
                 };
             }
             catch (ArgumentException)
