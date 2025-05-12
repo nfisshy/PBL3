@@ -1,4 +1,4 @@
-@model PBL3.DTO.Buyer.Buyer_CartDTO
+@model List<PBL3.DTO.Buyer.Buyer_CartDTO>
 @{
     ViewBag.Title = "Giỏ hàng";
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
@@ -13,119 +13,206 @@
         .cart-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; background: #f8f9fa; }
         .cart-title { font-weight: 600; color: #101820; font-size: 1.08rem; }
         .cart-price { color: #e53935; font-weight: bold; font-size: 1.08rem; }
-        .cart-qty { display: flex; align-items: center; gap: 6px; }
+        .cart-qty {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+        }
+        .cart-qty input {
+            width: 60px; text-align: center; border-radius: 8px; border: 1px solid #e6f3eb; padding: 4px 0;
+        }
         .cart-remove { color: #e53935; background: none; border: none; font-size: 1.2rem; }
         .cart-remove:hover { color: #b71c1c; }
         .cart-total { font-size: 1.2rem; color: #219150; font-weight: bold; margin-top: 18px; text-align: right; }
         .cart-select-all { margin-right: 8px; }
+        .seller-header { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .seller-name { font-weight: 600; color: #219150; }
+        .seller-group { border: 2px solid #219150; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 8px #0002; padding: 0 0 12px 0; background: #f8f9fa; }
     </style>
 }
 <div class="container cart-container">
-    <div class="cart-header">Giỏ hàng của bạn</div>
-    @if (Model.CartItems != null && Model.CartItems.Any())
-    {
-        <form id="cartForm">
-        <table class="cart-table">
-            <thead>
-                <tr>
-                    <th class="cart-checkbox"><input type="checkbox" id="selectAll" class="cart-select-all" checked onchange="toggleAll(this)"></th>
-                    <th></th>
-                    <th>Sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Thành tiền</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @for (int i = 0; i < Model.CartItems.Count; i++)
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center mb-3">
+                <input type="checkbox" id="selectAll" class="cart-select-all">
+                <label for="selectAll">Chọn tất cả sản phẩm</label>
+            </div>
+            @if (Model != null && Model.Any())
             {
-                var item = Model.CartItems[i];
-                <tr class="cart-row">
-                    <td class="cart-checkbox">
-                        <input type="checkbox" name="selected" value="@item.ProductId" class="cart-item-checkbox" checked onchange="updateTotal()">
-                    </td>
-                    <td>
-                        <img src="@(item.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Image)}" : Url.Content("~/images/no-image.jpg"))" class="cart-img" />
-                    </td>
-                    <td>
-                        <div class="cart-title">@item.ProductName</div>
-                    </td>
-                    <td>
-                        <div class="cart-price">@item.Price.ToString("N0") đ</div>
-                    </td>
-                    <td>
-                        <div class="cart-qty">
-                            <button type="button" class="btn btn-light btn-sm" onclick="changeQty(@item.ProductId, -1)" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
-                            <input type="number" id="qty-@item.ProductId" value="@item.Quantity" min="1" style="width:40px;text-align:center;" onchange="setQty(@item.ProductId, this.value)">
-                            <button type="button" class="btn btn-light btn-sm" onclick="changeQty(@item.ProductId, 1)">+</button>
+                foreach (var group in Model)
+                {
+                    <div class="seller-group mb-4">
+                        <div class="seller-header d-flex align-items-center">
+                            <input type="checkbox" class="seller-select-all me-2" data-seller-id="@group.sellerID">
+                            <span class="seller-name">@group.sellerName</span>
                         </div>
-                    </td>
-                    <td>
-                        <div class="cart-price" id="total-@item.ProductId">@(item.TotalPrice.ToString("N0")) đ</div>
-                    </td>
-                    <td>
-                        <button type="button" class="cart-remove" onclick="removeItem(@item.ProductId)"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th class="cart-checkbox"></th>
+                                    <th>Sản phẩm</th>
+                                    <th>Giá</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var item in group.CartItems)
+                            {
+                                <tr class="cart-row" data-product-id="@item.ProductId" data-seller-id="@group.sellerID">
+                                    <td class="cart-checkbox">
+                                        <input type="checkbox" class="product-checkbox" data-product-id="@item.ProductId" data-seller-id="@group.sellerID" data-price="@item.Price">
+                                    </td>
+                                    <td>
+                                        <img src="@(item.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Image)}" : Url.Content("~/images/no-image.jpg"))" class="cart-img" />
+                                        <div class="cart-title">@item.ProductName</div>
+                                    </td>
+                                    <td>
+                                        <div class="cart-price">@item.Price.ToString("N0") đ</div>
+                                    </td>
+                                    <td>
+                                        <div class="cart-qty">
+                                            <button type="button" class="btn btn-light btn-sm btn-minus" data-id="@item.ProductId">-</button>
+                                            <input type="number" class="qty-input" value="@item.Quantity" min="1" style="width:40px;text-align:center;" data-id="@item.ProductId">
+                                            <button type="button" class="btn btn-light btn-sm btn-plus" data-id="@item.ProductId">+</button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cart-price line-total" id="total-@item.ProductId">@((item.Price * item.Quantity).ToString("N0")) đ</div>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="cart-remove btn-remove" data-id="@item.ProductId"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             }
-            </tbody>
-        </table>
-        </form>
-        <div class="cart-total" id="cartTotal">Tổng cộng: @Model.TotalPrice.ToString("N0") đ</div>
-    }
-    else
-    {
-        <div class="text-center text-muted">Giỏ hàng của bạn đang trống.</div>
-    }
+            else
+            {
+                <div class="text-center text-muted">Giỏ hàng của bạn đang trống.</div>
+            }
+        </div>
+        <div class="col-md-4">
+            <div class="border rounded p-3 bg-light">
+                <h5>Thanh toán</h5>
+                <div class="mb-2">Tổng tiền: <span id="grand-total">0 đ</span></div>
+                <button class="btn btn-success w-100">Mua hàng</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 @section Scripts {
-    <script src="https://kit.fontawesome.com/4e5b2b1b7b.js" crossorigin="anonymous"></script>
-    <script>
-        function changeQty(productId, delta) {
-            var qtyInput = document.getElementById('qty-' + productId);
-            var qty = parseInt(qtyInput.value) + delta;
-            if (qty < 1) return;
-            $.post('@Url.Action("UpdateQuantity", "Cart")', { productId: productId, quantity: qty }, function() {
-                qtyInput.value = qty;
-                updateLineTotal(productId, qty);
-                updateTotal();
-            });
-        }
-        function setQty(productId, qty) {
-            qty = parseInt(qty);
-            if (qty < 1) qty = 1;
-            $.post('@Url.Action("UpdateQuantity", "Cart")', { productId: productId, quantity: qty }, function() {
-                updateLineTotal(productId, qty);
-                updateTotal();
-            });
-        }
-        function removeItem(productId) {
-            if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-                $.post('@Url.Action("Remove", "Cart")', { productId: productId }, function() {
-                    location.reload();
-                });
-            }
-        }
-        function toggleAll(checkbox) {
-            var items = document.querySelectorAll('.cart-item-checkbox');
-            items.forEach(function(cb) { cb.checked = checkbox.checked; });
-            updateTotal();
-        }
-        function updateLineTotal(productId, qty) {
-            var price = parseInt(document.querySelector('#qty-' + productId).closest('tr').querySelector('.cart-price').innerText.replace(/\D/g, ''));
-            var total = price * qty;
-            document.getElementById('total-' + productId).innerText = total.toLocaleString() + ' đ';
-        }
-        function updateTotal() {
-            var total = 0;
-            document.querySelectorAll('input.cart-item-checkbox:checked').forEach(function(cb) {
-                var row = cb.closest('tr');
-                var qty = parseInt(row.querySelector('input[type=number]').value);
-                var price = parseInt(row.querySelector('.cart-price').innerText.replace(/\D/g, ''));
-                total += price * qty;
-            });
-            document.getElementById('cartTotal').innerText = 'Tổng cộng: ' + total.toLocaleString() + ' đ';
-        }
-    </script>
+<script>
+function updateLineTotal(productId, quantity, price) {
+    const total = quantity * price;
+    document.getElementById(`total-${productId}`).innerText = total.toLocaleString() + ' đ';
+    updateGrandTotal();
+}
+
+function updateGrandTotal() {
+    let total = 0;
+    document.querySelectorAll('.product-checkbox:checked').forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const price = parseInt(checkbox.dataset.price);
+        const quantity = parseInt(row.querySelector('.qty-input').value);
+        total += price * quantity;
+    });
+    document.getElementById('grand-total').innerText = total.toLocaleString() + ' đ';
+}
+
+// Select all products
+document.getElementById('selectAll').addEventListener('change', function() {
+    const isChecked = this.checked;
+    document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+    document.querySelectorAll('.seller-select-all').forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+    updateGrandTotal();
+});
+
+// Select all products from a seller
+document.querySelectorAll('.seller-select-all').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const sellerId = this.dataset.sellerId;
+        const isChecked = this.checked;
+        document.querySelectorAll(`.product-checkbox[data-seller-id="${sellerId}"]`).forEach(cb => {
+            cb.checked = isChecked;
+        });
+        updateGrandTotal();
+    });
+});
+
+// Individual product selection
+document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const sellerId = this.dataset.sellerId;
+        const sellerCheckboxes = document.querySelectorAll(`.product-checkbox[data-seller-id="${sellerId}"]`);
+        const allChecked = Array.from(sellerCheckboxes).every(cb => cb.checked);
+        const sellerSelect = document.querySelector(`.seller-select-all[data-seller-id="${sellerId}"]`);
+        if (sellerSelect) sellerSelect.checked = allChecked;
+        updateGrandTotal();
+    });
+});
+
+// Quantity update handlers
+document.querySelectorAll('.btn-plus').forEach(btn => {
+    btn.onclick = function() {
+        const id = this.dataset.id;
+        const input = document.querySelector(`.qty-input[data-id="${id}"]`);
+        const qty = parseInt(input.value) + 1;
+        const price = parseInt(input.closest('tr').querySelector('.product-checkbox').dataset.price);
+        
+        fetch('/Cart/UpdateQuantity', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ productId: id, quantity: qty })
+        }).then(r => r.json()).then(() => {
+            input.value = qty;
+            updateLineTotal(id, qty, price);
+        });
+    }
+});
+
+document.querySelectorAll('.btn-minus').forEach(btn => {
+    btn.onclick = function() {
+        const id = this.dataset.id;
+        const input = document.querySelector(`.qty-input[data-id="${id}"]`);
+        const qty = Math.max(1, parseInt(input.value) - 1);
+        const price = parseInt(input.closest('tr').querySelector('.product-checkbox').dataset.price);
+        
+        fetch('/Cart/UpdateQuantity', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ productId: id, quantity: qty })
+        }).then(r => r.json()).then(() => {
+            input.value = qty;
+            updateLineTotal(id, qty, price);
+        });
+    }
+});
+
+// Remove product
+document.querySelectorAll('.btn-remove').forEach(btn => {
+    btn.onclick = function() {
+        const id = this.dataset.id;
+        fetch('/Cart/Remove', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ productId: id })
+        }).then(r => r.json()).then(() => {
+            const row = this.closest('tr');
+            row.remove();
+            updateGrandTotal();
+        });
+    }
+});
+
+// Initialize grand total
+updateGrandTotal();
+</script>
 } 

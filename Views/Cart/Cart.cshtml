@@ -1,0 +1,478 @@
+@model List<PBL3.DTO.Buyer.Buyer_CartDTO>
+@{
+    ViewBag.Title = "Giỏ hàng";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom class for the green color from the second image (emerald/teal) */
+        .theme-green-bg { background-color: #219150; color: #fff} /* Tailwind emerald-500 */
+        .theme-green-border { border-color: #219150; color: #fff}
+        .theme-green-text { color: #219150; }
+        .hover-theme-green-bg:hover { background-color: #219150; color: #fff} /* Tailwind emerald-600 */
+
+        /* Style for quantity input to prevent browser default spinners if desired */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        .quantity-btn {
+            min-width: 2.5rem; /* 40px */
+            height: 2.5rem; /* 40px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-input-el {
+             height: 2.5rem; /* 40px */
+        }
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover; /* Ensures image covers the area without distortion */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        /* Ensure checkboxes use the theme color */
+        .form-checkbox {
+            color: #219150; /* emerald-500 */
+            color: #fff
+        }
+        .form-checkbox:focus {
+            --tw-ring-color: rgb(16 185 129 / 0.5); /* emerald-500 with opacity */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+    <div class="container mx-auto max-w-7xl">
+        <h1 class="text-3xl font-semibold mb-6 text-gray-800">GIỎ HÀNG</h1>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-2/3 w-full space-y-6">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <input type="checkbox" id="selectAllProductsGlobal" class="form-checkbox h-5 w-5 rounded focus:ring-2 focus:ring-offset-0"/>
+                            <label for="selectAllProductsGlobal" class="ml-3 text-gray-700 font-medium align-middle">
+                                Tất cả (<span id="globalProductCount">@Model.SelectMany(s => s.CartItems).Count()</span> sản phẩm)
+                            </label>
+                        </div>
+                        <div class="hidden md:flex space-x-4 items-center text-sm text-gray-500">
+                            <span class="w-24 text-center">Đơn giá</span>
+                            <span class="w-32 text-center">Số lượng</span>
+                            <span class="w-24 text-center">Thành tiền</span>
+                            <span class="w-10 text-center">Xóa</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="bg-white rounded-lg shadow p-10 text-center">
+                        <i class="fas fa-shopping-cart fa-3x text-gray-300 mb-4"></i>
+                        <p class="text-gray-600 text-xl mb-2">Giỏ hàng của bạn đang trống.</p>
+                        <p class="text-gray-500 mb-6">Thêm sản phẩm vào giỏ để tiếp tục mua sắm nhé!</p>
+                        <a href="/" class="theme-green-bg hover-theme-green-bg text-white font-semibold py-2.5 px-6 rounded-lg transition duration-200 ease-in-out">
+                            Tiếp tục mua sắm
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    foreach (var sellerCart in Model)
+                    {
+                        <div class="bg-white rounded-lg shadow seller-block">
+                            <div class="p-4 border-b border-gray-200 flex items-center space-x-3 bg-gray-50 rounded-t-lg">
+                                <input type="checkbox" id="selectSeller_@sellerCart.sellerID" class="form-checkbox h-5 w-5 rounded focus:ring-2 focus:ring-offset-0 seller-checkbox" data-sellerid="@sellerCart.sellerID"/>
+                                <label for="selectSeller_@sellerCart.sellerID" class="font-semibold theme-green-text hover:text-emerald-700 cursor-pointer text-lg">
+                                    @sellerCart.sellerName
+                                </label>
+                            </div>
+
+                            <div class="divide-y divide-gray-200">
+                                @foreach (var item in sellerCart.CartItems)
+                                {
+                                    <div class="p-4 flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-2 cart-item" data-itemid="@item.ProductId" data-sellerid="@sellerCart.sellerID" data-price="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" data-quantity="@item.Quantity">
+                                        <div class="flex items-center w-full md:w-2/5 lg:w-3/5">
+                                            <input type="checkbox" name="selectedItems" value="@item.ProductId" class="form-checkbox h-5 w-5 rounded focus:ring-2 focus:ring-offset-0 item-checkbox" data-itemprice="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" @(item.IsSelected ? "checked" : "")/>
+                                            <div class="ml-3">
+                                            @if (item.Image != null && item.Image.Length > 0)
+                                            {
+                                                var base64 = Convert.ToBase64String(item.Image);
+                                                var imgSrc = String.Format("data:image/png;base64,{0}", base64); // Assuming PNG, adjust if different (e.g., image/jpeg)
+                                                <img src="@imgSrc" alt="@item.ProductName" class="product-image"/>
+                                            }
+                                            else
+                                            {
+                                                <img src="https://placehold.co/80x80/e2e8f0/cbd5e0?text=Ảnh+SP" alt="Placeholder" class="product-image"/>
+                                            }
+                                            </div>
+                                            <div class="ml-4 flex-grow">
+                                                <h3 class="font-medium text-gray-800 hover:theme-green-text transition-colors">@item.ProductName</h3>
+                                                <div class="md:hidden mt-2"> <span class="text-red-600 font-semibold">@item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="hidden md:block md:w-24 text-center">
+                                            <span class="text-red-600 font-semibold">@item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</span>
+                                        </div>
+
+                                        <div class="w-full md:w-32 flex items-center justify-start md:justify-center">
+                                            <span class="md:hidden font-semibold mr-2 text-sm">Số lượng: </span>
+                                            <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-l transition duration-200" onclick="updateQuantity('@item.ProductId', -1, event)">-</button>
+                                            <input type="number" id="quantity_@item.ProductId" class="quantity-input-el w-12 text-center border-t border-b border-gray-300 p-1 quantity-input" value="@item.Quantity" min="1" data-itemid="@item.ProductId" onchange="handleQuantityInputChange('@item.ProductId')">
+                                            <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-r transition duration-200" onclick="updateQuantity('@item.ProductId', 1, event)">+</button>
+                                        </div>
+
+                                        <div class="w-full md:w-24 text-left md:text-center">
+                                            <span class="md:hidden font-semibold text-sm">Thành tiền: </span>
+                                            <span class="font-semibold theme-green-text total-item-price" id="total_@item.ProductId">
+                                                @item.TotalPrice.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫
+                                            </span>
+                                        </div>
+
+                                        <div class="w-full md:w-10 text-right md:text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500 transition duration-200 p-2" title="Xóa sản phẩm" onclick="removeItem('@item.ProductId', event)">
+                                                <i class="fas fa-trash-alt fa-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="lg:w-1/3 w-full">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-4 mb-4">Thanh toán</h2>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Tạm tính</span>
+                            <span id="subtotalPrice" class="font-medium">0₫</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Giảm giá</span>
+                            <span id="discountPrice" class="font-medium">0₫</span>
+                        </div>
+                    </div>
+                    <hr class="my-4 border-gray-200">
+                    <div class="flex justify-between font-semibold text-lg text-gray-800 mb-1">
+                        <span>Tổng tiền</span>
+                        <span id="finalTotalPrice" class="text-red-600">0₫</span>
+                    </div>
+
+                    <button id="checkoutButton" onclick="submitSelectedItems()" class="w-full theme-green-bg hover-theme-green-bg text-white font-bold py-3 px-4 rounded-lg transition duration-200 text-lg disabled:opacity-60 disabled:cursor-not-allowed">
+                        Mua Hàng (<span id="selectedItemCount">0</span>)
+                    </button>
+                    <p id="selectionError" class="text-red-500 text-sm mt-2 text-center hidden">Vui lòng chọn sản phẩm để tiếp tục.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Utility to format currency for Vietnam (₫)
+    function formatCurrencyVND(value) {
+        return value.toLocaleString('vi-VN') + '₫';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize calculations and states
+        updateAllItemTotalPrices();
+        updateCartSummary();
+        initializeCheckboxStates();
+
+        const selectAllGlobalCheckbox = document.getElementById('selectAllProductsGlobal');
+        if (selectAllGlobalCheckbox) {
+            selectAllGlobalCheckbox.addEventListener('change', function () {
+                document.querySelectorAll('.item-checkbox, .seller-checkbox').forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateCartSummary();
+            });
+        }
+
+        document.querySelectorAll('.seller-checkbox').forEach(sellerCb => {
+            sellerCb.addEventListener('change', function() {
+                const sellerId = this.dataset.sellerid;
+                document.querySelectorAll(`.cart-item[data-sellerid="${sellerId}"] .item-checkbox`).forEach(itemCb => {
+                    itemCb.checked = this.checked;
+                });
+                updateCartSummary();
+                checkGlobalSelectAllState();
+            });
+        });
+
+        document.querySelectorAll('.item-checkbox').forEach(itemCb => {
+            itemCb.addEventListener('change', function() {
+                updateCartSummary();
+                checkSellerSelectAllState(this.closest('.cart-item').dataset.sellerid);
+                checkGlobalSelectAllState();
+            });
+        });
+
+        // Event delegation for quantity input changes for dynamically added/removed items might be more robust
+        // For now, direct binding:
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', function() { // Handles direct input or spinner usage
+                 handleQuantityInputChange(this.dataset.itemid);
+            });
+        });
+    });
+    
+    function handleQuantityInputChange(itemId) {
+        const quantityInput = document.getElementById('quantity_' + itemId);
+        let newQuantity = parseInt(quantityInput.value);
+        if (isNaN(newQuantity) || newQuantity < 1) {
+            newQuantity = 1; // Reset to 1 if invalid or less than 1
+            quantityInput.value = newQuantity;
+        }
+        // Update data-quantity attribute on the cart-item
+        const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
+        if(itemRow) itemRow.dataset.quantity = newQuantity;
+
+        updateItemTotalPrice(itemId);
+        updateCartSummary();
+    }
+
+
+function updateQuantity(itemId, change, event) {
+    event.preventDefault(); // Ngăn form tự submit
+
+    const quantityInput = document.getElementById('quantity_' + itemId);
+    let currentQuantity = parseInt(quantityInput.value);
+    currentQuantity += change;
+
+    if (currentQuantity < 1) {
+        removeItem(itemId, event); // Gọi hàm xóa nếu < 1
+        return; // Dừng lại không làm gì thêm
+    }
+
+    quantityInput.value = currentQuantity;
+
+    // Cập nhật thuộc tính data-quantity
+    const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
+    if (itemRow) itemRow.dataset.quantity = currentQuantity;
+
+    updateItemTotalPrice(itemId);
+    updateCartSummary();
+
+    // Gửi dữ liệu lên server để cập nhật DB
+    const formData = new URLSearchParams();
+    formData.append("productId", itemId);
+    formData.append("quantity", currentQuantity);
+
+    fetch('/Cart/UpdateQuantity', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+        },
+        body: formData.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert("Có lỗi xảy ra khi cập nhật số lượng.");
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi khi cập nhật số lượng:', error);
+    });
+}
+
+
+    function updateItemTotalPrice(itemId) {
+        const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
+        if (!itemRow) return;
+
+        const price = parseFloat(itemRow.dataset.price);
+        const quantityInput = document.getElementById('quantity_' + itemId);
+        const quantity = parseInt(quantityInput.value) || 0;
+
+        const totalItemPriceElement = document.getElementById('total_' + itemId);
+        const itemTotalPrice = price * quantity;
+        totalItemPriceElement.textContent = formatCurrencyVND(itemTotalPrice);
+    }
+    
+    function updateAllItemTotalPrices() {
+        document.querySelectorAll('.cart-item').forEach(itemRow => {
+            updateItemTotalPrice(itemRow.dataset.itemid);
+        });
+    }
+
+    function removeItem(itemId, event) {
+        event.preventDefault();
+        const confirmDelete = window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?");
+        if (!confirmDelete) return; // Nếu không xác nhận thì dừng lại
+
+        console.log('Attempting to remove item:', itemId);
+
+        console.log('Attempting to remove item:', itemId);
+
+        // Gửi yêu cầu POST đến Controller để xóa sản phẩm khỏi DB
+        fetch('/Cart/Remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value // nếu có dùng AntiForgery
+            },
+            body: JSON.stringify(itemId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Nếu server xác nhận xóa thành công => Xử lý giao diện như cũ
+                const itemElement = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
+                if (itemElement) {
+                    const sellerId = itemElement.dataset.sellerid;
+                    itemElement.remove();
+
+                    const sellerItems = document.querySelectorAll(`.cart-item[data-sellerid="${sellerId}"]`);
+                    if (sellerItems.length === 0) {
+                        const sellerBlock = document.querySelector(`.seller-checkbox[data-sellerid="${sellerId}"]`)?.closest('.seller-block');
+                        if (sellerBlock) sellerBlock.remove();
+                    }
+
+                    updateCartSummary();
+                    checkGlobalSelectAllState();
+                    checkSellerSelectAllState(sellerId);
+
+                    if (document.querySelectorAll('.cart-item').length === 0) {
+                        displayEmptyCartMessage();
+                    }
+                }
+            } else {
+                console.error('Lỗi từ phía server khi xóa sản phẩm.');
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi gọi đến Controller:', error);
+        });
+    }
+
+
+    function displayEmptyCartMessage() {
+        const cartItemsSectionContainer = document.querySelector('.lg\\:w-2\\/3.w-full.space-y-6');
+        if (cartItemsSectionContainer) {
+            cartItemsSectionContainer.innerHTML = `
+                <div class="bg-white rounded-lg shadow p-10 text-center">
+                    <i class="fas fa-shopping-cart fa-3x text-gray-300 mb-4"></i>
+                    <p class="text-gray-600 text-xl mb-2">Giỏ hàng của bạn đang trống.</p>
+                    <p class="text-gray-500 mb-6">Thêm sản phẩm vào giỏ để tiếp tục mua sắm nhé!</p>
+                    <a href="/" class="theme-green-bg hover-theme-green-bg text-white font-semibold py-2.5 px-6 rounded-lg transition duration-200 ease-in-out">
+                        Tiếp tục mua sắm
+                    </a>
+                </div>`;
+        }
+        // Disable global select all if cart is empty
+        const globalSelectAll = document.getElementById('selectAllProductsGlobal');
+        if (globalSelectAll) {
+            globalSelectAll.checked = false;
+            globalSelectAll.disabled = true;
+        }
+        document.getElementById('globalProductCount').textContent = '0';
+    }
+
+
+    function updateCartSummary() {
+        let subtotal = 0;
+        let selectedItemCount = 0;
+        const selectedItems = document.querySelectorAll('.item-checkbox:checked');
+
+        selectedItems.forEach(cb => {
+            const itemRow = cb.closest('.cart-item');
+            const price = parseFloat(itemRow.dataset.price);
+            const quantityInput = document.getElementById('quantity_' + itemRow.dataset.itemid);
+            const quantity = parseInt(quantityInput.value) || 0;
+            subtotal += price * quantity;
+            selectedItemCount++;
+        });
+
+        const discount = 0; // Placeholder for discount logic
+        const finalTotal = subtotal - discount;
+
+        document.getElementById('subtotalPrice').textContent = formatCurrencyVND(subtotal);
+        document.getElementById('discountPrice').textContent = formatCurrencyVND(discount); // Assuming discount is always 0 for now
+        document.getElementById('finalTotalPrice').textContent = formatCurrencyVND(finalTotal);
+        document.getElementById('selectedItemCount').textContent = selectedItemCount;
+
+        const checkoutButton = document.getElementById('checkoutButton');
+        const selectionError = document.getElementById('selectionError');
+        const totalItemsInCart = document.querySelectorAll('.cart-item').length;
+
+        if (selectedItemCount > 0) {
+            checkoutButton.disabled = false;
+            selectionError.classList.add('hidden');
+        } else {
+            checkoutButton.disabled = true;
+            if (totalItemsInCart > 0) { // Only show error if cart has items but none are selected
+                selectionError.classList.remove('hidden');
+            } else {
+                selectionError.classList.add('hidden'); // Hide if cart is empty
+            }
+        }
+        
+        // Update global product count display
+        document.getElementById('globalProductCount').textContent = totalItemsInCart;
+        const globalSelectAllCheckbox = document.getElementById('selectAllProductsGlobal');
+        if (globalSelectAllCheckbox) {
+            globalSelectAllCheckbox.disabled = totalItemsInCart === 0;
+        }
+    }
+
+    function checkSellerSelectAllState(sellerId) {
+        const sellerCheckbox = document.getElementById(`selectSeller_${sellerId}`);
+        if (!sellerCheckbox) return; // Seller block might have been removed
+
+        const itemCheckboxes = document.querySelectorAll(`.cart-item[data-sellerid="${sellerId}"] .item-checkbox`);
+        if (itemCheckboxes.length === 0) { // No items for this seller (e.g., all removed)
+            sellerCheckbox.checked = false;
+            // Optionally disable seller checkbox or handle UI for empty seller
+            return;
+        }
+        sellerCheckbox.checked = Array.from(itemCheckboxes).every(cb => cb.checked);
+    }
+
+    function checkGlobalSelectAllState() {
+        const globalSelectAllCheckbox = document.getElementById('selectAllProductsGlobal');
+        if (!globalSelectAllCheckbox) return;
+
+        const allItemCheckboxes = document.querySelectorAll('.item-checkbox');
+        if (allItemCheckboxes.length === 0) {
+            globalSelectAllCheckbox.checked = false;
+            globalSelectAllCheckbox.disabled = true;
+            return;
+        }
+        globalSelectAllCheckbox.disabled = false;
+        globalSelectAllCheckbox.checked = Array.from(allItemCheckboxes).every(cb => cb.checked);
+    }
+
+    function initializeCheckboxStates() {
+        // Set initial state of seller checkboxes based on their items
+        document.querySelectorAll('.seller-checkbox').forEach(scb => {
+            checkSellerSelectAllState(scb.dataset.sellerid);
+        });
+        // Set initial state of global select all checkbox
+        checkGlobalSelectAllState();
+    }
+
+    </script>
+</body>
+</html>

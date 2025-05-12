@@ -41,7 +41,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("BuyerId");
 
-                    b.ToTable("AddressBuyers");
+                    b.ToTable("AddressBuyers", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Bank", b =>
@@ -67,7 +67,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("Banks");
+                    b.ToTable("Banks", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.CartItem", b =>
@@ -94,7 +94,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("BuyerId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Order", b =>
@@ -135,7 +135,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.OrderDetail", b =>
@@ -155,7 +155,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.PlatformWallet", b =>
@@ -177,7 +177,7 @@ namespace PBL_3.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("PlatformWallets");
+                    b.ToTable("PlatformWallets", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Product", b =>
@@ -217,7 +217,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Review", b =>
@@ -252,7 +252,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.User", b =>
@@ -290,7 +290,7 @@ namespace PBL_3.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -328,7 +328,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Vouchers");
+                    b.ToTable("Vouchers", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Voucher_Buyer", b =>
@@ -348,7 +348,7 @@ namespace PBL_3.Migrations
 
                     b.HasIndex("VoucherId");
 
-                    b.ToTable("Voucher_Buyers");
+                    b.ToTable("Voucher_Buyers", (string)null);
                 });
 
             modelBuilder.Entity("PBL3.Entity.Buyer", b =>

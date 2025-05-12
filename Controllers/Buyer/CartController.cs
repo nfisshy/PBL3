@@ -13,12 +13,12 @@ namespace PBL3.Controllers
             _cartService = cartService;
         }
 
-        public IActionResult Index()
+        public IActionResult Cart()
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (buyerId == 0) return RedirectToAction("Login", "Account");
-            var cart = _cartService.GetCart(buyerId);
-            return View(cart);
+            var cartGroups = _cartService.GetCart(buyerId);
+            return View(cartGroups);
         }
 
         [HttpPost]
@@ -26,15 +26,15 @@ namespace PBL3.Controllers
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             _cartService.UpdateQuantity(buyerId, productId, quantity);
-            return RedirectToAction("Index");
+            return Json(new { success = true });
         }
 
         [HttpPost]
-        public IActionResult Remove(int productId)
+        public IActionResult Remove([FromBody] int productId)
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             _cartService.RemoveFromCart(buyerId, productId);
-            return RedirectToAction("Index");
+            return Json(new { success = true });
         }
 
         [HttpPost]
