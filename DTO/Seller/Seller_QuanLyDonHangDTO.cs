@@ -15,7 +15,7 @@ namespace PBL3.DTO.Seller
     public class Seller_DanhSachDonHangDTO
     {
         public int OrderId { get; set; }
-        public int BuyerName { get; set; }
+        public string BuyerName { get; set; }
         public OrdStatus OrderStatus { get; set; }
     }
     public class Seller_ChiTietDonHangDTO

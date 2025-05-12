@@ -1,0 +1,171 @@
+@model List<PBL3.DTO.Seller.Seller_QuanLySanPhamDTO>
+@using PBL3.Helpers
+@{
+    ViewBag.Title = "Quản lý sản phẩm";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+    var productTypes = Enum.GetValues(typeof(PBL3.Enums.TypeProduct)).Cast<PBL3.Enums.TypeProduct>().ToList();
+}
+
+@section Styles {
+    <style>
+        .order-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 16px;
+        }
+
+        .order-table th, .order-table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .status-selling { background-color: #27ae60; color: white; font-weight: 500; }
+        .status-stopped { background-color: #7f8c8d; color: white; font-weight: 500; }
+        .status-violation { background-color: #f39c12; color: #222; font-weight: 500; }
+        .status-other { background-color: #c0392b; color: white; font-weight: 500; }
+
+        .search-form {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Style cho dropdown có scroll */
+        .form-select {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Style cho scrollbar */
+        .form-select::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .form-select::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .form-select::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .form-select::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Menu bên trái -->
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <!-- Nội dung chính -->
+        <div class="col-md-9">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+
+            <!-- Form tìm kiếm -->
+            <div class="search-form">
+                <form method="get" action="@Url.Action("ProductManagement")" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="productId" class="form-label">Mã sản phẩm</label>
+                        <input type="text" class="form-control" id="productId" name="productId" value="@ViewBag.ProductId" placeholder="Nhập mã sản phẩm">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="productName" class="form-label">Tên sản phẩm</label>
+                        <input type="text" class="form-control" id="productName" name="productName" value="@ViewBag.ProductName" placeholder="Nhập tên sản phẩm">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="productType" class="form-label">Loại sản phẩm</label>
+                        <select class="form-select" id="productType" name="productType">
+                            <option value="">Tất cả loại sản phẩm</option>
+                            @foreach (var type in productTypes)
+                            {
+                                <option value="@type" selected="@(ViewBag.ProductType?.ToString() == type.ToString())">
+                                    @type.GetDisplayName()
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                        <a href="@Url.Action("ProductManagement")" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="order-table">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Danh sách sản phẩm</h4>
+                    <a href="@Url.Action("CreateProduct")" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Tạo sản phẩm mới
+                    </a>
+                </div>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Loại sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Lợi nhuận</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var product in Model)
+                            {
+                                var statusClass = product.ProductStatus switch
+                                {
+                                    PBL3.Enums.ProductStatus.Selling => "status-selling",
+                                    PBL3.Enums.ProductStatus.StopSelling => "status-stopped",
+                                    PBL3.Enums.ProductStatus.Violation => "status-violation",
+                                    _ => "status-other"
+                                };
+                                <tr>
+                                    <td>@product.ProductId</td>
+                                    <td>@product.ProductName</td>
+                                    <td>@product.TypeProduct</td>
+                                    <td>@product.Price.ToString("N0") VNĐ</td>
+                                    <td>@product.Profit.ToString("N0") VNĐ</td>
+                                    <td><span class="badge @statusClass">@product.ProductStatus</span></td>
+                                    <td>
+                                        <a href="@Url.Action("ProductDetail", new { productId = product.ProductId })"
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Không có sản phẩm nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

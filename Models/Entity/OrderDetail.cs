@@ -10,6 +10,7 @@ namespace PBL3.Entity
         private int orderId;
         private int productId;
         private int quantity;
+        private decimal price;
 
         [Key,Column(Order =0)]
         public int OrderId
@@ -27,6 +28,11 @@ namespace PBL3.Entity
         {
             get { return quantity; }
             set { quantity = value; }
+        }
+        public decimal Price
+        {
+            get { return price; }
+            set { price = value; }
         }
         public Order Order { get; set; }
         public Product Product { get;set; }

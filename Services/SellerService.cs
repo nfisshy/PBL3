@@ -6,6 +6,7 @@ using PBL3.DTO.Seller;
 using PBL3.Repositories;
 using PBL3.Enums;
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace PBL3.Services
 {
@@ -154,6 +155,117 @@ namespace PBL3.Services
             catch (Exception ex)
             {
                 throw new Exception("Lỗi khi lấy dữ liệu dashboard: " + ex.Message, ex);
+            }
+        }
+
+        public Seller_QuanLyDonHangDTO GetOrderManagement(int sellerId, DateTime? startDate, DateTime? endDate, OrdStatus? status, int? orderId)
+        {
+            var orders = _orderRepository.GetBySellerId(sellerId);
+            if (startDate.HasValue)
+                orders = orders.Where(o => o.OrderDate >= startDate.Value);
+            if (endDate.HasValue)
+                orders = orders.Where(o => o.OrderDate <= endDate.Value);
+            if (status.HasValue)
+                orders = orders.Where(o => o.OrderStatus == status.Value);
+            if (orderId.HasValue)
+                orders = orders.Where(o => o.OrderId == orderId.Value);
+
+            var listOrder = orders.Select(o => new Seller_DanhSachDonHangDTO
+            {
+                OrderId = o.OrderId,
+                BuyerName = o.Buyer != null ? o.Buyer.Name : o.BuyerId.ToString(),
+                OrderStatus = o.OrderStatus
+            }).ToList();
+
+            return new Seller_QuanLyDonHangDTO
+            {
+                StartDate = startDate ?? DateTime.Now.AddDays(-30),
+                EndDate = endDate ?? DateTime.Now,
+                ListOrder = listOrder
+            };
+        }
+
+        public List<Seller_QuanLySanPhamDTO> GetProductList(int sellerId)
+        {
+            try
+            {
+                var products = _productRepository.GetBySellerId(sellerId);
+                if (products == null || !products.Any())
+                {
+                    return new List<Seller_QuanLySanPhamDTO>();
+                }
+
+                return products.Select(p => new Seller_QuanLySanPhamDTO
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    Price = p.Price,
+                    Profit = p.Price * 0.95m, // Assuming 5% commission
+                    TypeProduct = p.ProductType,
+                    ProductStatus = p.ProductStatus
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy danh sách sản phẩm: " + ex.Message, ex);
+            }
+        }
+
+        public Seller_ChiTietSanPhamDTO GetProductDetail(int sellerId, int productId)
+        {
+            try
+            {
+                var product = _productRepository.GetById(productId);
+                if (product == null || product.SellerId != sellerId)
+                {
+                    return null;
+                }
+
+                return new Seller_ChiTietSanPhamDTO
+                {
+                    ProductId = product.ProductId,
+                    ProductName = product.ProductName,
+                    Price = product.Price,
+                    ProductType = product.ProductType,
+                    Description = product.ProductDescription,
+                    Image = product.ProductImage
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy chi tiết sản phẩm ID {productId}: " + ex.Message, ex);
+            }
+        }
+
+        public void CreateProduct(int sellerId, CreateProductDTO model)
+        {
+            try
+            {
+                // Kiểm tra người bán tồn tại
+                var seller = _sellerRepository.GetById(sellerId);
+                if (seller == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy thông tin người bán");
+                }
+
+                // Tạo sản phẩm mới
+                var product = new Product
+                {
+                    ProductName = model.ProductName,
+                    Price = model.Price,
+                    ProductType = model.TypeProduct,
+                    ProductDescription = model.Description,
+                    ProductImage = model.ProductImage,
+                    SellerId = sellerId,
+                    ProductStatus = ProductStatus.Selling,
+                    ProductQuantity = 0, // Số lượng ban đầu là 0
+                };
+
+                _productRepository.Add(product);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tạo sản phẩm mới: " + ex.Message, ex);
             }
         }
     }

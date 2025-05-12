@@ -6,71 +6,88 @@
 
 @section Styles {
     <style>
+        body {
+            background-color: #f6f8fa;
+        }
+
         .dashboard-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px #0001;
-            padding: 24px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
             margin-bottom: 24px;
         }
+
         .dashboard-card h3 {
-            color: #219150;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 16px;
         }
+
         .metric-card {
-            background: #e6f3eb;
-            border-radius: 12px;
+            background: #e3f2fd;
+            border-radius: 10px;
             padding: 20px;
             text-align: center;
             margin-bottom: 16px;
+            border: 1px solid #bbdefb;
         }
+
         .metric-card .value {
             font-size: 2rem;
-            font-weight: bold;
-            color: #219150;
+            font-weight: 700;
+            color: #1976d2;
         }
+
         .metric-card .label {
-            color: #666;
-            font-size: 0.9rem;
+            color: #546e7a;
+            font-size: 0.95rem;
         }
+
         .product-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+
         .product-item {
             display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            flex-direction: column;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
         }
-        .product-item:last-child {
-            border-bottom: none;
-        }
-        .product-info {
-            flex: 1;
-        }
+
         .product-name {
-            font-weight: 500;
-            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #37474f;
         }
+
         .product-stats {
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.875rem;
+            color: #78909c;
         }
+
         .date-range {
-            color: #666;
             font-size: 0.9rem;
-            margin-bottom: 16px;
+            color: #888;
+            margin-bottom: 10px;
         }
+
+        /* Không thêm nền hoặc bo viền nặng */
     </style>
 }
 
-<div class="container-fluid">
-    <!-- Business Metrics -->
+<div class="container mt-4">
     <div class="row">
-        <div class="col-12">
+        <!-- Menu trái -->
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <!-- Nội dung dashboard -->
+        <div class="col-md-9">
             <div class="dashboard-card">
                 <h3>Hiệu quả kinh doanh (7 ngày gần nhất)</h3>
                 <div class="date-range">
@@ -91,48 +108,44 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="row">
-        <!-- Top Selling Products -->
-        <div class="col-md-6">
-            <div class="dashboard-card">
-                <h3>Top 3 sản phẩm bán chạy nhất</h3>
-                <ul class="product-list">
-                    @foreach (var product in Model.TopSellingProducts)
-                    {
-                        <li class="product-item">
-                            <div class="product-info">
-                                <div class="product-name">@product.ProductName</div>
-                                <div class="product-stats">
-                                    Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
-                                </div>
-                            </div>
-                        </li>
-                    }
-                </ul>
-            </div>
-        </div>
+            <div class="row">
+                <!-- Top bán chạy -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h3>Top 3 sản phẩm bán chạy</h3>
+                        <ul class="product-list">
+                            @foreach (var product in Model.TopSellingProducts)
+                            {
+                                <li class="product-item">
+                                    <div class="product-name">@product.ProductName</div>
+                                    <div class="product-stats">
+                                        Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
 
-        <!-- Top Rated Products -->
-        <div class="col-md-6">
-            <div class="dashboard-card">
-                <h3>Top 3 sản phẩm được đánh giá cao nhất</h3>
-                <ul class="product-list">
-                    @foreach (var product in Model.TopRatedProducts)
-                    {
-                        <li class="product-item">
-                            <div class="product-info">
-                                <div class="product-name">@product.ProductName</div>
-                                <div class="product-stats">
-                                    Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
-                                </div>
-                            </div>
-                        </li>
-                    }
-                </ul>
+                <!-- Top đánh giá cao -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h3>Top 3 sản phẩm được đánh giá cao</h3>
+                        <ul class="product-list">
+                            @foreach (var product in Model.TopRatedProducts)
+                            {
+                                <li class="product-item">
+                                    <div class="product-name">@product.ProductName</div>
+                                    <div class="product-stats">
+                                        Đã bán: @product.TotalSold | Doanh thu: @product.TotalRevenue.ToString("N0") đ
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div> 
+</div>

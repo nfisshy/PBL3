@@ -1,26 +1,28 @@
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <!-- dùng để chèn thư viện chứa mấy icon trong sidebar  -->
+
 <style>
     .seller-menu-container {
         width: 100%;
-        max-width: 300px;
-        background-color: #1c1c1c;
-        color: #e8f5e9;
-        border-radius: 12px;
+        max-width: 280px;
+        background: linear-gradient(145deg, #1e1e2f, #111122);
+        color: #f1f1f1;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         font-family: 'Segoe UI', sans-serif;
     }
 
     .seller-profile {
         display: flex;
         align-items: center;
-        padding: 1rem;
-        background-color: #111;
-        border-bottom: 1px solid #2e2e2e;
+        padding: 1.2rem;
+        background-color: #191933;
+        border-bottom: 1px solid #333;
     }
 
     .seller-avatar img {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #f39c12;
@@ -28,12 +30,12 @@
     }
 
     .seller-info .title {
-        font-size: 0.85rem;
-        color: #aaa;
+        font-size: 0.8rem;
+        color: #bbb;
     }
 
     .seller-info .name {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 600;
         color: #f39c12;
     }
@@ -44,35 +46,77 @@
         padding: 0;
     }
 
-    .seller-menu-link {
-        display: block;
-        padding: 0.9rem 1.2rem;
-        text-decoration: none;
-        color: #e8f5e9;
-        font-size: 1rem;
-        transition: background 0.3s, color 0.3s;
+    .seller-menu-list li {
         border-bottom: 1px solid #2a2a2a;
+    }
+
+    .seller-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 1rem 1.4rem;
+        text-decoration: none;
+        color: #f1f1f1;
+        font-size: 1rem;
+        transition: background 0.3s ease, transform 0.2s;
     }
 
     .seller-menu-link:hover {
         background-color: #f39c12;
         color: #000;
+        transform: translateX(4px);
+    }
+
+    .seller-menu-link i {
+        width: 20px;
+        text-align: center;
     }
 
     .seller-menu-link.active {
         background-color: #e67e22;
         color: #fff;
-        font-weight: 600;
+        font-weight: bold;
+    }
+
+    media (max-width: 768px) {
+        .seller-menu-container {
+            max-width: 100%;
+        }
     }
 </style>
 
 <div class="seller-menu-container">
+    <div class="seller-profile">
+        <div class="seller-avatar">
+            <img src="~/images/avatar-default.png" alt="Seller Avatar">
+        </div>
+        <div class="seller-info">
+            <div class="title">Tài khoản của</div>
+            <div class="name">Seller</div>
+        </div>
+    </div>
+
     <ul class="seller-menu-list">
-        <li><a class="buyer-menu-link" href="#">Trang chủ</a></li>
-        <li><a class="buyer-menu-link" href="#">Quản lý đơn hàng</a></li>
-        <li><a class="buyer-menu-link" href="#">Quản lý sản phẩm</a></li>
-        <li><a class="buyer-menu-link" href="#">Thông báo</a></li>
-        <li><a class="buyer-menu-link" href="#">Đánh giá</a></li>
-        <li><a class="buyer-menu-link" href="#">Voucher</a></li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "Dashboard" ? "active" : "")" 
+            href="@Url.Action("Dashboard", "Seller")">
+                <i class="fas fa-home"></i> Trang chủ
+            </a>
+        </li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "OrderManage" ? "active" : "")" 
+            href="@Url.Action("OrderManage", "Seller")">
+                <i class="fas fa-box"></i> Quản lý đơn hàng
+            </a>
+        </li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ProductManagement" ? "active" : "")" 
+            href="@Url.Action("ProductManagement", "Seller")">
+                <i class="fas fa-store"></i> Quản lý sản phẩm
+            </a>
+        </li>
+        <li><a class="seller-menu-link" href="#"><i class="fas fa-bell"></i>Thông báo</a></li>
+        <li><a class="seller-menu-link" href="#"><i class="fas fa-star"></i>Đánh giá</a></li>
+        <li><a class="seller-menu-link" href="#"><i class="fas fa-ticket-alt"></i>Voucher</a></li>
     </ul>
 </div>

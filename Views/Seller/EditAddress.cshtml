@@ -86,6 +86,13 @@
                     <h3 class="text-center">Chỉnh sửa địa chỉ</h3>
                 </div>
                 <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["Error"]
+                        </div>
+                    }
+
                     <form asp-action="EditAddress" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -109,7 +116,7 @@
 
                         <div class="form-group mb-3">
                             <label asp-for="DetailAddress" class="control-label">Địa chỉ chi tiết</label>
-                            <input asp-for="DetailAddress" class="form-control" />
+                            <input asp-for="DetailAddress" class="form-control" placeholder="Số nhà, tên đường" />
                             <span asp-validation-for="DetailAddress" class="text-danger"></span>
                         </div>
 

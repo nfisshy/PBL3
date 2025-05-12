@@ -1,0 +1,141 @@
+@model PBL3.DTO.Seller.Seller_QuanLyDonHangDTO
+@using PBL3.Enums
+@{
+    ViewBag.Title = "Quản lý đơn hàng";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+    var statusList = new[] {
+        new { Value = OrdStatus.WaitConfirm, Text = "Chờ xác nhận" },
+        new { Value = OrdStatus.Pending, Text = "Đang xử lý" },
+        new { Value = OrdStatus.Delivering, Text = "Đang vận chuyển" },
+        new { Value = OrdStatus.Completed, Text = "Đã giao hàng" },
+        new { Value = OrdStatus.Canceled, Text = "Đã hủy" }
+    };
+}
+
+@section Styles {
+    <style>
+        .order-filter-bar {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px #0001;
+        }
+        .order-filter-bar .form-label {
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        .order-filter-bar .form-control, .order-filter-bar .form-select {
+            border-radius: 6px;
+            margin-right: 12px;
+        }
+        .order-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+        }
+        .order-table th, .order-table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .order-status {
+            font-weight: 600;
+        }
+        .order-status.WaitConfirm { color: #f39c12; }
+        .order-status.Pending { color: #2980b9; }
+        .order-status.Delivering { color: #8e44ad; }
+        .order-status.Completed { color: #27ae60; }
+        .order-status.Canceled { color: #e74c3c; }
+    </style>
+}
+
+<div class="container mt-4">
+    <!-- Chèn partial view cho menu hoặc phần điều khiển bên trái -->
+    <div class="row">
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <!-- Nội dung dashboard -->
+        <div class="col-md-9">
+            <form method="get" class="order-filter-bar row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" name="StartDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" name="EndDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="OrderStatus" class="form-select">
+                        <option value="">Tất cả</option>
+                            @foreach (var s in statusList)
+                            {
+                                var selected = Context.Request.Query["OrderStatus"] == s.Value.ToString() ? "selected" : "";
+                                <option value="@s.Value" selected="@selected">@s.Text</option>
+                            }   
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mã đơn hàng</label>
+                    <input type="text" name="OrderId" class="form-control" placeholder="Nhập mã đơn hàng" value="@(Context.Request.Query["OrderId"])" />
+                </div>
+                <div class="col-md-12 text-end mt-2">
+                    <button type="submit" class="btn btn-primary">Lọc đơn hàng</button>
+                </div>
+            </form>
+
+            <div class="order-table mt-3">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Trạng thái</th>
+                            <th>Khách hàng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ListOrder != null && Model.ListOrder.Any())
+                        {
+                            foreach (var order in Model.ListOrder)
+                            {
+                                <tr>
+                                    <td>@order.OrderId</td>
+                                    <td><span class="order-status @order.OrderStatus">@GetStatusText(order.OrderStatus)</span></td>
+                                    <td>@order.BuyerName</td>
+                                    <td>
+                                        <a href="@Url.Action("ChiTietDonHang", "Seller", new { id = order.OrderId })" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Không có đơn hàng nào phù hợp</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusText(OrdStatus status)
+    {
+        return status switch
+        {
+            OrdStatus.WaitConfirm => "Chờ xác nhận",
+            OrdStatus.Pending => "Đang xử lý",
+            OrdStatus.Delivering => "Đang vận chuyển",
+            OrdStatus.Completed => "Đã giao hàng",
+            OrdStatus.Canceled => "Đã hủy",
+            _ => status.ToString()
+        };
+    }
+}
