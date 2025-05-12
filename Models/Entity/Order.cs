@@ -18,6 +18,8 @@ namespace PBL3.Entity
         private PayMethod paymentMethod; // thanh toan khi nhan hang , thanh toan qua vi
         private bool paymentStatus; //da thanh toan : 1 , chua thanh toan : 0 
 
+        private string address;
+
         [Key]
         public int OrderId
         {
@@ -65,6 +67,11 @@ namespace PBL3.Entity
         {
             get { return paymentStatus; }
             set { paymentStatus = value; }
+        }
+
+        public string Address{
+            get { return address; }
+            set { address = value; } 
         }
         public ICollection<OrderDetail> OrderDetails { get; set; }
         public Buyer Buyer {  get; set; }

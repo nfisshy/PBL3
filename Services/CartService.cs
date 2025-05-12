@@ -11,29 +11,47 @@ namespace PBL3.Services
         private readonly ICartItemRepositories _cartRepo;
         private readonly IProductRepositories _productRepo;
 
-        public CartService(ICartItemRepositories cartRepo, IProductRepositories productRepo)
+        private readonly ISellerRepositories _sellerRepo;
+
+        public CartService(ICartItemRepositories cartRepo, IProductRepositories productRepo, ISellerRepositories sellerRepo)
         {
             _cartRepo = cartRepo;
             _productRepo = productRepo;
+            _sellerRepo = sellerRepo;
         }
-
-        public Buyer_CartDTO GetCart(int buyerId)
+        //đã sửa xong
+        public List<Buyer_CartDTO> GetCart(int buyerId)
         {
-            var items = _cartRepo.GetByBuyerId(buyerId)
-                .Select(ci => {
-                    var product = _productRepo.GetById(ci.ProductId);
-                    return new Buyer_CartItemDTO
+            var cartItems = _cartRepo.GetByBuyerId(buyerId).ToList();
+            var result = cartItems
+                .GroupBy(ci => _productRepo.GetById(ci.ProductId)?.SellerId ?? 0)
+                .Select(g => {
+                    var sellerId = g.Key;
+                    var seller = _sellerRepo.GetById(sellerId);
+                    var sellerName = seller?.StoreName ?? "Không rõ";
+                    var items = g.Select(ci => {
+                        var product = _productRepo.GetById(ci.ProductId);
+                        return new Buyer_CartItemDTO
+                        {
+                            ProductId = ci.ProductId,
+                            ProductName = product?.ProductName ?? ci.ProductName,
+                            Price = product?.Price ?? 0,
+                            Image = ci.ProductImage,
+                            Quantity = ci.Quantity,
+                            IsSelected = false,
+                            currentQuantity = product?.ProductQuantity ?? 0,
+                        };
+                    }).ToList();
+                    return new Buyer_CartDTO
                     {
-                        ProductId = ci.ProductId,
-                        ProductName = ci.ProductName,
-                        Price = product != null ? product.Price : 0,
-                        Image = ci.ProductImage,
-                        Quantity = ci.Quantity
+                        sellerID = sellerId,
+                        sellerName = sellerName,
+                        CartItems = items
                     };
                 }).ToList();
-
-            return new Buyer_CartDTO { CartItems = items };
+            return result;
         }
+
 
         public void AddToCart(int buyerId, int productId, int quantity)
         {
@@ -58,11 +76,13 @@ namespace PBL3.Services
             }
         }
 
+        //đã sửa xong
         public void RemoveFromCart(int buyerId, int productId)
         {
             _cartRepo.Remove(buyerId, productId);
         }
 
+        //đã sửa xong
         public void UpdateQuantity(int buyerId, int productId, int quantity)
         {
             var item = _cartRepo.Get(buyerId, productId);
