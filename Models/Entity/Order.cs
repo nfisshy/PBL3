@@ -17,7 +17,6 @@ namespace PBL3.Entity
         private OrdStatus orderStatus;  // trang thai : chua giao , da giao , bi huy , giao hang thanh cong
         private PayMethod paymentMethod; // thanh toan khi nhan hang , thanh toan qua vi
         private bool paymentStatus; //da thanh toan : 1 , chua thanh toan : 0 
-
         private string address;
 
         [Key]
