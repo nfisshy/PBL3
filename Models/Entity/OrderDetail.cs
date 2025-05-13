@@ -11,6 +11,7 @@ namespace PBL3.Entity
         private int productId;
         private int quantity;
         private decimal price;
+        private decimal totalNetProfit; // tổng lợi nhuận ròng người bán thu được
 
         [Key,Column(Order =0)]
         public int OrderId
@@ -33,6 +34,11 @@ namespace PBL3.Entity
         {
             get { return price; }
             set { price = value; }
+        }
+        public decimal TotalNetProfit
+        {
+            get { return totalNetProfit; }
+            set { totalNetProfit = value; }
         }
         public Order Order { get; set; }
         public Product Product { get;set; }

@@ -1,0 +1,183 @@
+@model List<PBL3.DTO.Seller.Seller_DanhGiaDTO>
+@{
+    ViewData["Title"] = "Đánh giá sản phẩm";
+    Layout = "_LayoutSeller";
+}
+
+@section Styles {
+    <style>
+        .review-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .product-id {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .review-content {
+            margin-left: 95px;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: 500;
+            color: #34495e;
+            margin-right: 10px;
+        }
+
+        .review-date {
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+
+        .rating {
+            color: #f1c40f;
+            margin-bottom: 10px;
+        }
+
+        .rating i {
+            margin-right: 2px;
+        }
+
+        .review-comment {
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .no-reviews {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Menu trái -->
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <!-- Nội dung -->
+        <div class="col-md-9">
+            <h2 class="mb-4">Đánh giá sản phẩm</h2>
+
+            <!-- Bộ lọc -->
+            <div class="filter-section">
+                <form method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <label for="productId" class="form-label">Lọc theo sản phẩm</label>
+                        <select class="form-select" id="productId" name="productId">
+                            <option value="">Tất cả sản phẩm</option>
+                            @foreach (var review in Model.DistinctBy(r => r.ProductId))
+                            {
+                                <option value="@review.ProductId" @(ViewBag.ProductId == review.ProductId ? "selected" : "")>
+                                    @review.ProductName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danh sách đánh giá -->
+            @if (!Model.Any())
+            {
+                <div class="no-reviews">
+                    <i class="fas fa-comment-slash fa-3x mb-3"></i>
+                    <p>Chưa có đánh giá nào cho sản phẩm</p>
+                </div>
+            }
+            else
+            {
+                foreach (var review in Model)
+                {
+                    <div class="review-card">
+                        <div class="review-header">
+                            @if (review.ProductImage != null)
+                            {
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(review.ProductImage)" 
+                                     alt="@review.ProductName" class="product-image">
+                            }
+                            <div class="product-info">
+                                <div class="product-name">@review.ProductName</div>
+                                <div class="product-id">Mã sản phẩm: @review.ProductId</div>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <div class="reviewer-info">
+                                <span class="reviewer-name">@review.BuyerName</span>
+                                <span class="review-date">@review.DateReview.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            <div class="rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="fas fa-star @(i <= review.Rating ? "text-warning" : "text-muted")"></i>
+                                }
+                            </div>
+                            <div class="review-comment">
+                                @review.Comment
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tự động submit form khi thay đổi sản phẩm
+        document.getElementById('productId').addEventListener('change', function() {
+            this.form.submit();
+        });
+    </script>
+} 

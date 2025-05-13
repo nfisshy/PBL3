@@ -16,17 +16,20 @@ namespace PBL3.Services
         private readonly IProductRepositories _productRepository;
         private readonly IOrderRepositories _orderRepository;
         private readonly IReviewRepositories _reviewRepository;
+        private readonly IBuyerRepositories _buyerRepository;
 
         public SellerService(
             ISellerRepositories sellerRepository,
             IProductRepositories productRepository,
             IOrderRepositories orderRepository,
-            IReviewRepositories reviewRepository)
+            IReviewRepositories reviewRepository,
+            IBuyerRepositories buyerRepository)
         {
             _sellerRepository = sellerRepository;
             _productRepository = productRepository;
             _orderRepository = orderRepository;
             _reviewRepository = reviewRepository;
+            _buyerRepository = buyerRepository;
         }
 
         public bool IsSellerProfileComplete(int sellerId)
@@ -200,7 +203,6 @@ namespace PBL3.Services
                     ProductId = p.ProductId,
                     ProductName = p.ProductName,
                     Price = p.Price,
-                    Profit = p.Price * 0.95m, // Assuming 5% commission
                     TypeProduct = p.ProductType,
                     ProductStatus = p.ProductStatus
                 }).ToList();
@@ -221,6 +223,28 @@ namespace PBL3.Services
                     return null;
                 }
 
+                // Lấy danh sách đánh giá
+                var reviews = _reviewRepository.GetByProductId(productId);
+                var reviewDTOs = reviews?.Select(r => {
+                    var buyer = _buyerRepository.GetById(r.BuyerId);
+                    return new Seller_DanhGiaDTO
+                    {
+                        ProductId = r.ProductId,
+                        ProductName = product.ProductName,
+                        ReviewId = r.ReviewId,
+                        Comment = r.Comment,
+                        BuyerName = buyer != null ? buyer.Name : $"Người dùng {r.BuyerId}", // nếu người dùng không tồn tại thì sẽ tạo 1 chuỗi tên mặc định 
+                        Rating = r.Rating,
+                        DateReview = r.DateReview
+                    };
+                }).ToList() ?? new List<Seller_DanhGiaDTO>();
+
+                // Tính điểm đánh giá trung bình
+                double averageRating = reviews?.Any() == true ? reviews.Average(r => r.Rating) : 0;
+
+                // Sử dụng ProductQuantity thay vì GetSoldQuantity
+                int soldQuantity = product.ProductQuantity;
+
                 return new Seller_ChiTietSanPhamDTO
                 {
                     ProductId = product.ProductId,
@@ -228,7 +252,10 @@ namespace PBL3.Services
                     Price = product.Price,
                     ProductType = product.ProductType,
                     Description = product.ProductDescription,
-                    Image = product.ProductImage
+                    Image = product.ProductImage,
+                    Rating = averageRating,
+                    SoldQuantity = soldQuantity,
+                    Comments = reviewDTOs
                 };
             }
             catch (Exception ex)
@@ -266,6 +293,133 @@ namespace PBL3.Services
             catch (Exception ex)
             {
                 throw new Exception("Lỗi khi tạo sản phẩm mới: " + ex.Message, ex);
+            }
+        }
+
+        // Add notification methods
+        public List<Seller_ThongBaoDTO> GetNewOrders(int sellerId)
+        {
+            var orders = _orderRepository.GetBySellerId(sellerId)
+                .Where(o => o.OrderStatus == OrdStatus.WaitConfirm)
+                .OrderByDescending(o => o.OrderDate)
+                .Select(o => new Seller_ThongBaoDTO
+                {
+                    OrderId = o.OrderId,
+                    BuyerName = o.Buyer != null ? o.Buyer.Name : "Khách hàng",
+                    TotalProductTypes = o.OrderDetails.Count, // Số lượng loại sản phẩm
+                    TotalPrice = o.OrderPrice - o.OriginalPrice * (decimal)0.05, // Giá sau khi trừ phí
+                    OrderDate = o.OrderDate,
+                    OrderStatus = o.OrderStatus // Thêm trạng thái đơn hàng
+                })
+                .ToList();
+
+            return orders;
+        }
+
+        public int GetNewOrdersCount(int sellerId)
+        {
+            return _orderRepository.GetBySellerId(sellerId)
+                .Count(o => o.OrderStatus == OrdStatus.WaitConfirm);
+        }
+
+        public Seller_ThongKeDTO GetStatistics(int sellerId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                // Get all orders for the seller in the date range
+                var orders = _orderRepository.GetBySellerId(sellerId)
+                    .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate && o.OrderStatus == OrdStatus.Completed)
+                    .ToList();
+
+                // Calculate total revenue and orders
+                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OriginalPrice * (decimal)0.05); // Trừ 5% phí platform
+                var totalOrders = orders.Count;
+                var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+                // Get top products by quantity
+                var topProductsByQuantity = orders
+                    .SelectMany(o => o.OrderDetails)
+                    .GroupBy(od => new { od.ProductId, od.Product.ProductName })
+                    .Select(g => new Seller_TopSanPhamDTO
+                    {
+                        ProductName = g.Key.ProductName,
+                        TotalSold = g.Sum(od => od.Quantity),
+                        TotalRevenue = g.Sum(od => od.TotalNetProfit)
+                    })
+                    .OrderByDescending(p => p.TotalSold)
+                    .Take(5)
+                    .ToList();
+
+                // Get top products by revenue
+                var topProductsByRevenue = orders
+                    .SelectMany(o => o.OrderDetails)
+                    .GroupBy(od => new { od.ProductId, od.Product.ProductName })
+                    .Select(g => new Seller_TopSanPhamDTO
+                    {
+                        ProductName = g.Key.ProductName,
+                        TotalSold = g.Sum(od => od.Quantity),
+                        TotalRevenue = g.Sum(od => od.TotalNetProfit)
+                    })
+                    .OrderByDescending(p => p.TotalRevenue)
+                    .Take(5)
+                    .ToList();
+
+                return new Seller_ThongKeDTO
+                {
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    TotalRevenue = totalRevenue,
+                    TotalOrders = totalOrders,
+                    AverageOrderValue = averageOrderValue,
+                    TopProductsByQuantity = topProductsByQuantity,
+                    TopProductsByRevenue = topProductsByRevenue
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy dữ liệu thống kê: " + ex.Message, ex);
+            }
+        }
+
+        public List<Seller_DanhGiaDTO> GetProductReviews(int sellerId, int? productId = null)
+        {
+            try
+            {
+                // Lấy tất cả sản phẩm của seller
+                var products = _productRepository.GetBySellerId(sellerId);
+                if (productId.HasValue)
+                {
+                    products = products.Where(p => p.ProductId == productId.Value);
+                }
+
+                // Lấy tất cả đánh giá của các sản phẩm
+                var reviews = new List<Seller_DanhGiaDTO>();
+                foreach (var product in products)
+                {
+                    var productReviews = _reviewRepository.GetByProductId(product.ProductId)
+                        .Select(r => {
+                            var buyer = _buyerRepository.GetById(r.BuyerId);
+                            return new Seller_DanhGiaDTO
+                            {
+                                ProductId = product.ProductId,
+                                ProductName = product.ProductName,
+                                ReviewId = r.ReviewId,
+                                Comment = r.Comment,
+                                BuyerName = buyer != null ? buyer.Name : $"Người dùng {r.BuyerId}",
+                                Rating = r.Rating,
+                                DateReview = r.DateReview,
+                                ProductImage = product.ProductImage
+                            };
+                        });
+                    reviews.AddRange(productReviews);
+                }
+
+                // Sắp xếp theo ngày đánh giá mới nhất
+                return reviews.OrderByDescending(r => r.DateReview).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy danh sách đánh giá: " + ex.Message, ex);
             }
         }
     }

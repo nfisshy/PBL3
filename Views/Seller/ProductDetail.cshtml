@@ -1,67 +1,444 @@
 @model PBL3.DTO.Seller.Seller_ChiTietSanPhamDTO
 
 @{
-    ViewData["Title"] = "Chi tiết sản phẩm";
+    ViewBag.Title = "Quản lý sản phẩm";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="@Url.Action("ProductManagement")">Quản lý sản phẩm</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Chi tiết sản phẩm</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
+@section Styles {
+    <style>
+        :root {
+            --main-color: #2e7d32; /* xanh lục */
+            --text-dark: #101820;
+            --text-muted: #6c757d;
+            --bg-light: #f8f9fa;
+            --border-color: #e9ecef;
+        }
 
-    <div class="row">
-        <div class="col-md-6">
-            @if (Model.Image != null)
-            {
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Image)" 
-                     class="img-fluid rounded" alt="@Model.ProductName" />
+        .product-main-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            padding: 32px 28px 24px;
+            margin-bottom: 32px;
+        }
+
+        .product-main-row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .product-main-left {
+            flex: 0 0 240px;
+            max-width: 240px;
+            margin-right: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-main-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 16px;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .product-main-image:hover {
+            transform: scale(1.05);
+        }
+
+        .product-main-image img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .product-main-right {
+            flex: 1 1 320px;
+            min-width: 320px;
+        }
+
+        .product-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .product-info-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .product-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .product-info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .product-info-label {
+            flex: 0 0 120px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .product-info-value {
+            flex: 1;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .product-price {
+            color: var(--main-color);
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 16px 0;
+            padding: 12px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid var(--main-color);
+        }
+
+        .product-stats {
+            display: flex;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--main-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .product-description {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-description h5 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .product-description p {
+            color: #495057;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: var(--main-color);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-edit:hover {
+            background: #388e3c;
+            color: #fff;
+        }
+
+        .btn-back {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-back:hover {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        .product-reviews {
+            margin-top: 32px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .review-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .review-item {
+            padding: 16px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .review-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .review-user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--main-color);
+            margin-right: 12px;
+        }
+
+        .review-info {
+            flex: 1;
+        }
+
+        .review-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .review-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .review-rating {
+            color: #ffb300;
+            margin-bottom: 8px;
+        }
+
+        .review-content {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        media (max-width: 991px) {
+            .product-main-row {
+                flex-direction: column;
             }
-            else
-            {
-                <div class="bg-light rounded p-5 text-center">
-                    <i class="fas fa-image fa-3x text-muted"></i>
-                    <p class="mt-2">Không có hình ảnh</p>
-                </div>
+            .product-main-left {
+                margin-right: 0;
+                margin-bottom: 24px;
+                max-width: 100%;
             }
-        </div>
-        <div class="col-md-6">
-            <h2 class="mb-4">@Model.ProductName</h2>
-            
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Thông tin sản phẩm</h5>
-                    <dl class="row">
-                        <dt class="col-sm-4">ID sản phẩm:</dt>
-                        <dd class="col-sm-8">@Model.ProductId</dd>
+            .product-main-image {
+                width: 100%;
+                max-width: 300px;
+            }
+            .product-stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+}
 
-                        <dt class="col-sm-4">Loại sản phẩm:</dt>
-                        <dd class="col-sm-8">@Model.ProductType</dd>
 
-                        <dt class="col-sm-4">Giá:</dt>
-                        <dd class="col-sm-8">@Model.Price.ToString("N0") VNĐ</dd>
-                    </dl>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Mô tả sản phẩm</h5>
-                    <p class="card-text">@Model.Description</p>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <a href="@Url.Action("ProductManagement")" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("ProductManagement")" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Quản lý sản phẩm
                 </a>
+            </li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Chi tiết sản phẩm</li>
+        </ol>
+    </nav>
+
+    <div class="product-main-container">
+        <div class="product-main-row">
+            <!-- Left: Product Image -->
+            <div class="product-main-left">
+                <div class="product-main-image">
+                    @if (Model.Image != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Image)" 
+                             alt="@Model.ProductName" />
+                    }
+                    else
+                    {
+                        <div class="text-center p-4">
+                            <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Không có hình ảnh</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Right: Product Info -->
+            <div class="product-main-right">
+                <h1 class="product-title">@Model.ProductName</h1>
+                
+                <div class="product-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">@Model.Rating.ToString("F1")</div>
+                        <div class="stat-label">Đánh giá trung bình</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">@Model.SoldQuantity</div>
+                        <div class="stat-label">Đã bán</div>
+                    </div>
+                </div>
+
+                <div class="product-info-card">
+                    <div class="product-info-item">
+                        <div class="product-info-label">ID sản phẩm:</div>
+                        <div class="product-info-value">@Model.ProductId</div>
+                    </div>
+                    <div class="product-info-item">
+                        <div class="product-info-label">Loại sản phẩm:</div>
+                        <div class="product-info-value">@Model.ProductType</div>
+                    </div>
+                    <div class="product-info-item">
+                        <div class="product-info-label">Trạng thái:</div>
+                        <div class="product-info-value">
+                            <span class="badge bg-success">Đang bán</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-price">
+                    @Model.Price.ToString("N0") VNĐ
+                </div>
+
+                <div class="product-description">
+                    <h5>
+                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                        Mô tả sản phẩm
+                    </h5>
+                    <p>@Model.Description</p>
+                </div>
+
+                <div class="product-actions">
+                    <a href="@Url.Action("ProductManagement")" class="btn btn-action btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                    <a href="@Url.Action("EditProduct", new { id = Model.ProductId })" class="btn btn-action btn-edit">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div> 
+
+    <!-- Product Reviews -->
+    <div class="product-reviews">
+        <div class="review-header">
+            <h5 class="review-title">
+                <i class="fas fa-star me-2 text-warning"></i>
+                Đánh giá sản phẩm
+            </h5>
+            <span class="badge bg-primary">@Model.Comments.Count đánh giá</span>
+        </div>
+
+        @if (Model.Comments != null && Model.Comments.Any())
+        {
+            foreach (var review in Model.Comments.OrderByDescending(c => c.DateReview))
+            {
+                <div class="review-item">
+                    <div class="review-user">
+                        <div class="review-avatar">
+                            @(review.BuyerName.Length > 2 ? review.BuyerName.Substring(0, 2) : review.BuyerName)
+                        </div>
+                        <div class="review-info">
+                            <div class="review-name">@review.BuyerName</div>
+                            <div class="review-date">@review.DateReview.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= review.Rating)
+                            {
+                                <i class="fas fa-star"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star"></i>
+                            }
+                        }
+                    </div>
+                    <div class="review-content">
+                        @review.Comment
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comment-slash fa-2x mb-3"></i>
+                <p>Chưa có đánh giá nào cho sản phẩm này</p>
+            </div>
+        }
+    </div>
+</div>
+
