@@ -8,8 +8,8 @@ namespace PBL3.Entity
     public class Voucher
     {
         private string voucherId;
-        private int percentDiscount;
-        private int maxDiscount;
+        private decimal percentDiscount;
+        private decimal maxDiscount;
         private string? description;
         private int voucherQuantity;
         private DateTime startDate;
@@ -23,12 +23,12 @@ namespace PBL3.Entity
             get { return voucherId; }
             set { voucherId = value; }           
         } 
-        public int PercentDiscount
+        public decimal PercentDiscount
         {
             get { return percentDiscount; }
             set { percentDiscount = value; }
         }
-        public int MaxDiscount
+        public decimal MaxDiscount
         {
             get { return maxDiscount; }
             set { maxDiscount = value; }

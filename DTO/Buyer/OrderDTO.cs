@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using PBL3.Entity;
 using PBL3.Enums;
 
-namespace PBL3.DTO
+namespace PBL3.DTO.Buyer
 {
     public class OrderDTO
     {
@@ -18,7 +18,9 @@ namespace PBL3.DTO
         public List<OrderDetailDTO> OrderDetails { get; set; }
         public string BuyerName { get; set; }
         public string SellerName { get; set; }
-        public string address {get; set; }
+        public string Address {get; set; } 
+
+        public string BuyerPhone {get; set; }
     }
 
     public class OrderDetailDTO
@@ -27,5 +29,7 @@ namespace PBL3.DTO
         public string ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
+
+        public byte[]? Image {get; set; }
     }
 } 

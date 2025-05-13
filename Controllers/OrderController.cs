@@ -1,0 +1,115 @@
+using Microsoft.AspNetCore.Mvc;
+using PBL3.Services;
+using PBL3.DTO;
+using PBL3.DTO.Buyer;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using PBL3.Enums;
+using Newtonsoft.Json;
+namespace PBL3.Controllers
+{
+    public class OrderController : Controller
+    {
+        private readonly OrderService _orderService;
+        private readonly ILogger<OrderController> _logger;
+
+        public OrderController(OrderService orderService, ILogger<OrderController> logger)
+        {
+            _orderService = orderService;
+            _logger = logger;
+        }
+        //đã sửa
+        [HttpGet]
+        public IActionResult Preview()
+        {
+            var json = TempData["PreviewOrders"] as string;
+            if (string.IsNullOrEmpty(json))
+                return RedirectToAction("Cart", "Cart");
+
+            var previewOrders = JsonConvert.DeserializeObject<List<OrderDTO>>(json);
+            return View("Order", previewOrders);
+        }
+        //đã sửa
+        [HttpPost]
+        public IActionResult Order([FromBody] List<Buyer_CartDTO> selectedItem)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+                return RedirectToAction("Login", "Account");
+
+            try
+            {
+                var cartItems = selectedItem;
+                if (cartItems == null || !cartItems.Any())
+                {
+                    TempData["Error"] = "Vui lòng chọn sản phẩm từ giỏ hàng";
+                    return RedirectToAction("Cart", "Cart");
+                }
+
+                var previewOrders = _orderService.PreviewOrder(buyerId, cartItems);
+                //return View("Order",previewOrders);
+                TempData["PreviewOrders"] = JsonConvert.SerializeObject(previewOrders);
+                return Ok(new { redirectUrl = Url.Action("Preview") });
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xem trước đơn hàng cho buyer ID: {BuyerId}", buyerId);
+                TempData["Error"] = "Có lỗi xảy ra khi xem trước đơn hàng";
+                return RedirectToAction("Cart", "Cart");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrder(OrderDTO orderDTO)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+                return RedirectToAction("Login", "Account");
+
+            try
+            {
+                _orderService.CreateOrder(orderDTO);
+                HttpContext.Session.Remove("SelectedCartItems"); // Xóa các sản phẩm đã đặt hàng khỏi giỏ
+                TempData["Success"] = "Đặt hàng thành công";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo đơn hàng cho buyer ID: {BuyerId}", buyerId);
+                TempData["Error"] = "Có lỗi xảy ra khi đặt hàng";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrderStatus(int orderId, OrdStatus newStatus)
+        {
+            try
+            {
+                _orderService.UpdateOrderStatus(orderId, newStatus);
+                return Json(new { success = true, message = "Cập nhật trạng thái đơn hàng thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cập nhật trạng thái đơn hàng ID: {OrderId}", orderId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng" });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdatePaymentStatus(int orderId, bool paymentStatus)
+        {
+            try
+            {
+                _orderService.UpdatePaymentStatus(orderId, paymentStatus);
+                return Json(new { success = true, message = "Cập nhật trạng thái thanh toán thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cập nhật trạng thái thanh toán đơn hàng ID: {OrderId}", orderId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật trạng thái thanh toán" });
+            }
+        }
+    }
+} 
