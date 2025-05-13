@@ -124,7 +124,6 @@
                             <th>Tên sản phẩm</th>
                             <th>Loại sản phẩm</th>
                             <th>Giá</th>
-                            <th>Lợi nhuận</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
@@ -146,7 +145,6 @@
                                     <td>@product.ProductName</td>
                                     <td>@product.TypeProduct</td>
                                     <td>@product.Price.ToString("N0") VNĐ</td>
-                                    <td>@product.Profit.ToString("N0") VNĐ</td>
                                     <td><span class="badge @statusClass">@product.ProductStatus</span></td>
                                     <td>
                                         <a href="@Url.Action("ProductDetail", new { productId = product.ProductId })"

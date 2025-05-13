@@ -13,6 +13,6 @@ namespace PBL3.DTO.Seller
         public string BuyerName { get; set; }
         public int Rating { get; set; }
         public DateTime DateReview { get; set; }
-
+        public byte[] ProductImage { get; set; }
     }
 }

@@ -10,13 +10,14 @@ namespace PBL3.Entity
     {
         private int productId;
         private string productName;
-        private int productQuantity;
+        private int productQuantity; // số lượng sản phẩm bán được
         private decimal price;
         private byte[]? productImage;
         private TypeProduct productType;
         private string? productDescription;
         private int sellerId;
         private ProductStatus productStatus;
+        private int soldProduct;
 
         [Key]
         public int ProductId
@@ -64,6 +65,11 @@ namespace PBL3.Entity
         {
             get { return productStatus; }
             set { productStatus = value; }
+        }
+        public int SoldProduct
+        {
+            get { return soldProduct; }
+            set { soldProduct = value; }
         }
         public Seller Seller { get; set; }
         public ICollection<OrderDetail> OrderDetails { get; set; }

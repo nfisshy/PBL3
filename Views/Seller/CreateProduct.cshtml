@@ -93,16 +93,24 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="TypeProduct" class="form-label">Loại sản phẩm</label>
-                        <select asp-for="TypeProduct" class="form-select">
-                            <option value="">Chọn loại sản phẩm</option>
-                            @foreach (var type in productTypes)
-                            {
-                                <option value="@type">@type.GetDisplayName()</option>
-                            }
-                        </select>
-                        <span asp-validation-for="TypeProduct" class="text-danger"></span>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="TypeProduct" class="form-label">Loại sản phẩm</label>
+                            <select asp-for="TypeProduct" class="form-select">
+                                <option value="">Chọn loại sản phẩm</option>
+                                @foreach (var type in productTypes)
+                                {
+                                    <option value="@type">@type.GetDisplayName()</option>
+                                }
+                            </select>
+                            <span asp-validation-for="TypeProduct" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ProductQuantity" class="form-label">Số lượng sản phẩm</label>
+                            <input asp-for="ProductQuantity" class="form-control" type="number" min="0" max="10000" placeholder="Nhập số lượng sản phẩm" />
+                            <span asp-validation-for="ProductQuantity" class="text-danger"></span>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -113,11 +121,12 @@
 
                     <div class="mb-4">
                         <label class="form-label">Hình ảnh sản phẩm</label>
-                        <input type="file" name="ProductImageFile" class="form-control" accept="image/*" onchange="previewImage(this)" />
+                        <input type="file" name="ProductImageFile" class="form-control"
+                               accept=".png,.jpg,.jpeg,.gif,image/*" onchange="previewImage(this)" />
                         <div class="image-preview mt-2" id="imagePreview">
                             <img id="preview" src="#" alt="Preview" style="display: none;" />
                         </div>
-                        <span asp-validation-for="ProductImage" class="text-danger"></span>
+                        <span class="text-danger">@Html.ValidationMessage("ProductImage")</span>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
@@ -138,17 +147,22 @@
     <script>
         function previewImage(input) {
             const preview = document.getElementById('preview');
+            const imagePreview = document.getElementById('imagePreview');
+
             if (input.files && input.files[0]) {
+                const file = input.files[0];
                 const reader = new FileReader();
-                reader.onload = function(e) {
+
+                reader.onload = function (e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
+                };
+
+                reader.readAsDataURL(file);
             } else {
                 preview.src = '#';
                 preview.style.display = 'none';
             }
         }
     </script>
-} 
+}

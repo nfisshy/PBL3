@@ -12,7 +12,6 @@ namespace PBL3.DTO.Seller
         public int ProductId { get; set; }
         public string ProductName { get; set; }
         public decimal Price { get; set; }
-        public decimal Profit { get; set; }
 
     }
     
@@ -32,9 +31,12 @@ namespace PBL3.DTO.Seller
         [Display(Name = "Loại sản phẩm")]
         public TypeProduct TypeProduct { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập mô tả sản phẩm")]
+        [Required(ErrorMessage = "Vui lòng nhập số lượng sản phẩm")]
+        [Display(Name = "Số lượng sản phẩm")]
+        [Range(0, 10000, ErrorMessage = "Số lượng sản phẩm phải từ 0 đến 10.000")]
+        public int ProductQuantity { get; set; }
+
         [Display(Name = "Mô tả sản phẩm")]
-        [StringLength(2000, MinimumLength = 10, ErrorMessage = "Mô tả sản phẩm phải từ 10-2000 ký tự")]
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn hình ảnh sản phẩm")]
@@ -50,5 +52,9 @@ namespace PBL3.DTO.Seller
         public TypeProduct ProductType { get; set; }
         public string Description { get; set; }
         public byte[] Image { get; set; }
+        
+        public double Rating { get; set; }
+        public int SoldQuantity { get; set; }
+        public List<Seller_DanhGiaDTO> Comments { get; set; }
     }
 }

@@ -12,14 +12,12 @@ namespace PBL3.Entity
         private int buyerId;
         private int sellerId;
         private DateTime orderDate;
-        private decimal orderPrice;
+        private decimal orderPrice; // giá gốc
         private OrdStatus orderStatus;  // trang thai : chua giao , da giao , bi huy , giao hang thanh cong
         private PayMethod paymentMethod; // thanh toan khi nhan hang , thanh toan qua vi
         private bool paymentStatus; //da thanh toan : 1 , chua thanh toan : 0 
         private string address;
-
         private decimal discount;
-
         private int quantityTypeOfProduct;
 
         [Key]
@@ -71,6 +69,7 @@ namespace PBL3.Entity
             set { address = value; } 
         }
 
+
         public decimal Discount{
             get {return discount; }
             set {discount = value; }
@@ -80,6 +79,7 @@ namespace PBL3.Entity
         {
             get { return quantityTypeOfProduct; }
             set { quantityTypeOfProduct = value; }
+
         }
         public ICollection<OrderDetail> OrderDetails { get; set; }
         public Buyer Buyer {  get; set; }

@@ -228,6 +228,33 @@ namespace PBL_3.Controllers
             return View(product);
         }
 
+        // Add notification endpoints
+        [HttpGet]
+        public IActionResult Notifications()
+        {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var notifications = _sellerService.GetNewOrders(sellerId.Value);
+            return View(notifications);
+        }
+
+        [HttpGet]
+        public IActionResult GetNewOrdersCount()
+        {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return Json(new { count = 0 });
+            }
+
+            var count = _sellerService.GetNewOrdersCount(sellerId.Value);
+            return Json(new { count });
+        }
+
         [HttpGet]
         public IActionResult CreateProduct()
         {
@@ -249,25 +276,26 @@ namespace PBL_3.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             try
             {
                 // Xử lý upload ảnh
                 if (ProductImageFile != null && ProductImageFile.Length > 0)
                 {
-                    using (var ms = new MemoryStream())
+                    using (var ms = new MemoryStream()) // sau khi ra khỏi khối using đối tượng ms sẽ bị giải phóng
                     {
                         ProductImageFile.CopyTo(ms);
                         model.ProductImage = ms.ToArray();
                     }
+                    ModelState.Remove("ProductImage");
                 }
                 else
                 {
                     ModelState.AddModelError("ProductImage", "Vui lòng chọn hình ảnh sản phẩm");
+                    return View(model);
+                }
+
+                if (!ModelState.IsValid)
+                {
                     return View(model);
                 }
 
@@ -280,6 +308,67 @@ namespace PBL_3.Controllers
                 _logger.LogError(ex, "Lỗi khi tạo sản phẩm mới");
                 TempData["Error"] = "Có lỗi xảy ra khi tạo sản phẩm";
                 return View(model);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Statistics(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Set default date range if not provided
+                if (!startDate.HasValue)
+                    startDate = DateTime.Now.AddDays(-30); // Default to last 30 days
+                if (!endDate.HasValue)
+                    endDate = DateTime.Now;
+
+                // Validate date range
+                if (startDate > endDate)
+                {
+                    TempData["Error"] = "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc";
+                    return View(new Seller_ThongKeDTO());
+                }
+
+                var statistics = _sellerService.GetStatistics(sellerId.Value, startDate.Value, endDate.Value);
+                return View(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy dữ liệu thống kê");
+                TempData["Error"] = "Có lỗi xảy ra khi tải dữ liệu thống kê";
+                return View(new Seller_ThongKeDTO());
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ProductReviews(int? productId)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var reviews = _sellerService.GetProductReviews(sellerId.Value, productId);
+                
+                // Lưu productId vào ViewBag để giữ lại trên form
+                ViewBag.ProductId = productId;
+                
+                return View(reviews);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đánh giá");
+                TempData["Error"] = "Có lỗi xảy ra khi tải danh sách đánh giá";
+                return View(new List<Seller_DanhGiaDTO>());
             }
         }
     }

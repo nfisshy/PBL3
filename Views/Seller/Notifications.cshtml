@@ -1,0 +1,199 @@
+@model List<PBL3.DTO.Seller.Seller_ThongBaoDTO>
+@{
+    ViewBag.Title = "Thông báo đơn hàng mới";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .notification-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .notification-title {
+            color: #219150;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e6f3eb;
+        }
+        .order-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e6f3eb;
+            transition: all 0.2s ease;
+        }
+        .order-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .buyer-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .buyer-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .product-count {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            text-align: center;
+            min-width: 100px;
+        }
+        .total-price {
+            font-weight: 600;
+            color: #219150;
+            font-size: 1.1rem;
+            text-align: right;
+            min-width: 150px;
+        }
+        .btn-detail {
+            background: #219150;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-detail:hover {
+            background: #1b7a3f;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 1.1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .empty-message i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        .order-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            text-align: center;
+            min-width: 120px;
+            background: #fff3cd;
+            color: #856404;
+        }
+        .order-status.waitconfirm {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .order-status.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .order-status.shipping {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .order-status.completed {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+        .order-status.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Menu trái -->
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <!-- Nội dung thông báo -->
+        <div class="col-md-9">
+            <div class="notification-container">
+                <h2 class="notification-title">Đơn hàng mới cần xác nhận</h2>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var order in Model)
+                    {
+                        <div class="order-item">
+                            <div class="buyer-info">
+                                <div class="buyer-name">@order.BuyerName</div>
+                                <div class="order-date">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                            <div class="product-count">
+                                @order.TotalProductTypes loại sản phẩm
+                            </div>
+                            <div class="total-price">
+                                @order.TotalPrice.ToString("N0") đ
+                            </div>
+                            <div class="order-status">
+                                Chờ xác nhận
+                            </div>
+                            <a href="@Url.Action("ChiTietDonHang", "Seller", new { id = order.OrderId })" 
+                               class="btn-detail">
+                                Chi tiết
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-message">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>Không có đơn hàng mới nào cần xác nhận</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Function to update notification count in menu
+        function updateNotificationCount() {
+            fetch('/Seller/GetNewOrdersCount')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = data.count > 0 ? 'inline' : 'none';
+                    }
+                });
+        }
+
+        // Update count every 30 seconds
+        setInterval(updateNotificationCount, 30000);
+        // Initial update
+        updateNotificationCount();
+    </script>
+} 
