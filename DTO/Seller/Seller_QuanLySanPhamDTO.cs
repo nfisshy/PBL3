@@ -31,6 +31,10 @@ namespace PBL3.DTO.Seller
         [Display(Name = "Loại sản phẩm")]
         public TypeProduct TypeProduct { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng nhập số lượng sản phẩm")]
+        [Display(Name = "Số lượng sản phẩm")]
+        [Range(0, 10000, ErrorMessage = "Số lượng sản phẩm phải từ 0 đến 10.000")]
+        public int ProductQuantity { get; set; }
 
         [Display(Name = "Mô tả sản phẩm")]
         public string Description { get; set; }

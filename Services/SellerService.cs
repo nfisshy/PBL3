@@ -243,7 +243,7 @@ namespace PBL3.Services
                 double averageRating = reviews?.Any() == true ? reviews.Average(r => r.Rating) : 0;
 
                 // Sử dụng ProductQuantity thay vì GetSoldQuantity
-                int soldQuantity = product.ProductQuantity;
+                int soldQuantity = product.SoldProduct;
 
                 return new Seller_ChiTietSanPhamDTO
                 {
@@ -285,7 +285,7 @@ namespace PBL3.Services
                     ProductImage = model.ProductImage,
                     SellerId = sellerId,
                     ProductStatus = ProductStatus.Selling,
-                    ProductQuantity = 0, // Số lượng ban đầu là 0
+                    ProductQuantity = model.ProductQuantity // Sử dụng số lượng từ model
                 };
 
                 _productRepository.Add(product);
@@ -307,7 +307,7 @@ namespace PBL3.Services
                     OrderId = o.OrderId,
                     BuyerName = o.Buyer != null ? o.Buyer.Name : "Khách hàng",
                     TotalProductTypes = o.OrderDetails.Count, // Số lượng loại sản phẩm
-                    TotalPrice = o.OrderPrice - o.OriginalPrice * (decimal)0.05, // Giá sau khi trừ phí
+                    TotalPrice = o.OrderPrice - o.OrderPrice * (decimal)0.05-o.Discount, // Giá sau khi trừ phí
                     OrderDate = o.OrderDate,
                     OrderStatus = o.OrderStatus // Thêm trạng thái đơn hàng
                 })
@@ -332,18 +332,18 @@ namespace PBL3.Services
                     .ToList();
 
                 // Calculate total revenue and orders
-                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OriginalPrice * (decimal)0.05); // Trừ 5% phí platform
+                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OrderPrice * (decimal)0.05-o.Discount); // Trừ 5% phí platform
                 var totalOrders = orders.Count;
                 var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
                 // Get top products by quantity
                 var topProductsByQuantity = orders
-                    .SelectMany(o => o.OrderDetails)
-                    .GroupBy(od => new { od.ProductId, od.Product.ProductName })
-                    .Select(g => new Seller_TopSanPhamDTO
+                    .SelectMany(o => o.OrderDetails) // trải phẳng các nhóm orderdetail theo tất cả các order
+                    .GroupBy(od => new { od.ProductId, od.Product.ProductName }) // nhóm các orderdetail theo productid và productname
+                    .Select(g => new Seller_TopSanPhamDTO  // mỗi g đại diện cho 1 group 
                     {
-                        ProductName = g.Key.ProductName,
-                        TotalSold = g.Sum(od => od.Quantity),
+                        ProductName = g.Key.ProductName,  // key này là key của group ở trên 
+                        TotalSold = g.Sum(od => od.Quantity), // nhóm tất cả các orderdetail trong group và tính tổng số lượng
                         TotalRevenue = g.Sum(od => od.TotalNetProfit)
                     })
                     .OrderByDescending(p => p.TotalSold)

@@ -9,9 +9,11 @@ namespace PBL3.Entity
     {
         private int orderId;
         private int productId;
+        private string productName;
         private int quantity;
         private decimal price;
         private decimal totalNetProfit; // tổng lợi nhuận ròng người bán thu được
+        private byte[]? image;
 
         [Key,Column(Order =0)]
         public int OrderId
@@ -25,6 +27,11 @@ namespace PBL3.Entity
             get { return productId; }
             set { productId = value; }
         }
+        public string Productname
+        {
+            get { return productName; }
+            set { productName = value; }
+        }
         public int Quantity
         {
             get { return quantity; }
@@ -35,10 +42,15 @@ namespace PBL3.Entity
             get { return price; }
             set { price = value; }
         }
+
         public decimal TotalNetProfit
         {
             get { return totalNetProfit; }
             set { totalNetProfit = value; }
+        }
+        public byte[]? Image {
+            get { return image; }
+            set { image = value; }
         }
         public Order Order { get; set; }
         public Product Product { get;set; }

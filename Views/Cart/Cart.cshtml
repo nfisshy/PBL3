@@ -251,51 +251,50 @@
         updateCartSummary();
     }
 
+    function updateQuantity(itemId, change, event) {
+        event.preventDefault(); // Ngăn form tự submit
 
-function updateQuantity(itemId, change, event) {
-    event.preventDefault(); // Ngăn form tự submit
+        const quantityInput = document.getElementById('quantity_' + itemId);
+        let currentQuantity = parseInt(quantityInput.value);
+        currentQuantity += change;
 
-    const quantityInput = document.getElementById('quantity_' + itemId);
-    let currentQuantity = parseInt(quantityInput.value);
-    currentQuantity += change;
-
-    if (currentQuantity < 1) {
-        removeItem(itemId, event); // Gọi hàm xóa nếu < 1
-        return; // Dừng lại không làm gì thêm
-    }
-
-    quantityInput.value = currentQuantity;
-
-    // Cập nhật thuộc tính data-quantity
-    const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
-    if (itemRow) itemRow.dataset.quantity = currentQuantity;
-
-    updateItemTotalPrice(itemId);
-    updateCartSummary();
-
-    // Gửi dữ liệu lên server để cập nhật DB
-    const formData = new URLSearchParams();
-    formData.append("productId", itemId);
-    formData.append("quantity", currentQuantity);
-
-    fetch('/Cart/UpdateQuantity', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
-        },
-        body: formData.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            alert("Có lỗi xảy ra khi cập nhật số lượng.");
+        if (currentQuantity < 1) {
+            removeItem(itemId, event); // Gọi hàm xóa nếu < 1
+            return; // Dừng lại không làm gì thêm
         }
-    })
-    .catch(error => {
-        console.error('Lỗi khi cập nhật số lượng:', error);
-    });
-}
+
+        quantityInput.value = currentQuantity;
+
+        // Cập nhật thuộc tính data-quantity
+        const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
+        if (itemRow) itemRow.dataset.quantity = currentQuantity;
+
+        updateItemTotalPrice(itemId);
+        updateCartSummary();
+
+        // Gửi dữ liệu lên server để cập nhật DB
+        const formData = new URLSearchParams();
+        formData.append("productId", itemId);
+        formData.append("quantity", currentQuantity);
+
+        fetch('/Cart/UpdateQuantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: formData.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert("Có lỗi xảy ra khi cập nhật số lượng.");
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi cập nhật số lượng:', error);
+        });
+    }
 
 
     function updateItemTotalPrice(itemId) {
@@ -316,7 +315,7 @@ function updateQuantity(itemId, change, event) {
             updateItemTotalPrice(itemRow.dataset.itemid);
         });
     }
-
+    //đã sửa
     function removeItem(itemId, event) {
         event.preventDefault();
         const confirmDelete = window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?");
@@ -472,6 +471,77 @@ function updateQuantity(itemId, change, event) {
         // Set initial state of global select all checkbox
         checkGlobalSelectAllState();
     }
+    //đã sửa 
+    function submitSelectedItems() {
+        const selectedItems = [];
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            const itemRow = cb.closest('.cart-item');
+            const sellerId = parseInt(itemRow.dataset.sellerid);
+            const productId = parseInt(itemRow.dataset.itemid);
+            const quantity = parseInt(document.getElementById('quantity_' + productId).value);
+            const price = parseFloat(itemRow.dataset.price);
+           // const productImage = itemRow.querySelector('.product-image').src;
+            // Tìm seller trong danh sách đã có
+            let sellerGroup = selectedItems.find(s => s.sellerID === sellerId);
+            if (!sellerGroup) {
+                sellerGroup = {
+                    sellerID: sellerId,
+                    CartItems: []
+                };
+                selectedItems.push(sellerGroup);
+            }
+
+            // Thêm sản phẩm vào nhóm seller
+            sellerGroup.CartItems.push({
+                ProductId: productId,
+                Quantity: quantity,
+                Price: price,
+               // Image: productImage,
+                IsSelected: true,
+                TotalPrice: price * quantity
+            });
+        });
+
+        if (selectedItems.length === 0) {
+            document.getElementById('selectionError').classList.remove('hidden');
+            return;
+        }
+
+        // Gửi request đến Order/Order
+         @* fetch('/Order/Order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selectedItems)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = response.url;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi xử lý đơn hàng');
+        }); *@
+        fetch('/Order/Order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(selectedItems)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi xử lý đơn hàng');
+        });
+    } 
 
     </script>
 </body>

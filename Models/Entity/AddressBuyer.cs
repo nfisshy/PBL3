@@ -11,6 +11,8 @@ namespace PBL3.Entity
         private string location;
         private int buyerId;
 
+        private bool isDefault;
+
         [Key]
         public int AddressId
         {
@@ -22,6 +24,12 @@ namespace PBL3.Entity
             get { return location; }
             set { location = value; }
         }
+        
+        public bool IsDefault{
+            get {return isDefault;}
+            set {isDefault = value;}
+        }
+        
         [ForeignKey("Buyer")]
         public int BuyerId
         {

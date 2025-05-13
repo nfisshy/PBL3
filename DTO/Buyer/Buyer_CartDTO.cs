@@ -19,7 +19,6 @@ namespace PBL3.DTO.Buyer
         public class Buyer_CartDTO
         {
             public int sellerID {get; set; }
-
             public string sellerName {get; set; }
             public List<Buyer_CartItemDTO> CartItems { get; set; }
             public decimal TotalPrice => CartItems.Sum(item => item.TotalPrice);

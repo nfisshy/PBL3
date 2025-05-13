@@ -93,16 +93,24 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="TypeProduct" class="form-label">Loại sản phẩm</label>
-                        <select asp-for="TypeProduct" class="form-select">
-                            <option value="">Chọn loại sản phẩm</option>
-                            @foreach (var type in productTypes)
-                            {
-                                <option value="@type">@type.GetDisplayName()</option>
-                            }
-                        </select>
-                        <span asp-validation-for="TypeProduct" class="text-danger"></span>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="TypeProduct" class="form-label">Loại sản phẩm</label>
+                            <select asp-for="TypeProduct" class="form-select">
+                                <option value="">Chọn loại sản phẩm</option>
+                                @foreach (var type in productTypes)
+                                {
+                                    <option value="@type">@type.GetDisplayName()</option>
+                                }
+                            </select>
+                            <span asp-validation-for="TypeProduct" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ProductQuantity" class="form-label">Số lượng sản phẩm</label>
+                            <input asp-for="ProductQuantity" class="form-control" type="number" min="0" max="10000" placeholder="Nhập số lượng sản phẩm" />
+                            <span asp-validation-for="ProductQuantity" class="text-danger"></span>
+                        </div>
                     </div>
 
                     <div class="mb-3">

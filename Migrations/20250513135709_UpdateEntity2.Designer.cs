@@ -12,8 +12,8 @@ using PBL3.Dbcontext;
 namespace PBL_3.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250512132054_UpdateNew2")]
-    partial class UpdateNew2
+    [Migration("20250513135709_UpdateEntity2")]
+    partial class UpdateEntity2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,6 +35,9 @@ namespace PBL_3.Migrations
 
                     b.Property<int>("BuyerId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -115,6 +118,9 @@ namespace PBL_3.Migrations
                     b.Property<int>("BuyerId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
@@ -155,8 +161,15 @@ namespace PBL_3.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Productname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -322,11 +335,11 @@ namespace PBL_3.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaxDiscount")
-                        .HasColumnType("int");
+                    b.Property<decimal>("MaxDiscount")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("PercentDiscount")
-                        .HasColumnType("int");
+                    b.Property<decimal>("PercentDiscount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int");

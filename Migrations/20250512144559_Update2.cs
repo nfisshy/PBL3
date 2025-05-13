@@ -5,47 +5,46 @@
 namespace PBL_3.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateNew2 : Migration
+    public partial class Update2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "Otp",
-                table: "PlatformWallets",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.DropColumn(
+                name: "QuantityTypeOfProduct",
+                table: "Orders");
 
             migrationBuilder.AddColumn<string>(
-                name: "Address",
+                name: "BuyerPhone",
                 table: "Orders",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "Price",
+            migrationBuilder.AddColumn<byte[]>(
+                name: "Image",
                 table: "OrderDetails",
-                type: "decimal(18,2)",
-                nullable: false,
-                defaultValue: 0m);
+                type: "varbinary(max)",
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Otp",
-                table: "PlatformWallets");
-
-            migrationBuilder.DropColumn(
-                name: "Address",
+                name: "BuyerPhone",
                 table: "Orders");
 
             migrationBuilder.DropColumn(
-                name: "Price",
+                name: "Image",
                 table: "OrderDetails");
+
+            migrationBuilder.AddColumn<int>(
+                name: "QuantityTypeOfProduct",
+                table: "Orders",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
         }
     }
 }
