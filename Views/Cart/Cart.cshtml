@@ -480,7 +480,25 @@
             const productId = parseInt(itemRow.dataset.itemid);
             const quantity = parseInt(document.getElementById('quantity_' + productId).value);
             const price = parseFloat(itemRow.dataset.price);
-           // const productImage = itemRow.querySelector('.product-image').src;
+            const productName = itemRow.querySelector('h3').textContent.trim();
+            
+            // Get the image data from the img element
+            const imgElement = itemRow.querySelector('.product-image');
+            let imageBytes = null;
+            if (imgElement && imgElement.src) {
+                // If the image is a base64 string, convert it to byte array
+                if (imgElement.src.startsWith('data:image')) {
+                    const base64String = imgElement.src.split(',')[1];
+                    // Convert base64 to byte array
+                    const binaryString = window.atob(base64String);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    imageBytes = Array.from(bytes);
+                }
+            }
+            
             // Tìm seller trong danh sách đã có
             let sellerGroup = selectedItems.find(s => s.sellerID === sellerId);
             if (!sellerGroup) {
@@ -496,7 +514,8 @@
                 ProductId: productId,
                 Quantity: quantity,
                 Price: price,
-               // Image: productImage,
+                Image: imageBytes,
+                ProductName: productName,
                 IsSelected: true,
                 TotalPrice: price * quantity
             });

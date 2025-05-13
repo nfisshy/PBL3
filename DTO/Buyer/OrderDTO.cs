@@ -17,7 +17,7 @@ namespace PBL3.DTO.Buyer
         public bool PaymentStatus { get; set; }
         public List<OrderDetailDTO> OrderDetails { get; set; }
         public string BuyerName { get; set; }
-        public string SellerName { get; set; }
+        public string SellerStoreName { get; set; }
         public string Address {get; set; } 
 
         public string BuyerPhone {get; set; }
