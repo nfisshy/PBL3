@@ -1,0 +1,213 @@
+@model PBL3.DTO.Seller.Seller_ThongTinCaNhanDTO
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .profile-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .avatar-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .avatar-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .avatar-upload {
+            margin-top: 10px;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .form-control:disabled {
+            background-color: #f8f9fa;
+        }
+        .alert {
+            margin-bottom: 20px;
+        }
+        .validation-summary-errors {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            @await Html.PartialAsync("_SellerMenuInsideLayout")
+        </div>
+        <div class="col-md-9">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Success"]
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+
+            <div class="profile-card">
+                <h4 class="mb-4">Thông tin cá nhân</h4>
+                @using (Html.BeginForm("UpdateProfile", "Seller", FormMethod.Post, new { enctype = "multipart/form-data", id = "profileForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })
+                    
+                    <div class="avatar-container">
+                        @if (Model.Avatar != null)
+                        {
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Avatar)" class="avatar-preview" id="avatarPreview" alt="Avatar" />
+                        }
+                        else
+                        {
+                            <img src="~/Content/Images/default-avatar.png" class="avatar-preview" id="avatarPreview" alt="Default Avatar" />
+                        }
+                        <div class="avatar-upload">
+                            <input type="file" name="avatarFile" id="avatarFile" accept="image/*" class="d-none" onchange="previewAvatar(this)" />
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('avatarFile').click()">
+                                Thay đổi ảnh đại diện
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tên đăng nhập</label>
+                            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giới tính</label>
+                            @Html.TextBoxFor(m => m.Sex, new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày sinh</label>
+                            @Html.TextBoxFor(m => m.Date, "{0:dd/MM/yyyy}", new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên cửa hàng</label>
+                            @Html.TextBoxFor(m => m.StoreName, new { @class = "form-control", required = "required", id = "StoreName" })
+                            @Html.ValidationMessageFor(m => m.StoreName, "", new { @class = "field-validation-error" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        @Html.TextAreaFor(m => m.AddressSeller, new { @class = "form-control", rows = "2", required = "required", id = "AddressSeller" })
+                        @Html.ValidationMessageFor(m => m.AddressSeller, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Số điện thoại</label>
+                            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", required = "required", pattern = "[0-9]{8,12}", id = "PhoneNumber" })
+                            @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "field-validation-error" })
+                            <small class="text-muted">Nhập số điện thoại 8-12 chữ số</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            @Html.TextBoxFor(m => m.EmailGeneral, new { @class = "form-control", type = "email", required = "required", id = "EmailGeneral" })
+                            @Html.ValidationMessageFor(m => m.EmailGeneral, "", new { @class = "field-validation-error" })
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#avatarPreview').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $(function() {
+            $.validator.addMethod("phoneFormat", function(value, element) {
+                return this.optional(element) || /^[0-9]{8,12}$/.test(value);
+            }, "Số điện thoại phải có 8-12 chữ số");
+
+            $("#profileForm").validate({
+                rules: {
+                    StoreName: {
+                        required: true,
+                        minlength: 2
+                    },
+                    AddressSeller: {
+                        required: true,
+                        minlength: 5
+                    },
+                    PhoneNumber: {
+                        required: true,
+                        phoneFormat: true
+                    },
+                    EmailGeneral: {
+                        required: true,
+                        email: true
+                    }
+                },
+                messages: {
+                    StoreName: {
+                        required: "Vui lòng nhập tên cửa hàng",
+                        minlength: "Tên cửa hàng phải có ít nhất 2 ký tự"
+                    },
+                    AddressSeller: {
+                        required: "Vui lòng nhập địa chỉ",
+                        minlength: "Địa chỉ phải có ít nhất 5 ký tự"
+                    },
+                    PhoneNumber: {
+                        required: "Vui lòng nhập số điện thoại",
+                        phoneFormat: "Số điện thoại không hợp lệ (8-12 chữ số)"
+                    },
+                    EmailGeneral: {
+                        required: "Vui lòng nhập email",
+                        email: "Email không hợp lệ"
+                    }
+                },
+                errorElement: "span",
+                errorClass: "field-validation-error",
+                errorPlacement: function(error, element) {
+                    error.insertAfter(element);
+                }
+            });
+        });
+    </script>
+}

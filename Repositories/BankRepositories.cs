@@ -1,6 +1,8 @@
 ﻿using PBL3.Entity;
 using PBL3.Dbcontext;
 using PBL3.Enums;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PBL3.Repositories 
 {
@@ -38,6 +40,11 @@ namespace PBL3.Repositories
                 _context.Banks.Remove(bank);
                 _context.SaveChanges();
             }
+        }
+
+        public IEnumerable<Bank> GetByWalletId(int walletId)
+        {
+            return _context.Banks.Where(b => b.WalletId == walletId).ToList();
         }
     }
 }

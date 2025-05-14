@@ -70,15 +70,18 @@
     <!-- Header -->
     <div class="main-header w-100 shadow-sm mb-3">
         <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between py-2">
-            <div class="logo">CDT Seller</div>
+            <a href="@Url.Action("Dashboard", "Seller")" class="logo text-decoration-none">
+            CDT Seller
+            </a>
             <div class="d-flex align-items-center">
                 <div class="dropdown me-2">
                     <button class="btn btn-header dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user me-1"></i> @(userName ?? "Tài khoản")
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="@Url.Action("Account")">Thông tin tài khoản</a></li>
-                        <li><a class="dropdown-item" href="@Url.Action("Wallet", "Account")">Ví</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Profile", "Seller")">Thông tin tài khoản</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("DoiMatKhau", "Seller")">Đổi mật khẩu</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Wallet", "Seller")">Ví</a></li>
                         <li><hr class="dropdown-divider" /></li>
                         <li><a class="dropdown-item text-danger" href="@Url.Action("Index", "Home")">Đăng xuất</a></li>
                     </ul>

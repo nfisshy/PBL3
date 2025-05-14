@@ -371,5 +371,453 @@ namespace PBL_3.Controllers
                 return View(new List<Seller_DanhGiaDTO>());
             }
         }
+
+        [HttpGet]
+        public IActionResult VoucherList()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                var vouchers = _sellerService.GetVoucherList(sellerId.Value);
+                return View(vouchers);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult CreateVoucher()
+        {
+            return View(new Seller_TaoGiamGiaDTO());
+        }
+
+        [HttpPost]
+        public IActionResult CreateVoucher(Seller_TaoGiamGiaDTO model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return View(model);
+
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                _sellerService.CreateVoucher(sellerId.Value, model);
+                TempData["Success"] = "Tạo voucher thành công";
+                return RedirectToAction(nameof(VoucherList));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateVoucherStatus(string voucherId, bool isActive)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                _sellerService.UpdateVoucherStatus(sellerId.Value, voucherId, isActive);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult DeleteVoucher(string voucherId)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                _sellerService.DeleteVoucher(sellerId.Value, voucherId);
+                TempData["Success"] = "Xóa voucher thành công";
+                return RedirectToAction(nameof(VoucherList));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(VoucherList));
+            }
+        }
+
+        [HttpGet]
+        public IActionResult OrderDetail(int id)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var orderDetail = _sellerService.GetOrderDetail(sellerId.Value, id);
+                if (orderDetail == null)
+                {
+                    TempData["Error"] = "Không tìm thấy đơn hàng";
+                    return RedirectToAction("OrderManage");
+                }
+
+                return View(orderDetail);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy chi tiết đơn hàng");
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("OrderManage");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrderStatus(int orderId, OrdStatus newStatus)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập" });
+                }
+
+                _sellerService.UpdateOrderStatus(sellerId.Value, orderId, newStatus);
+                return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cập nhật trạng thái đơn hàng");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult Profile()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (sellerId == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var profile = _sellerService.GetSellerPersonalInfo(sellerId.Value);
+                return View(profile);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult UpdateProfile(Seller_ThongTinCaNhanDTO profile, IFormFile avatarFile)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (sellerId == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                byte[] newAvatar = null;
+                if (avatarFile != null && avatarFile.Length > 0)
+                {
+                    // Validate file type
+                    var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                    if (!allowedTypes.Contains(avatarFile.ContentType.ToLower()))
+                    {
+                        throw new Exception("Chỉ chấp nhận file ảnh (JPEG, PNG, GIF)");
+                    }
+
+                    // Validate file size (max 5MB)
+                    if (avatarFile.Length > 5 * 1024 * 1024)
+                    {
+                        throw new Exception("Kích thước file không được vượt quá 5MB");
+                    }
+
+                    using (var ms = new MemoryStream())
+                    {
+                        avatarFile.CopyTo(ms);
+                        newAvatar = ms.ToArray();
+                    }
+                }
+
+                _sellerService.UpdateSellerProfile(sellerId.Value, profile, newAvatar);
+                TempData["Success"] = "Cập nhật thông tin thành công";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        public IActionResult DoiMatKhau()
+        {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult DoiMatKhau(Seller_DoiMatKhauDTO model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                _sellerService.DoiMatKhau(sellerId.Value, model);
+                TempData["Success"] = "Đổi mật khẩu thành công";
+                return RedirectToAction("Profile");
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Không tìm thấy seller ID: {SellerId}", sellerId);
+                TempData["Error"] = "Không tìm thấy tài khoản người bán";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi đổi mật khẩu seller ID: {SellerId}", sellerId);
+                TempData["Error"] = "Có lỗi xảy ra khi đổi mật khẩu";
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Wallet()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
+                return View(walletInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy thông tin ví");
+                TempData["Error"] = "Có lỗi xảy ra khi tải thông tin ví";
+                return RedirectToAction("Dashboard");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult LinkBank()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Lấy thông tin ví để hiển thị thông tin ngân hàng hiện tại (nếu có)
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
+                var model = new Seller_LienKetNganHangDTO
+                {
+                    BankName = walletInfo.BankName != "Chưa liên kết" ? walletInfo.BankName : "",
+                    BankNumber = walletInfo.BankNumber != "Chưa liên kết" ? walletInfo.BankNumber : ""
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải trang liên kết ngân hàng");
+                TempData["Error"] = "Có lỗi xảy ra khi tải trang liên kết ngân hàng";
+                return RedirectToAction("Wallet");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult LinkBank(Seller_LienKetNganHangDTO model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _sellerService.LinkBankAccount(sellerId.Value, model);
+                TempData["Success"] = "Liên kết ngân hàng thành công";
+                return RedirectToAction("Wallet");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi liên kết ngân hàng");
+                TempData["Error"] = ex.Message;
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult NapTien()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
+                var model = new Seller_RutNapTienDTO
+                {
+                    WalletBalance = walletInfo.WalletBalance,
+                    BankName = walletInfo.BankName,
+                    BankNumber = walletInfo.BankNumber
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải trang nạp tiền");
+                TempData["Error"] = "Có lỗi xảy ra khi tải trang nạp tiền";
+                return RedirectToAction("Wallet");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult NapTien(Seller_RutNapTienDTO model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _sellerService.NapTien(sellerId.Value, model);
+                TempData["Success"] = "Nạp tiền thành công";
+                return RedirectToAction("Wallet");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi nạp tiền");
+                TempData["Error"] = ex.Message;
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult RutTien()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
+                var model = new Seller_RutNapTienDTO
+                {
+                    WalletBalance = walletInfo.WalletBalance,
+                    BankName = walletInfo.BankName,
+                    BankNumber = walletInfo.BankNumber
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải trang rút tiền");
+                TempData["Error"] = "Có lỗi xảy ra khi tải trang rút tiền";
+                return RedirectToAction("Wallet");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult RutTien(Seller_RutNapTienDTO model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _sellerService.RutTien(sellerId.Value, model);
+                TempData["Success"] = "Rút tiền thành công";
+                return RedirectToAction("Wallet");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi rút tiền");
+                TempData["Error"] = ex.Message;
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOTP()
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _sellerService.UpdateOTP(sellerId.Value);
+                TempData["Success"] = "OTP mới đã được tạo";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo OTP mới");
+                TempData["Error"] = "Có lỗi xảy ra khi tạo OTP mới";
+            }
+
+            return RedirectToAction("Wallet");
+        }
     }
 } 

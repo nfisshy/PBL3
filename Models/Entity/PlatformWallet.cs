@@ -10,7 +10,6 @@ namespace PBL3.Entity
         private int walletId;
         private decimal walletBalance;
         private int userId;
-        private int otp;
 
         [Key]
         public int WalletId
@@ -28,11 +27,6 @@ namespace PBL3.Entity
         {
             get { return userId; }
             set { userId = value; }
-        }
-        public int Otp
-        {
-            get { return otp; }
-            set { otp = value; }
         }
         public User User { get; set; }
         public ICollection<Bank> Banks { get; set; }

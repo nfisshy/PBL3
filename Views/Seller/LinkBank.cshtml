@@ -1,0 +1,107 @@
+@model PBL3.DTO.Seller.Seller_LienKetNganHangDTO
+
+@{
+    ViewBag.Title = "Liên kết ngân hàng";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+        }
+
+        .btn i {
+            margin-right: 5px;
+        }
+
+        .input-group-append .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .link-bank-card {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_SellerMenuInsideLayout" />
+        </div>
+        <div class="col-md-9">
+            <div class="link-bank-card">
+
+                <h3 class="text-center mb-4 text-primary">Liên kết ngân hàng</h3>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger text-center">
+                        @Html.Raw(TempData["Error"])
+                    </div>
+                }
+
+                @using (Html.BeginForm("LinkBank", "Seller", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger text-center mb-3" })
+
+                    <div class="form-group">
+                        <label asp-for="BankName">Tên ngân hàng</label>
+                        <input asp-for="BankName" class="form-control" placeholder="Nhập tên ngân hàng" />
+                        @Html.ValidationMessageFor(m => m.BankName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="BankNumber">Số tài khoản</label>
+                        <input asp-for="BankNumber" class="form-control" placeholder="Nhập số tài khoản" />
+                        @Html.ValidationMessageFor(m => m.BankNumber, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="OTP">OTP xác nhận</label>
+                        <div class="input-group">
+                            <input asp-for="OTP" class="form-control" placeholder="Nhập mã OTP" />
+                            <div class="input-group-append">
+                                <a href="@Url.Action("UpdateOTP", "Seller")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-sync"></i> Lấy OTP mới
+                                </a>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.OTP, "", new { @class = "text-danger" })
+                        <small class="form-text text-muted">
+                            Vui lòng nhập mã OTP đã được gửi đến email của bạn
+                        </small>
+                    </div>
+
+                    <div class="form-group text-center mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-link"></i> Liên kết ngân hàng
+                        </button>
+                        <a href="@Url.Action("Wallet", "Seller")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

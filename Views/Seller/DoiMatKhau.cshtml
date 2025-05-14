@@ -1,0 +1,157 @@
+@model PBL3.DTO.Seller.Seller_DoiMatKhauDTO
+
+@{
+    ViewBag.Title  = "Đổi mật khẩu";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .password-form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .validation-summary-errors {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn-change-password {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-change-password:hover {
+            background-color: #0056b3;
+        }
+
+        .password-requirements {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_SellerMenuInsideLayout" />
+        </div>
+        <div class="col-md-9">
+            <div class="password-form">
+                <h2 class="text-center mb-4">Đổi mật khẩu</h2>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">
+                        @Html.Raw(TempData["Success"])
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @Html.Raw(TempData["Error"])
+                    </div>
+                }
+
+                @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })
+
+                <form asp-action="DoiMatKhau" asp-controller="Seller" method="post" id="changePasswordForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group">
+                        <label asp-for="OldPassword">Mật khẩu cũ</label>
+                        <input asp-for="OldPassword" type="password" class="form-control" required />
+                        @Html.ValidationMessageFor(m => m.OldPassword, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NewPassword">Mật khẩu mới</label>
+                        <input asp-for="NewPassword" type="password" class="form-control" required 
+                               minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" />
+                        @Html.ValidationMessageFor(m => m.NewPassword, "", new { @class = "field-validation-error" })
+                        <div class="password-requirements">
+                            Mật khẩu phải có ít nhất 8 ký tự, bao gồm cả chữ và số
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword">Xác nhận mật khẩu mới</label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" required />
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-change-password">Đổi mật khẩu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#changePasswordForm").validate({
+                rules: {
+                    OldPassword: {
+                        required: true
+                    },
+                    NewPassword: {
+                        required: true,
+                        minlength: 8,
+                        pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+                    },
+                    ConfirmPassword: {
+                        required: true,
+                        equalTo: "#NewPassword"
+                    }
+                },
+                messages: {
+                    OldPassword: {
+                        required: "Vui lòng nhập mật khẩu cũ"
+                    },
+                    NewPassword: {
+                        required: "Vui lòng nhập mật khẩu mới",
+                        minlength: "Mật khẩu phải có ít nhất 8 ký tự",
+                        pattern: "Mật khẩu phải bao gồm cả chữ và số"
+                    },
+                    ConfirmPassword: {
+                        required: "Vui lòng xác nhận mật khẩu mới",
+                        equalTo: "Mật khẩu xác nhận không khớp"
+                    }
+                },
+                errorElement: "span",
+                errorClass: "field-validation-error",
+                errorPlacement: function(error, element) {
+                    error.insertAfter(element);
+                }
+            });
+        });
+    </script>
+} 

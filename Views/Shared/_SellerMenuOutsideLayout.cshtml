@@ -62,7 +62,7 @@
     }
 
     .seller-menu-link:hover {
-        background-color: #f39c12;
+        background-color: #2ecc71;
         color: #000;
         transform: translateX(4px);
     }
@@ -73,7 +73,7 @@
     }
 
     .seller-menu-link.active {
-        background-color: #e67e22;
+        background-color: #2ecc71;
         color: #fff;
         font-weight: bold;
     }
@@ -134,6 +134,11 @@
                 <i class="fas fa-star"></i> Đánh giá 
             </a>
         </li>
-        <li><a class="seller-menu-link" href="#"><i class="fas fa-ticket-alt"></i>Voucher</a></li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "VoucherList" ? "active" : "")" 
+            href="@Url.Action("VoucherList", "Seller")">
+                <i class="fas fa-ticket-alt"></i> Voucher 
+            </a>
+        </li>
     </ul>
 </div>
