@@ -26,7 +26,7 @@ namespace PBL3.Controllers
             if (string.IsNullOrEmpty(json))
                 return RedirectToAction("Cart", "Cart");
 
-            var previewOrders = JsonConvert.DeserializeObject<List<OrderDTO>>(json);
+            var previewOrders = JsonConvert.DeserializeObject<PurchaseDTO>(json);
             return View("Order", previewOrders);
         }
         //đã sửa
@@ -59,26 +59,32 @@ namespace PBL3.Controllers
                 return RedirectToAction("Cart", "Cart");
             }
         }
-
+        //đã sửa 
         [HttpPost]
-        public IActionResult CreateOrder(OrderDTO orderDTO)
+        public IActionResult CreateOrder([FromBody] List<OrderDTO> orderDTOs)
         {
+            _logger.LogInformation("OrderDTO nhận được: {@orderDTO}", orderDTOs);
+            _logger.LogInformation("OrderDetails count: {Count}", orderDTOs.Count);
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (buyerId == 0)
                 return RedirectToAction("Login", "Account");
 
             try
             {
-                _orderService.CreateOrder(orderDTO);
-                HttpContext.Session.Remove("SelectedCartItems"); // Xóa các sản phẩm đã đặt hàng khỏi giỏ
+                foreach (var orderDTO in orderDTOs)
+                {
+                    orderDTO.BuyerId = buyerId;
+                    _orderService.CreateOrder(orderDTO);
+                }
+                
+               // HttpContext.Session.Remove("SelectedCartItems"); // Xóa các sản phẩm đã đặt hàng khỏi giỏ
                 TempData["Success"] = "Đặt hàng thành công";
-                return RedirectToAction("Index", "Home");
+                return Json(new { success = true, redirectUrl = Url.Action("Success", "Order") });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tạo đơn hàng cho buyer ID: {BuyerId}", buyerId);
-                TempData["Error"] = "Có lỗi xảy ra khi đặt hàng";
-                return RedirectToAction("Index");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đặt hàng" });
             }
         }
 
@@ -110,6 +116,17 @@ namespace PBL3.Controllers
                 _logger.LogError(ex, "Lỗi khi cập nhật trạng thái thanh toán đơn hàng ID: {OrderId}", orderId);
                 return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật trạng thái thanh toán" });
             }
+        }
+
+        [HttpGet]
+        public IActionResult Success()
+        {
+            // Kiểm tra xem có thông báo thành công trong TempData không
+            if (TempData["Success"] == null)
+            {
+                return RedirectToAction("Index", "Product");
+            }
+            return View();
         }
     }
 } 

@@ -471,7 +471,7 @@
         // Set initial state of global select all checkbox
         checkGlobalSelectAllState();
     }
-    //đã sửa 
+    //đã sửa(chưa lấy được ảnh)
     function submitSelectedItems() {
         const selectedItems = [];
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
@@ -525,26 +525,6 @@
             document.getElementById('selectionError').classList.remove('hidden');
             return;
         }
-
-        // Gửi request đến Order/Order
-         @* fetch('/Order/Order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(selectedItems)
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = response.url;
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi xử lý đơn hàng');
-        }); *@
         fetch('/Order/Order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

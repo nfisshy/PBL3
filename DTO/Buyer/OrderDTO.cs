@@ -5,6 +5,15 @@ using PBL3.Enums;
 
 namespace PBL3.DTO.Buyer
 {
+    public class PurchaseDTO{
+        public List<OrderDTO> Orders {get; set;}
+        public decimal purchasePrice{get; set; }
+        public PurchaseDTO()
+        {
+            Orders = new List<OrderDTO>();
+            purchasePrice = 0;
+        }
+    }
     public class OrderDTO
     {
         public int OrderId { get; set; }

@@ -31,34 +31,8 @@ namespace PBL3.Services
             _sellerRepository = sellerRepository;
             _logger = logger;
         }
-
-        // public OrderDTO GetOrderById(int orderId)
-        // {
-        //     var order = _orderRepository.GetById(orderId);
-        //     if (order == null) return null;
-
-        //     return MapToOrderDTO(order);
-        // }
-
-        // public IEnumerable<OrderDTO> GetOrdersByBuyerId(int buyerId)
-        // {
-        //     var orders = _orderRepository.GetByBuyerId(buyerId);
-        //     return orders.Select(MapToOrderDTO);
-        // }
-
-        // public IEnumerable<OrderDTO> GetOrdersBySellerId(int sellerId)
-        // {
-        //     var orders = _orderRepository.GetBySellerId(sellerId);
-        //     return orders.Select(MapToOrderDTO);
-        // }
-
-        // public IEnumerable<OrderDTO> GetOrdersByStatus(OrdStatus status)
-        // {
-        //     var orders = _orderRepository.GetByStatus(status);
-        //     return orders.Select(MapToOrderDTO);
-        // }
-        public List<OrderDTO> PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem){
-            var result = new List<OrderDTO>();
+        public PurchaseDTO PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem){
+            var result = new PurchaseDTO();
             // Get buyer information
             var buyer = _buyerRepository.GetById(buyerID);
             if (buyer == null)
@@ -79,8 +53,8 @@ namespace PBL3.Services
                     Address = buyer.Location,
                     SellerId = sellerId,
                     SellerStoreName = seller.StoreName,
-                    OrderDate = DateTime.Now,
-                    OrderStatus = OrdStatus.WaitConfirm,
+                    //OrderDate = DateTime.Now,
+                    //OrderStatus = OrdStatus.WaitConfirm,
                     PaymentStatus = false,
                     OrderDetails = new List<OrderDetailDTO>()
                 };
@@ -103,33 +77,41 @@ namespace PBL3.Services
                     _logger.LogInformation("${totalPrice}",totalPrice);
                 }
                 orderDTO.OrderPrice = totalPrice;
-                result.Add(orderDTO);
+                result.Orders.Add(orderDTO);
+                result.purchasePrice += orderDTO.OrderPrice;
             }
             
             return result;
         }
         public void CreateOrder(OrderDTO orderDTO)
         {
+            // Create the main order
             var order = new Order
             {
                 BuyerId = orderDTO.BuyerId,
                 SellerId = orderDTO.SellerId,
                 OrderDate = DateTime.Now,
-                OrderPrice = orderDTO.OrderPrice,
+                OrderPrice = orderDTO.OrderPrice + 22000,
                 OrderStatus = OrdStatus.WaitConfirm,
                 PaymentMethod = orderDTO.PaymentMethod,
-                PaymentStatus = false
+                PaymentStatus = false,
+                Address = orderDTO.Address,
+                QuantityTypeOfProduct = orderDTO.OrderDetails.Count
             };
 
             _orderRepository.Add(order);
 
+            // Create order details
             foreach (var detail in orderDTO.OrderDetails)
             {
                 var orderDetail = new OrderDetail
                 {
                     OrderId = order.OrderId,
                     ProductId = detail.ProductId,
-                    Quantity = detail.Quantity
+                    Quantity = detail.Quantity,
+                    Price = detail.TotalPrice,
+                    Productname = detail.ProductName,
+                    Image = detail.Image
                 };
                 _orderDetailRepository.Add(orderDetail);
             }
