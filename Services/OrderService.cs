@@ -78,7 +78,7 @@ namespace PBL3.Services
                     BuyerPhone = buyer.PhoneNumber,
                     Address = buyer.Location,
                     SellerId = sellerId,
-                    SellerName = seller.Name,
+                    SellerStoreName = seller.StoreName,
                     OrderDate = DateTime.Now,
                     OrderStatus = OrdStatus.WaitConfirm,
                     PaymentStatus = false,
