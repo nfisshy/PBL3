@@ -18,6 +18,7 @@ namespace PBL3.Entity
         protected string phoneNumber;
         protected DateTime date;
         protected Roles roleName;
+        private int otp;
 
 
         [Key]
@@ -62,6 +63,11 @@ namespace PBL3.Entity
         {
             get { return roleName; }
             set { roleName = value; }
+        }
+        public int OTP
+        {
+            get { return otp; }
+            set { otp = value; }
         }
 
         public PlatformWallet Wallet { get; set; }

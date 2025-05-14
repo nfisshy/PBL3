@@ -1,0 +1,118 @@
+@model PBL3.DTO.Seller.Seller_ViDTO
+
+@{
+    ViewBag.Title = "Ví của tôi";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .wallet-info {
+            padding: 20px;
+        }
+
+        .balance-section {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .bank-info {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .action-buttons .btn {
+            padding: 12px;
+            font-size: 1.1em;
+            width: 100%;
+        }
+
+        .action-buttons .btn i {
+            margin-right: 8px;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_SellerMenuInsideLayout" />
+        </div>
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">Ví của tôi</h4>
+                </div>
+                <div class="card-body">
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success text-center">
+                            @Html.Raw(TempData["Success"])
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            @Html.Raw(TempData["Error"])
+                        </div>
+                    }
+
+                    <div class="wallet-info">
+                        <div class="balance-section mb-4">
+                            <h5>Số dư ví</h5>
+                            <h2 class="text-primary fw-bold">@Model.WalletBalance.ToString("N0") VNĐ</h2>
+                        </div>
+
+                        <div class="bank-info mb-4">
+                            <h5>Thông tin ngân hàng</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Tên ngân hàng:</strong> @Model.BankName</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Số tài khoản:</strong> @Model.BankNumber</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <a href="@Url.Action("LinkBank", "Seller")" class="btn btn-outline-primary">
+                                        <i class="fas fa-university"></i> Liên kết ngân hàng
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <a href="@Url.Action("NapTien", "Seller")" class="btn btn-success">
+                                        <i class="fas fa-plus-circle"></i> Nạp tiền
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <a href="@Url.Action("RutTien", "Seller")" class="btn btn-warning">
+                                        <i class="fas fa-minus-circle"></i> Rút tiền
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-4 offset-md-4">
+                                    <form asp-action="UpdateOTP" method="post">
+                                        <button type="submit" class="btn btn-info btn-block">
+                                            <i class="fas fa-key"></i> Tạo OTP mới
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div> <!-- end action-buttons -->
+                    </div> <!-- end wallet-info -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

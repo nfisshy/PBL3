@@ -1,6 +1,7 @@
 ﻿using PBL3.Entity;
 using PBL3.Dbcontext;
 using PBL3.Enums;
+using System.Collections.Generic;
 
 namespace PBL3.Repositories 
 {
@@ -10,5 +11,6 @@ namespace PBL3.Repositories
         void Add(Bank bank);                              
         void Update(Bank bank);                           
         void Delete(int bankAccountId);
+        IEnumerable<Bank> GetByWalletId(int walletId);
     }
 }

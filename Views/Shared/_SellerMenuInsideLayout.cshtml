@@ -4,26 +4,26 @@
 <style>
     .seller-menu-container {
         width: 100%;
-        max-width: 300px;
-        background-color: #1c1c1c;
-        color: #e8f5e9;
-        border-radius: 12px;
+        max-width: 280px;
+        background: linear-gradient(145deg, #1e1e2f, #111122);
+        color: #f1f1f1;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         font-family: 'Segoe UI', sans-serif;
     }
 
     .seller-profile {
         display: flex;
         align-items: center;
-        padding: 1rem;
-        background-color: #111;
-        border-bottom: 1px solid #2e2e2e;
+        padding: 1.2rem;
+        background-color: #191933;
+        border-bottom: 1px solid #333;
     }
 
     .seller-avatar img {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #2ecc71;
@@ -31,12 +31,12 @@
     }
 
     .seller-info .title {
-        font-size: 0.85rem;
-        color: #aaa;
+        font-size: 0.8rem;
+        color: #bbb;
     }
 
     .seller-info .name {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 600;
         color: #2ecc71;
     }
@@ -47,21 +47,25 @@
         padding: 0;
     }
 
+    .seller-menu-list li {
+        border-bottom: 1px solid #2a2a2a;
+    }
+
     .seller-menu-link {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 0.9rem 1.2rem;
+        gap: 12px;
+        padding: 1rem 1.4rem;
         text-decoration: none;
-        color: #e8f5e9;
+        color: #f1f1f1;
         font-size: 1rem;
-        transition: background 0.3s, color 0.3s;
-        border-bottom: 1px solid #2a2a2a;
+        transition: background 0.3s ease, transform 0.2s;
     }
 
     .seller-menu-link:hover {
         background-color: #2ecc71;
         color: #000;
+        transform: translateX(4px);
     }
 
     .seller-menu-link i {
@@ -72,23 +76,45 @@
     .seller-menu-link.active {
         background-color: #27ae60;
         color: #fff;
-        font-weight: 600;
+        font-weight: bold;
+    }
+
+    media (max-width: 768px) {
+        .seller-menu-container {
+            max-width: 100%;
+        }
     }
 </style>
 
 <div class="seller-menu-container">
     <div class="seller-profile">
         <div class="seller-avatar">
-            <img src="~/images/avatar-default.png" alt="Avatar" />
+            <img src="~/images/avatar-default.png" alt="Seller Avatar" />
         </div>
         <div class="seller-info">
             <div class="title">Gian hàng của</div>
             <div class="name">CDT Seller</div>
         </div>
     </div>
+
     <ul class="seller-menu-list">
-        <li><a class="seller-menu-link" href="#"><i class="fas fa-user"></i> Thông tin cá nhân</a></li>
-        <li><a class="seller-menu-link" href="#"><i class="fas fa-lock"></i> Đổi mật khẩu</a></li>
-        <li><a class="seller-menu-link" href="#"><i class="fas fa-wallet"></i> Ví</a></li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "Profile" ? "active" : "")" 
+               href="@Url.Action("Profile", "Seller")">
+                <i class="fas fa-user"></i> Thông tin cá nhân
+            </a>
+        </li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "DoiMatKhau" ? "active" : "")" 
+               href="@Url.Action("DoiMatKhau", "Seller")">
+                <i class="fas fa-lock"></i> Đổi mật khẩu
+            </a>
+        </li>
+        <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "Wallet" ? "active" : "")" 
+               href="@Url.Action("Wallet", "Seller")">
+                <i class="fas fa-wallet"></i> Ví
+            </a>
+        </li>
     </ul>
 </div>

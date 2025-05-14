@@ -107,7 +107,7 @@
                                     <td><span class="order-status @order.OrderStatus">@GetStatusText(order.OrderStatus)</span></td>
                                     <td>@order.BuyerName</td>
                                     <td>
-                                        <a href="@Url.Action("ChiTietDonHang", "Seller", new { id = order.OrderId })" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                        <a href="@Url.Action("OrderDetail", "Seller", new { id = order.OrderId })" class="btn btn-sm btn-info">Xem chi tiết</a>
                                     </td>
                                 </tr>
                             }

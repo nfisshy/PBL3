@@ -1,0 +1,152 @@
+@model List<PBL3.DTO.Seller.Seller_DanhSachGiamGiaDTO>
+
+@{
+    ViewBag.Title = "Quản lý giảm giá";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #f6f8fa;
+        }
+
+        .dashboard-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 16px;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <div class="col-md-9">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>Quản lý giảm giá</h3>
+                    <a href="@Url.Action("CreateVoucher")" class="btn btn-primary">
+                        <i class="fas fa-plus mr-1"></i> Tạo voucher mới
+                    </a>
+                </div>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Mã voucher</th>
+                                <th>Giảm giá</th>
+                                <th>Giảm tối đa</th>
+                                <th>Số lượng</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var voucher in Model)
+                            {
+                                <tr>
+                                    <td>@voucher.VoucherId</td>
+                                    <td>@voucher.PercentDiscount%</td>
+                                    <td>@voucher.MaxDiscount.ToString("N0") VNĐ</td>
+                                    <td>@voucher.Quantity</td>
+                                    <td>@voucher.StartDate.ToString("dd/MM/yyyy") - @voucher.EndDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="toggle-@voucher.VoucherId"
+                                                   @(voucher.IsActive ? "checked" : "")
+                                                   onchange="updateVoucherStatus('@voucher.VoucherId', this.checked)" />
+                                            <label class="form-check-label" for="toggle-@voucher.VoucherId">
+                                                @(voucher.IsActive ? "Đang hoạt động" : "Đã tắt")
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button onclick="deleteVoucher('@voucher.VoucherId')" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateVoucherStatus(voucherId, isActive) {
+            $.ajax({
+                url: '@Url.Action("UpdateVoucherStatus")',
+                type: 'POST',
+                data: {
+                    voucherId: voucherId,
+                    isActive: isActive,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (!response.success) {
+                        alert(response.message);
+                        $(`#toggle-${voucherId}`).prop('checked', !isActive);
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra khi cập nhật trạng thái voucher');
+                    $(`#toggle-${voucherId}`).prop('checked', !isActive);
+                }
+            });
+        }
+
+        function deleteVoucher(voucherId) {
+            if (confirm('Bạn có chắc chắn muốn xóa voucher này?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteVoucher")',
+                    type: 'POST',
+                    data: {
+                        voucherId: voucherId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function () {
+                        window.location.reload();
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi xóa voucher');
+                    }
+                });
+            }
+        }
+    </script>
+}

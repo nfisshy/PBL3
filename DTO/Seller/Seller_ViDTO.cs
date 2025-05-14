@@ -10,7 +10,6 @@ namespace PBL3.DTO.Seller
         public string BankName { get; set; }
         public string BankNumber { get; set; }
 
-        public List<PlatformWallet> PlatformWallets { get; set; }
     }
 
     public class Seller_RutNapTienDTO
@@ -19,13 +18,15 @@ namespace PBL3.DTO.Seller
         public decimal WalletBalance { get; set; }
         public string BankName { get; set; }
         public string BankNumber { get; set; }
+        public int OTP { get; set; }
     }
     
     public class Seller_LienKetNganHangDTO
     {
-        public int SellerId { get; set; }
+
         public int BankAccountId { get; set; }
         public string BankName { get; set; }
         public string BankNumber { get; set; }
+        public int OTP { get; set; }
     }
 }
