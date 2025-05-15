@@ -1,0 +1,150 @@
+@model PBL3.DTO.Seller.Seller_ViewShopDTO
+@{
+    ViewBag.Title = "Trang cửa hàng";
+    //Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    Layout = ViewBag.Layout;
+}
+@section Styles {
+    <style>
+        .shop-header {
+            background: linear-gradient(90deg, #0d3f2e 60%, #27ae60 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 32px 24px 24px 24px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .shop-avatar {
+            width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 2px 8px #0002;
+            background: #fff;
+        }
+        .shop-title { font-size: 2rem; font-weight: bold; color: #fff; }
+        .shop-info-list { list-style: none; padding: 0; margin: 0; }
+        .shop-info-list li { display: inline-block; margin-right: 32px; font-size: 1.1rem; color: #e6f3eb; }
+        .shop-info-list li strong { color: #fff; font-weight: 600; }
+        .shop-stats { margin-top: 12px; }
+        .shop-stats span { margin-right: 24px; font-size: 1.05rem; color: #e6f3eb; }
+        .shop-stats .stat-label { color: #b2dfdb; }
+        .shop-follow-btn { background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 6px 18px; font-weight: 500; margin-right: 8px; }
+        .shop-follow-btn:hover { background: #219150; }
+        .shop-chat-btn { background: #fff; color: #27ae60; border: 1px solid #27ae60; border-radius: 6px; padding: 6px 18px; font-weight: 500; }
+        .shop-chat-btn:hover { background: #e6f3eb; color: #219150; }
+        .shop-nav { border-bottom: 2px solid #27ae60; margin-bottom: 18px; }
+        .shop-nav .nav-link { color: #0d3f2e; font-weight: 500; border: none; border-bottom: 2px solid transparent; }
+        .shop-nav .nav-link.active, .shop-nav .nav-link:hover { color: #27ae60; border-bottom: 2px solid #27ae60; background: none; }
+        .voucher-card { background: #e6f3eb; border: 1px dashed #27ae60; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
+        .voucher-card .btn { background: #27ae60; color: #fff; border-radius: 6px; }
+        .voucher-card .btn:hover { background: #219150; }
+        .product-section-title { color: #0d3f2e; font-weight: bold; margin: 32px 0 18px 0; font-size: 1.3rem; }
+        .product-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px #0001; }
+        .product-card .card-title { color: #0d3f2e; font-weight: 500; }
+        .product-card .card-text { color: #27ae60; font-weight: bold; }
+        .product-card .btn { background: #27ae60; border: none; }
+        .product-card .btn:hover { background: #219150; }
+        .star { color: #ffc107; }
+    </style>
+}
+<div class="container">
+    <!-- Header shop -->
+    <div class="shop-header d-flex align-items-center">
+        <div class="me-4">
+            @if (Model.Avatar != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Avatar)" class="shop-avatar" alt="Avatar" />
+            }
+            else
+            {
+                <img src="~/images/default-avatar.png" class="shop-avatar" alt="Avatar" />
+            }
+        </div>
+        <div class="flex-grow-1">
+            <div class="shop-title">@Model.StoreName</div>
+            <ul class="shop-info-list mt-2">
+                <li><strong>Sản phẩm:</strong> @Model.TotalProducts</li>
+                <li><strong>Email:</strong> @Model.EmailGeneral</li>
+                <li><strong>Địa chỉ:</strong> @Model.AddressSeller</li>
+            </ul>
+            <div class="shop-stats mt-2">
+                <span><span class="stat-label">Đánh giá:</span> <strong>@(Model.Products.Any() ? Model.Products.Average(p => p.Rating).ToString("F1") : "0.0")</strong></span>
+                <span><span class="stat-label">Đã bán:</span> <strong>@Model.Products.Sum(p => p.SoldQuantity)</strong></span>
+            </div>
+        </div>
+    </div>
+    <!-- Vouchers (giả lập) -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="voucher-card">
+                <div class="fw-bold text-danger">₫120k off</div>
+                <div>Đơn tối thiểu ₫1tr</div>
+                <div class="text-muted small">Sắp hết hạn: Còn 1 phút</div>
+                <button class="btn btn-sm mt-2">Lưu</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="voucher-card">
+                <div class="fw-bold text-danger">₫80k off</div>
+                <div>Đơn tối thiểu ₫800k</div>
+                <div class="text-muted small">Sắp hết hạn: Còn 1 phút</div>
+                <button class="btn btn-sm mt-2">Lưu</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="voucher-card">
+                <div class="fw-bold text-danger">₫50k off</div>
+                <div>Đơn tối thiểu ₫500k</div>
+                <div class="text-warning small">Voucher khách hàng mới</div>
+                <div class="text-muted small">Đã dùng 69%, HSD: 31.05.2025</div>
+                <button class="btn btn-sm mt-2">Lưu</button>
+            </div>
+        </div>
+    </div>
+    <!-- Sản phẩm của shop -->
+    <div class="product-section-title">Tất cả sản phẩm</div>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+        @foreach (var product in Model.Products)
+        {
+            <div class="col">
+                <div class="card product-card h-100">
+                    @if (product.Image != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Image)" class="card-img-top" alt="@product.ProductName" style="height: 180px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image.jpg" class="card-img-top" alt="No image" style="height: 180px; object-fit: cover;">
+                    }
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate">@product.ProductName</h6>
+                        <p class="card-text">@product.Price.ToString("N0") đ</p>
+                        <div class="d-flex align-items-center mb-2">
+                            <div>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= product.Rating)
+                                    {
+                                        <i class="fas fa-star star"></i>
+                                    }
+                                    else if (i - 0.5 <= product.Rating)
+                                    {
+                                        <i class="fas fa-star-half-alt star"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star star"></i>
+                                    }
+                                }
+                            </div>
+                            <small class="text-muted ms-2">(@product.Rating.ToString("F1"))</small>
+                        </div>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn btn-success w-100">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // Thêm các script cần thiết ở đây
+    </script>
+}

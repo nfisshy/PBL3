@@ -4,6 +4,7 @@ using PBL3.Entity;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using PBL3.Enums;
 
 namespace PBL3.Services
 {
@@ -28,6 +29,7 @@ namespace PBL3.Services
                 return new Buyer_ThongTinCaNhanDTO
                 {
                     UserName = buyer.Username,
+                    Name = buyer.Name,
                     Sex = buyer.Sex,
                     Date = buyer.Date,
                     PhoneNumber = buyer.PhoneNumber,
@@ -107,6 +109,42 @@ namespace PBL3.Services
             {
                 throw new Exception($"Lỗi khi lấy thông báo cho buyer ID {buyerId}: " + ex.Message, ex);
             }
+        }
+
+        // Update Name
+        public void UpdateName(int buyerId, string newName)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null) throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+            buyer.Name = newName;
+            _buyerRepositories.Update(buyer);
+        }
+
+        // Update Date
+        public void UpdateDate(int buyerId, DateTime newDate)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null) throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+            buyer.Date = newDate;
+            _buyerRepositories.Update(buyer);
+        }
+
+        // Update Sex
+        public void UpdateSex(int buyerId, Gender newSex)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null) throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+            buyer.Sex = newSex;
+            _buyerRepositories.Update(buyer);
+        }
+
+        // Update PhoneNumber
+        public void UpdatePhoneNumber(int buyerId, string newPhoneNumber)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null) throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+            buyer.PhoneNumber = newPhoneNumber;
+            _buyerRepositories.Update(buyer);
         }
     }
 } 

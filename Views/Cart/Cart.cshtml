@@ -55,7 +55,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 p-4 md:p-8">
+<body>
     <div class="container mx-auto max-w-7xl">
         <h1 class="text-3xl font-semibold mb-6 text-gray-800">GIỎ HÀNG</h1>
 
@@ -130,11 +130,17 @@
                                             <span class="text-red-600 font-semibold">@item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</span>
                                         </div>
 
-                                        <div class="w-full md:w-32 flex items-center justify-start md:justify-center">
-                                            <span class="md:hidden font-semibold mr-2 text-sm">Số lượng: </span>
-                                            <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-l transition duration-200" onclick="updateQuantity('@item.ProductId', -1, event)">-</button>
-                                            <input type="number" id="quantity_@item.ProductId" class="quantity-input-el w-12 text-center border-t border-b border-gray-300 p-1 quantity-input" value="@item.Quantity" min="1" data-itemid="@item.ProductId" onchange="handleQuantityInputChange('@item.ProductId')">
-                                            <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-r transition duration-200" onclick="updateQuantity('@item.ProductId', 1, event)">+</button>
+                                        <div class="w-full md:w-32 flex flex-col items-center justify-start md:justify-center">
+                                            <div class="flex items-center">
+                                                <span class="md:hidden font-semibold mr-2 text-sm">Số lượng: </span>
+                                                <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-l transition duration-200" onclick="updateQuantity('@item.ProductId', -1, event)">-</button>
+                                                <input type="number" id="quantity_@item.ProductId" class="quantity-input-el w-12 text-center border-t border-b border-gray-300 p-1 quantity-input" value="@item.Quantity" min="1" max="@item.currentQuantity" data-itemid="@item.ProductId" onchange="handleQuantityInputChange('@item.ProductId')">
+                                                <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-r transition duration-200" onclick="updateQuantity('@item.ProductId', 1, event)">+</button>
+                                            </div>
+                                            <div class="text-xs text-center mt-1">
+                                                <span class="text-gray-500">Còn lại: </span>
+                                                <span class="text-green-600 font-semibold">@item.currentQuantity</span>
+                                            </div>
                                         </div>
 
                                         <div class="w-full md:w-24 text-left md:text-center">
@@ -239,10 +245,17 @@
     function handleQuantityInputChange(itemId) {
         const quantityInput = document.getElementById('quantity_' + itemId);
         let newQuantity = parseInt(quantityInput.value);
+        const maxQuantity = parseInt(quantityInput.max);
+
         if (isNaN(newQuantity) || newQuantity < 1) {
             newQuantity = 1; // Reset to 1 if invalid or less than 1
             quantityInput.value = newQuantity;
+        } else if (newQuantity > maxQuantity) {
+            alert("Số lượng sản phẩm trong kho không đủ!");
+            newQuantity = maxQuantity;
+            quantityInput.value = newQuantity;
         }
+
         // Update data-quantity attribute on the cart-item
         const itemRow = document.querySelector(`.cart-item[data-itemid="${itemId}"]`);
         if(itemRow) itemRow.dataset.quantity = newQuantity;
@@ -256,11 +269,18 @@
 
         const quantityInput = document.getElementById('quantity_' + itemId);
         let currentQuantity = parseInt(quantityInput.value);
+        const maxQuantity = parseInt(quantityInput.max);
         currentQuantity += change;
 
         if (currentQuantity < 1) {
             removeItem(itemId, event); // Gọi hàm xóa nếu < 1
             return; // Dừng lại không làm gì thêm
+        }
+
+        // Kiểm tra nếu số lượng vượt quá số lượng còn lại
+        if (currentQuantity > maxQuantity) {
+            alert("Số lượng sản phẩm trong kho không đủ!");
+            return;
         }
 
         quantityInput.value = currentQuantity;

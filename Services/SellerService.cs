@@ -833,5 +833,48 @@ namespace PBL3.Services
             wallet.WalletBalance -= model.AmountMoney;
             _walletRepository.Update(wallet);
         }
+
+        public Seller_ViewShopDTO ViewShop(int sellerId)
+        {
+            try
+            {
+                var seller = _sellerRepository.GetById(sellerId);
+                if (seller == null)
+                {
+                    throw new KeyNotFoundException($"Không tìm thấy cửa hàng với ID: {sellerId}");
+                }
+
+                // Lấy danh sách sản phẩm của cửa hàng
+                var products = _productRepository.GetBySellerId(sellerId);
+                var productDTOs = products?.Select(p => {
+                    var reviews = _reviewRepository.GetByProductId(p.ProductId);
+                    double averageRating = reviews?.Any() == true ? reviews.Average(r => r.Rating) : 0;
+
+                    return new Seller_ViewShopProductDTO
+                    {
+                        ProductId = p.ProductId,
+                        ProductName = p.ProductName,
+                        Price = p.Price,
+                        Image = p.ProductImage,
+                        Rating = averageRating,
+                        SoldQuantity = p.SoldProduct
+                    };
+                }).ToList() ?? new List<Seller_ViewShopProductDTO>();
+
+                return new Seller_ViewShopDTO
+                {
+                    StoreName = seller.StoreName,
+                    EmailGeneral = seller.EmailGeneral,
+                    AddressSeller = seller.AddressSeller,
+                    Avatar = seller.Avatar,
+                    TotalProducts = products?.Count() ?? 0,
+                    Products = productDTOs
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi xem thông tin cửa hàng: " + ex.Message, ex);
+            }
+        }
     }
 } 

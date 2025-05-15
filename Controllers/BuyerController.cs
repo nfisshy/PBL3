@@ -43,7 +43,7 @@ namespace PBL3.Controllers
         [HttpGet]
         public IActionResult ThongTinTaiKhoan()
         {
-            int buyerId = HttpContext.Session.GetInt32("BuyerId") ?? 0;
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (buyerId == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -152,6 +152,27 @@ namespace PBL3.Controllers
                 _logger.LogError(ex, "Lỗi khi lấy thông báo buyer ID: {BuyerId}", buyerId);
                 TempData["Error"] = "Có lỗi xảy ra khi tải thông báo";
                 return RedirectToAction("Index", "Home");
+            }
+        }
+        [HttpPost]
+        public IActionResult UpdateProfile([FromBody] Buyer_ThongTinCaNhanDTO model)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0) return Json(new { success = false, message = "Chưa đăng nhập" });
+            try
+            {
+                _buyerService.UpdateName(buyerId, model.Name);
+                DateTime date;
+                if(DateTime.TryParse(model.Date.ToString(), out date))
+                    _buyerService.UpdateDate(buyerId, date);
+                // if(Enum.TryParse(typeof(PBL3.Enums.Gender), model.Sex.ToString(), out var gender))
+                //     _buyerService.UpdateSex(buyerId, (PBL3.Enums.Gender)gender);
+                _buyerService.UpdatePhoneNumber(buyerId, model.PhoneNumber);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }

@@ -14,5 +14,8 @@ namespace PBL3.DTO.Seller
         public byte[] Avatar { get; set; }
         public string StoreName { get; set; }
         public string EmailGeneral { get; set; }
+
+        public List<Product> products {get; set;}
     }
+
 }

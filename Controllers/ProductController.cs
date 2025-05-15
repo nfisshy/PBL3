@@ -97,11 +97,23 @@ namespace PBL_3.Controllers
                     TempData["Error"] = "Không tìm thấy sản phẩm";
                     return RedirectToAction("Index");
                 }
+
+                // Get user authentication status
+                int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
                 string userName = HttpContext.Session.GetString("UserName");
                 int cartCount = HttpContext.Session.GetInt32("CartCount") ?? 0;
+
+                // Set layout based on authentication status
+                ViewBag.Layout = (buyerId == 0)
+                    ? "~/Views/Shared/Layout.cshtml"
+                    : "~/Views/Shared/BuyerLayout.cshtml";
+
+                // Pass necessary data to view
                 ViewBag.Categories = Enum.GetValues(typeof(TypeProduct)).Cast<TypeProduct>().ToList();
                 ViewBag.UserName = userName;
                 ViewBag.CartCount = cartCount;
+                ViewBag.IsAuthenticated = buyerId != 0;
+
                 return View(product);
             }
             catch (KeyNotFoundException ex)

@@ -81,5 +81,11 @@ namespace PBL_3.Controllers
                 return View(model);
             }
         }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

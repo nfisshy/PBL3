@@ -138,7 +138,7 @@
                                     </div>
                                     <small class="text-muted ms-2">(@product.Rating.ToString("F1"))</small>
                                 </div>
-                                <a href="@Url.Action("Details","Product")" class="btn btn-success w-100">Xem chi tiết</a>
+                                <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn btn-success w-100">Xem chi tiết</a>
                             </div>
                         </div>
                     </div>

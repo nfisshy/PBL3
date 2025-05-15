@@ -7,6 +7,7 @@ namespace PBL3.DTO.Buyer
     public class Buyer_ThongTinCaNhanDTO
     {
         public string UserName { get; set; }
+        public string Name { get; set; }
         public Gender Sex { get; set; }
         public DateTime Date { get; set; }
         public string PhoneNumber { get; set; }

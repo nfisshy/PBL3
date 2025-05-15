@@ -32,7 +32,9 @@
     <div class="main-header w-100 shadow-sm mb-3">
         <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between py-2">
             <div class="logo d-flex align-items-center">
-                <span>CDT Store</span>
+                <a href="@Url.Action("Index", "Product")" class="text-decoration-none" style="color: inherit;">
+                    CDT Store
+                </a>
             </div>
             <form asp-action="Search" method="get" class="d-flex flex-grow-1 mx-3" style="max-width: 500px;">
                 <input type="text" name="searchTerm" class="form-control search-bar me-2" placeholder="Tìm kiếm sản phẩm..." value="@searchTerm">
@@ -44,10 +46,10 @@
                     Tài khoản
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="@Url.Action("Profile", "Account")">Thông tin tài khoản</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("ThongTinTaiKhoan", "Buyer")">Thông tin tài khoản</a></li>
                     <li><a class="dropdown-item" href="@Url.Action("Wallet", "Account")">Ví</a></li>
                     <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item text-danger" href="@Url.Action("Index", "Home")">Đăng xuất</a></li>
+                    <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">Đăng xuất</a></li>
                 </ul>
             </div>
                 <a href="@Url.Action("Cart", "Cart")" class="btn btn-header position-relative me-2">

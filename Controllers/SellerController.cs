@@ -819,5 +819,34 @@ namespace PBL_3.Controllers
 
             return RedirectToAction("Wallet");
         }
+
+        [HttpGet]
+        public IActionResult ViewShop(int sellerId)
+        {
+            try
+            {
+                // Kiểm tra xem người dùng đã đăng nhập chưa
+                var currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                ViewBag.Layout = (currentUserId == 0)
+                    ? "~/Views/Shared/Layout.cshtml"
+                    : "~/Views/Shared/BuyerLayout.cshtml";
+
+                // Lấy thông tin cửa hàng
+                var shopInfo = _sellerService.ViewShop(sellerId);
+                if (shopInfo == null)
+                {
+                    TempData["Error"] = "Không tìm thấy thông tin cửa hàng";
+                    return RedirectToAction("Index","Product");
+                }
+
+                return View(shopInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xem thông tin cửa hàng");
+                TempData["Error"] = "Có lỗi xảy ra khi tải thông tin cửa hàng";
+                return RedirectToAction("Dashboard");
+            }
+        }
     }
 } 

@@ -143,6 +143,7 @@ namespace PBL3.Services
                     Image = product.ProductImage,
                     Quantity = product.ProductQuantity,
                     Rating = CalculateAverageRating(productId),
+                    sellerId = product.SellerId,
                     StoreName = seller.StoreName,
                     Comments = reviewDTOs
                 };

@@ -35,6 +35,10 @@ namespace PBL3.Services
                 {
                     throw new InvalidOperationException("Tài khoản hoặc mật khẩu không đúng");
                 }
+                
+                // if(user.IsActive == 0){
+                //     throw new InvalidOperationException("Tài khoản của bạn đã bị khoá. Hãy liên hệ với chúng tôi qua email cdtstore@gmail.com để biết thêm thông tin chi tiết");
+                // }
 
                 return user;
             }

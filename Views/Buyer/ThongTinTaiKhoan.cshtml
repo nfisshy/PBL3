@@ -1,172 +1,254 @@
 @model PBL3.DTO.Buyer.Buyer_ThongTinCaNhanDTO
+@using PBL3.Enums
+
 @{
-    ViewBag.Title = "Thông tin tài khoản";
+    ViewBag.Title = "Thông tin cá nhân";
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
 }
-
-@section Styles {
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .sidebar {
-            background: #e6f3eb;
-            border-radius: 16px;
-            padding: 20px 10px;
-            min-height: 500px;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
         }
-        .sidebar h5 {
-            color: #219150;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-        .sidebar .list-group-item {
-            border: none;
-            background: transparent;
-            color: #219150;
-            font-size: 1.05rem;
-        }
-        .sidebar .list-group-item:hover, .sidebar .list-group-item.active {
-            background: #27ae60;
-            color: #fff;
+        .form-label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #374151; /* text-gray-700 */
+            margin-bottom: 0.25rem; /* mb-1 */
         }
 
-        .profile-container {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px #0001;
-            padding: 32px 24px;
-            margin-bottom: 24px;
-        }
-        .profile-title {
-            color: #27ae60;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-        .profile-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 18px;
-            justify-content: flex-start; /* Chỉnh sửa để căn trái */
-        }
-        .profile-label {
-            width: 160px;
-            color: #111;
-            font-weight: 600;
-        }
-        .profile-value {
-            color: #222;
-            font-size: 1.1rem;
-            flex: 1;
-        }
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #27ae60;
-            margin-bottom: 20px;
-        }
-        .edit-button {
-            background-color: #27ae60;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 1rem;
-            display: inline-block;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            text-align: center;
-        }
-        .edit-button:hover {
-            background-color: #219150;
-        }
-
-        .address-container {
-            background-color: #f8f8f8;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Effect nổi lên */
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 100%; /* Chiếm toàn bộ chiều rộng */
-        }
-
-        .address-container:hover {
-            transform: translateY(-5px); /* Hiệu ứng nổi lên khi hover */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Hiệu ứng shadow khi hover */
-        }
-
-        .address-container .edit-button {
-            margin-top: 10px;
-            display: block; /* Nút sẽ là block để ở dưới cùng */
-        }
-
-        .address-textarea {
+        .form-input {
+            margin-top: 0.25rem; /* mt-1 */
+            display: block;
             width: 100%;
-            height: 100px;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            resize: none;
-            background-color: #fff;
+            padding: 0.5rem 0.75rem; /* px-3 py-2 */
+            background-color: white;
+            border: 1px solid #D1D5DB; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+            font-size: 0.875rem; /* sm:text-sm */
         }
 
-        media (max-width: 991px) {
-            .sidebar {
-                min-height: unset;
-                margin-bottom: 1rem;
-            }
+        .form-input:focus {
+            outline: none;
+            border-color: #219150; /* indigo-500 */
+            box-shadow: 0 0 0 1px #219150; /* focus:ring-indigo-500 */
+        }
+
+        .form-radio-label {
+            margin-left: 0.5rem; /* ml-2 */
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            color: #111827; /* text-gray-900 */
+        }
+
+        .btn-primary {
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.75rem 1.5rem; /* px-6 py-3 */
+            border: 1px solid transparent;
+            font-size: 1rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+            color: white;
+            background-color: #219150; /* bg-blue-600 */
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #219150; /* hover:bg-blue-700 */
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #219150; /* focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 */
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 8rem; /* w-32 */
+            height: 8rem; /* h-32 */
+            border-radius: 9999px; /* rounded-full */
+            overflow: hidden;
+            border: 2px solid #D1D5DB; /* border-gray-300 */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .avatar-image {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        .avatar-edit-button {
+            position: absolute;
+            bottom: 0.25rem; /* bottom-1 */
+            right: 0.25rem; /* right-1 */
+            background-color: white;
+            padding: 0.375rem; /* p-1.5 */
+            border-radius: 9999px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* shadow-md */
+            cursor: pointer;
+        }
+
+        .avatar-edit-button:hover {
+            background-color: #F3F4F6; /* hover:bg-gray-100 */
+        }
+        /* Custom styles for date input placeholder */
+        input[type="date"]:required:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+        input[type="date"]:focus::-webkit-datetime-edit {
+            color: black !important;
         }
     </style>
-}
+</head>
+<body>
+    <div class="flex gap-6 max-w-5xl mx-auto mt-8">
+        <div class="w-1/4">
+            @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+        </div>
+        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-2xl w-3/4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6 sm:mb-8">Thông tin cá nhân</h1>
 
-<div class="row">
-    <!-- Sidebar menu -->
-    <div class="col-lg-2 col-md-3 mb-3">
-        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
-    </div>
+            <div id="statusMessage" class="mb-4 p-3 rounded-md text-sm hidden"></div>
 
-    <!-- Main content -->
-    <div class="col-lg-10 col-md-9">
-        <div class="profile-container">
-            <div class="text-center">
-                @if (Model.Avatar != null && Model.Avatar.Length > 0)
-                {
-                    var base64 = Convert.ToBase64String(Model.Avatar);
-                    <img class="profile-avatar" src="data:image/png;base64,@base64" alt="Avatar" />
-                }
-                else
-                {
-                    <img class="profile-avatar" src="~/images/avatar-default.png" alt="Avatar" />
-                }
-            </div>
-            <div class="profile-title text-center">Thông tin cá nhân</div>
-            <div class="profile-row">
-                <div class="profile-label">Tên đăng nhập:</div>
-                <div class="profile-value">@Model.UserName</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Giới tính:</div>
-                <div class="profile-value">@Model.Sex</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Ngày sinh:</div>
-                <div class="profile-value">@Model.Date.ToString("dd/MM/yyyy")</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Số điện thoại:</div>
-                <div class="profile-value">@Model.PhoneNumber</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Địa chỉ:</div>
-                <div class="address-container">
-                    <!-- Ô nhập thông tin địa chỉ -->
-                    <textarea class="address-textarea" readonly>@Model.AddressBuyer</textarea>
-                    <!-- Nút chỉnh sửa nằm dưới ô nhập -->
-                    <a href="@Url.Action("EditAddress", "Buyer")" class="edit-button">Chỉnh sửa</a>
+            <form id="profileForm">
+                <div class="space-y-6">
+                    <div class="flex flex-col items-center space-y-2">
+                        <div class="avatar-container">
+                            <img id="avatarPreview" src="@(ViewBag.AvatarBase64 ?? "https://placehold.co/128x128/E0E0E0/B0B0B0?text=Avatar")" alt="Avatar" class="avatar-image">
+                             <label for="avatarUpload" class="avatar-edit-button" title="Thay đổi ảnh đại diện">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                                </svg>
+                            </label>
+                        </div>
+                        <input type="file" id="avatarUpload" name="avatar" class="hidden" accept="image/*">
+                    </div>
+
+                    <div>
+                        <label for="userName" class="form-label">Họ & Tên</label>
+                        <input type="text" id="userName" name="userName" class="form-input" value="@Model.Name" required>
+                    </div>
+
+                    <div>
+                        <label for="dateOfBirth" class="form-label">Ngày sinh</label>
+                        <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input" value="@Model.Date.ToString("yyyy-MM-dd")" required>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Giới tính</label>
+                        <div class="mt-2 flex items-center space-x-4 sm:space-x-6">
+                            @foreach (Gender genderValue in (ViewBag.GenderEnumValues ?? Enum.GetValues(typeof(Gender))))
+                            {
+                                <div class="flex items-center">
+                                    <input id="gender_@(genderValue.ToString().ToLower())" name="sex" type="radio" value="@genderValue"
+                                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                           @(Model.Sex == genderValue ? "checked" : "")>
+                                    <label for="gender_@(genderValue.ToString().ToLower())" class="form-radio-label">
+                                        @if (genderValue == Gender.Male) { <text>Nam</text> }
+                                        else if (genderValue == Gender.Female) { <text>Nữ</text> }
+                                        else { <text>Khác</text> }
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="phoneNumber" class="form-label">Số điện thoại</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" class="form-input" value="@Model.PhoneNumber" pattern="[0-9]{10,11}" title="Số điện thoại gồm 10-11 chữ số">
+                    </div>
+
+                    <div>
+                        <label for="addressBuyer" class="form-label">Địa chỉ</label>
+                        <textarea id="addressBuyer" name="addressBuyer" rows="3" class="form-input">@Model.AddressBuyer</textarea>
+                    </div>
+
+                    <div class="pt-4 text-center">
+                        <button type="submit" class="btn-primary">
+                            Lưu thay đổi
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const profileForm = document.getElementById('profileForm');
+            const statusMessage = document.getElementById('statusMessage');
+            const avatarUploadInput = document.getElementById('avatarUpload');
+            const avatarPreview = document.getElementById('avatarPreview');
+
+            // Xử lý avatar preview giữ nguyên...
+            avatarUploadInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Chỉ gửi dữ liệu khi bấm nút Lưu thay đổi
+            profileForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const data = {
+                    Name: document.getElementById('userName').value.trim(),
+                    Date: document.getElementById('dateOfBirth').value,
+                    //Sex: document.querySelector('input[name="sex"]:checked').value,
+                    PhoneNumber: document.getElementById('phoneNumber').value.trim()
+                    // Có thể thêm Address, Avatar nếu muốn
+                };
+                fetch('/Buyer/UpdateProfile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.success) {
+                        showStatusMessage('Cập nhật thành công!', 'success');
+                    } else {
+                        showStatusMessage(result.message || 'Có lỗi xảy ra khi cập nhật.', 'error');
+                    }
+                })
+                .catch(() => {
+                    showStatusMessage('Có lỗi xảy ra khi cập nhật.', 'error');
+                });
+            });
+
+            function showStatusMessage(message, type) {
+                statusMessage.textContent = message;
+                if (type === 'success') {
+                    statusMessage.className = 'mb-4 p-3 rounded-md text-sm bg-green-100 text-green-700';
+                } else if (type === 'error') {
+                    statusMessage.className = 'mb-4 p-3 rounded-md text-sm bg-red-100 text-red-700';
+                }
+                statusMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+
+</body>
+</html>

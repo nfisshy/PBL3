@@ -27,6 +27,48 @@
         }
     }
 }
+<style>
+    .sidebar {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .sidebar h5 {
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .sidebar .list-group-item {
+        border: none;
+        background-color: transparent;
+        transition: background-color 0.2s ease;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+    }
+
+    .sidebar .list-group-item a {
+        color: #000;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar .list-group-item:hover,
+    .sidebar .list-group-item:active {
+        background-color: #f0f0f0;
+    }
+
+    .sidebar .list-group-item:hover a {
+        color: #000;
+        text-decoration: none;
+    }
+
+    .sidebar .list-group-item i {
+        font-size: 1rem;
+        margin-right: 0.5rem;
+    }
+</style>
 
 <div class="sidebar shadow-sm">
     <h5>Danh mục</h5>

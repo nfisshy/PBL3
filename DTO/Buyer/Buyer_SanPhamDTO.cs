@@ -28,6 +28,7 @@ namespace PBL3.DTO.Buyer
 
         public int AddQuantity {get; set; }
         public double Rating { get; set; } 
+        public int sellerId {get; set;}
         public string StoreName { get; set; }
         public byte[] StoreAvatar { get; set; }
 

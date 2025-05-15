@@ -1,7 +1,8 @@
 @model PBL3.DTO.Buyer.Buyer_ChiTietSanPhamDTO
 @{
     ViewBag.Title = Model.ProductName;
-    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    //Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    Layout = ViewBag.Layout;
 }
 
 @section Styles {
@@ -186,7 +187,7 @@
         <div style="margin-left:18px;">
             <div style="font-size:1.25rem;font-weight:700;color:#222;">@Model.StoreName</div>
             <div class="mt-2">
-                <a href="#" class="btn btn-outline-dark btn-sm">Xem Shop</a>
+                <a href="@Url.Action("ViewShop", "Seller", new { sellerId = Model.sellerId })" class="btn btn-outline-dark btn-sm">Xem Shop</a>
             </div>
         </div>
     </div>
