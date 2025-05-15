@@ -28,7 +28,7 @@ namespace PBL3.DTO.Seller
         public DateTime OrderDate { get; set; }
         public decimal OrderPrice { get; set; }
         public decimal Discount { get; set; }
-        public decimal FinalPrice => OrderPrice - Discount;
+        public decimal FinalPrice => OrderPrice - Discount - (OrderPrice * 0.05m);
         public OrdStatus OrderStatus { get; set; }
         public PayMethod PaymentMethod { get; set; }
         public bool PaymentStatus { get; set; }
@@ -43,7 +43,7 @@ namespace PBL3.DTO.Seller
         public string ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
-        public decimal TotalPrice => Price * Quantity;
+        public decimal TotalPrice { get; set; }
         public byte[] Image { get; set; }
     }
 }

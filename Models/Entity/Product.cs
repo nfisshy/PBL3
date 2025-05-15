@@ -10,7 +10,7 @@ namespace PBL3.Entity
     {
         private int productId;
         private string productName;
-        private int productQuantity; // số lượng sản phẩm bán được
+        private int productQuantity; 
         private decimal price;
         private byte[]? productImage;
         private TypeProduct productType;

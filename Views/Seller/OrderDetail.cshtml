@@ -9,37 +9,56 @@
     <style>
         .order-detail-card {
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
-        .order-status {
+        .order-status-badge {
+            font-size: 0.9rem;
             font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
         }
         .order-status.WaitConfirm { background: #fff3cd; color: #856404; }
         .order-status.Pending { background: #cce5ff; color: #004085; }
         .order-status.Delivering { background: #d4edda; color: #155724; }
         .order-status.Completed { background: #d1e7dd; color: #0f5132; }
         .order-status.Canceled { background: #f8d7da; color: #721c24; }
-        .order-item {
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-        }
-        .order-item:last-child {
-            border-bottom: none;
+
+        .order-item + .order-item {
+            border-top: 1px solid #eee;
         }
         .product-image {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 8px;
+            background-color: #f5f5f5;
         }
+
         .btn-update-status {
-            margin-right: 10px;
+            min-width: 160px;
+            margin: 4px;
+        }
+
+        .total-line {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .total-line strong {
+            color: #2c3e50;
+        }
+        .grand-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        h5.section-title {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
         }
     </style>
 }
@@ -52,73 +71,86 @@
         <div class="col-md-9">
             <div class="order-detail-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="mb-0">Chi tiết đơn hàng #@Model.OrderId</h4>
-                    <span class="order-status @Model.OrderStatus">@Model.OrderStatus</span>
+                    <h4 class="mb-0">Đơn hàng #@Model.OrderId</h4>
+                    <span class="order-status-badge order-status @Model.OrderStatus">@Model.OrderStatus</span>
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <h5>Thông tin người mua</h5>
+                        <h5 class="section-title">👤 Thông tin người mua</h5>
                         <p><strong>Tên:</strong> @Model.BuyerName</p>
-                        <p><strong>Số điện thoại:</strong> @Model.BuyerPhone</p>
+                        <p><strong>SĐT:</strong> @Model.BuyerPhone</p>
                         <p><strong>Địa chỉ:</strong> @Model.Address</p>
                     </div>
                     <div class="col-md-6">
-                        <h5>Thông tin đơn hàng</h5>
+                        <h5 class="section-title">📦 Thông tin đơn hàng</h5>
                         <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
-                        <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
-                        <p><strong>Trạng thái thanh toán:</strong> @(Model.PaymentStatus ? "Đã thanh toán" : "Chưa thanh toán")</p>
+                        <p><strong>Thanh toán:</strong> @Model.PaymentMethod</p>
+                        <p><strong>Trạng thái:</strong> @(Model.PaymentStatus ? "Đã thanh toán" : "Chưa thanh toán")</p>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <h5>Danh sách sản phẩm</h5>
-                    @foreach (var item in Model.OrderItems)
+                    <h5 class="section-title">🛒 Danh sách sản phẩm</h5>
+
+                    @if (Model.OrderItems == null || !Model.OrderItems.Any())
                     {
-                        <div class="order-item">
-                            <div class="row align-items-center">
-                                <div class="col-md-2">
-                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(item.Image)" class="product-image" alt="@item.ProductName" />
-                                </div>
-                                <div class="col-md-4">
-                                    <h6 class="mb-0">@item.ProductName</h6>
-                                </div>
-                                <div class="col-md-2 text-center">
-                                    <span>@item.Quantity x</span>
-                                </div>
-                                <div class="col-md-2 text-end">
-                                    <span>@item.Price.ToString("N0") đ</span>
-                                </div>
-                                <div class="col-md-2 text-end">
-                                    <span>@item.TotalPrice.ToString("N0") đ</span>
+                        <div class="alert alert-info">Không có sản phẩm nào trong đơn hàng</div>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.OrderItems)
+                        {
+                            <div class="order-item py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center">
+                                        @if (item.Image != null)
+                                        {
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(item.Image)" class="product-image" />
+                                        }
+                                        else
+                                        {
+                                            <div class="product-image d-flex align-items-center justify-content-center text-muted">No image</div>
+                                        }
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="mb-1">@item.ProductName</h6>
+                                        <small>Số lượng: @item.Quantity</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <span>@item.Price.ToString("N0") đ</span>
+                                    </div>
+                                    <div class="col-md-3 text-end fw-bold text-success">
+                                        <span>@item.TotalPrice.ToString("N0") đ</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        }
                     }
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <h5>Cập nhật trạng thái</h5>
+                        <h5 class="section-title">⚙️ Cập nhật trạng thái</h5>
                         @if (Model.CanUpdateToPending)
                         {
-                            <button class="btn btn-primary btn-update-status" onclick="updateOrderStatus(@Model.OrderId, '@OrdStatus.Pending')">
-                                Xác nhận đơn hàng
+                            <button class="btn btn-outline-primary btn-update-status" onclick="updateOrderStatus(@Model.OrderId, '@OrdStatus.Pending')">
+                                ✔️ Xác nhận đơn
                             </button>
                         }
                         @if (Model.CanUpdateToDelivering)
                         {
-                            <button class="btn btn-success btn-update-status" onclick="updateOrderStatus(@Model.OrderId, '@OrdStatus.Delivering')">
-                                Bắt đầu giao hàng
+                            <button class="btn btn-outline-success btn-update-status" onclick="updateOrderStatus(@Model.OrderId, '@OrdStatus.Delivering')">
+                                🚚 Bắt đầu giao hàng
                             </button>
                         }
                     </div>
                     <div class="col-md-6 text-end">
-                        <h5>Tổng tiền</h5>
-                        <p><strong>Giá trị đơn hàng:</strong> @Model.OrderPrice.ToString("N0") đ</p>
-                        <p><strong>Giảm giá:</strong> @Model.Discount.ToString("N0") đ</p>
-                        <p><strong>Phí platform (5%):</strong> @((Model.OrderPrice * 0.05m).ToString("N0")) đ</p>
-                        <h4><strong>Thành tiền:</strong> @Model.FinalPrice.ToString("N0") đ</h4>
+                        <h5 class="section-title">💰 Tổng kết</h5>
+                        <p class="total-line"><strong>Tạm tính:</strong> @Model.OrderPrice.ToString("N0") đ</p>
+                        <p class="total-line"><strong>Giảm giá:</strong> @Model.Discount.ToString("N0") đ</p>
+                        <p class="total-line"><strong>Phí nền tảng (5%):</strong> @((Model.OrderPrice * 0.05m).ToString("N0")) đ</p>
+                        <p class="grand-total">Thành tiền: @Model.FinalPrice.ToString("N0") đ</p>
                     </div>
                 </div>
             </div>
@@ -127,28 +159,29 @@
 </div>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function updateOrderStatus(orderId, newStatus) {
-            if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?')) {
-                return;
-            }
+        $(document).ready(function () {
+            window.updateOrderStatus = function (orderId, newStatus) {
+                if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?')) return;
 
-            $.ajax({
-                url: '@Url.Action("UpdateOrderStatus")',
-                type: 'POST',
-                data: { orderId: orderId, newStatus: newStatus },
-                success: function(response) {
-                    if (response.success) {
-                        alert(response.message);
-                        location.reload();
-                    } else {
-                        alert(response.message);
+                $.ajax({
+                    url: '@Url.Action("UpdateOrderStatus")',
+                    type: 'POST',
+                    data: { orderId: orderId, newStatus: newStatus },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái.');
                     }
-                },
-                error: function() {
-                    alert('Có lỗi xảy ra khi cập nhật trạng thái');
-                }
-            });
-        }
+                });
+            };
+        });
     </script>
-} 
+}
