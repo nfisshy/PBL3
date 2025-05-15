@@ -346,6 +346,10 @@
                         <div class="stat-value">@Model.SoldQuantity</div>
                         <div class="stat-label">Đã bán</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-value">@Model.RemainingQuantity</div>
+                        <div class="stat-label">Tồn kho</div>
+                    </div>
                 </div>
 
                 <div class="product-info-card">
@@ -362,6 +366,10 @@
                         <div class="product-info-value">
                             <span class="badge bg-success">Đang bán</span>
                         </div>
+                    </div>
+                    <div class="product-info-item">
+                        <div class="product-info-label">Địa chỉ lấy hàng:</div>
+                        <div class="product-info-value">@Model.AddressSeller</div>
                     </div>
                 </div>
 

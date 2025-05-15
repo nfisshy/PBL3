@@ -819,5 +819,98 @@ namespace PBL_3.Controllers
 
             return RedirectToAction("Wallet");
         }
+
+        [HttpGet]
+        public IActionResult EditProduct(int id)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                var product = _sellerService.GetProductDetail(sellerId.Value, id);
+                if (product == null)
+                {
+                    return NotFound();
+                }
+
+                var editModel = new EditProductDTO
+                {
+                    ProductName = product.ProductName,
+                    Price = product.Price,
+                    ProductQuantity = product.InitialQuantity,
+                    Description = product.Description,
+                    CurrentImage = product.Image
+                };
+
+                return View(editModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("ProductManagement");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditProduct(int id, EditProductDTO model, IFormFile ProductImageFile)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Xử lý upload ảnh
+                if (ProductImageFile != null && ProductImageFile.Length > 0)
+                {
+                    // Validate file type
+                    var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                    if (!allowedTypes.Contains(ProductImageFile.ContentType.ToLower()))
+                    {
+                        ModelState.AddModelError("ProductImage", "Chỉ chấp nhận file ảnh (JPEG, PNG, GIF)");
+                        return View(model);
+                    }
+
+                    // Validate file size (max 5MB)
+                    if (ProductImageFile.Length > 5 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("ProductImage", "Kích thước file không được vượt quá 5MB");
+                        return View(model);
+                    }
+
+                    // Đọc file thành byte array
+                    using (var stream = ProductImageFile.OpenReadStream())
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            stream.CopyTo(ms);
+                            model.ProductImage = ms.ToArray();
+                        }
+                    }
+                }
+                else
+                {
+                    // Nếu không có ảnh mới, giữ nguyên ảnh cũ
+                    model.ProductImage = model.CurrentImage;
+                }
+
+                _sellerService.UpdateProduct(sellerId.Value, id, model);
+
+                TempData["Success"] = "Cập nhật sản phẩm thành công";
+                return RedirectToAction("ProductDetail", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
     }
 } 

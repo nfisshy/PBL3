@@ -30,6 +30,48 @@
             vertical-align: middle;
             font-size: 0.95rem;
         }
+
+        .voucher-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-expired {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-revoked {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .btn-revoke {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-revoke:hover {
+            background-color: #c82333;
+            color: white;
+        }
+
+        .btn-revoke:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
     </style>
 }
 
@@ -74,6 +116,13 @@
                         <tbody>
                             @foreach (var voucher in Model)
                             {
+                                var isExpired = voucher.EndDate < DateTime.Now;
+                                var statusClass = !voucher.IsActive ? "status-revoked" : 
+                                               isExpired ? "status-expired" : "status-active";
+                                var statusText = !voucher.IsActive ? "Đã thu hồi" : 
+                                               isExpired ? "Hết hạn" : "Đang hoạt động";
+                                var canRevoke = voucher.IsActive && !isExpired;
+
                                 <tr>
                                     <td>@voucher.VoucherId</td>
                                     <td>@voucher.PercentDiscount%</td>
@@ -81,20 +130,15 @@
                                     <td>@voucher.Quantity</td>
                                     <td>@voucher.StartDate.ToString("dd/MM/yyyy") - @voucher.EndDate.ToString("dd/MM/yyyy")</td>
                                     <td>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox"
-                                                   id="toggle-@voucher.VoucherId"
-                                                   @(voucher.IsActive ? "checked" : "")
-                                                   onchange="updateVoucherStatus('@voucher.VoucherId', this.checked)" />
-                                            <label class="form-check-label" for="toggle-@voucher.VoucherId">
-                                                @(voucher.IsActive ? "Đang hoạt động" : "Đã tắt")
-                                            </label>
-                                        </div>
+                                        <span class="voucher-status @statusClass">@statusText</span>
                                     </td>
                                     <td>
-                                        <button onclick="deleteVoucher('@voucher.VoucherId')" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        @if (canRevoke)
+                                        {
+                                            <button onclick="revokeVoucher('@voucher.VoucherId')" class="btn btn-revoke">
+                                                Thu hồi
+                                            </button>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -107,46 +151,98 @@
 </div>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function updateVoucherStatus(voucherId, isActive) {
+        function revokeVoucher(voucherId) {
+            console.log('Bắt đầu thu hồi voucher:', voucherId);
+            
+            if (!confirm('Bạn có chắc chắn muốn thu hồi voucher này?')) {
+                console.log('Người dùng hủy thao tác');
+                return;
+            }
+
+            // Lấy token từ form
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            console.log('Token:', token ? 'Có' : 'Không');
+
             $.ajax({
                 url: '@Url.Action("UpdateVoucherStatus")',
                 type: 'POST',
                 data: {
                     voucherId: voucherId,
-                    isActive: isActive,
-                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    isActive: false,
+                    __RequestVerificationToken: token
                 },
-                success: function (response) {
-                    if (!response.success) {
-                        alert(response.message);
-                        $(`#toggle-${voucherId}`).prop('checked', !isActive);
+                beforeSend: function() {
+                    console.log('Đang gửi request...');
+                },
+                success: function(response) {
+                    console.log('Response:', response);
+                    if (response.success) {
+                        console.log('Thu hồi thành công, đang tải lại trang...');
+                        location.reload();
+                    } else {
+                        console.error('Lỗi từ server:', response.message);
+                        alert(response.message || 'Có lỗi xảy ra khi thu hồi voucher');
                     }
                 },
-                error: function () {
-                    alert('Có lỗi xảy ra khi cập nhật trạng thái voucher');
-                    $(`#toggle-${voucherId}`).prop('checked', !isActive);
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    alert('Có lỗi xảy ra khi thu hồi voucher. Vui lòng thử lại sau.');
                 }
             });
         }
 
-        function deleteVoucher(voucherId) {
-            if (confirm('Bạn có chắc chắn muốn xóa voucher này?')) {
-                $.ajax({
-                    url: '@Url.Action("DeleteVoucher")',
-                    type: 'POST',
-                    data: {
-                        voucherId: voucherId,
-                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-                    },
-                    success: function () {
-                        window.location.reload();
-                    },
-                    error: function () {
-                        alert('Có lỗi xảy ra khi xóa voucher');
+        // Tự động cập nhật trạng thái khi trang được tải
+        $(document).ready(function() {
+            console.log('Document ready');
+            
+            // Kiểm tra và cập nhật trạng thái của các voucher
+            $('.voucher-status').each(function() {
+                var row = $(this).closest('tr');
+                var endDate = new Date(row.find('td:eq(4)').text().split(' - ')[1].split('/').reverse().join('-'));
+                var now = new Date();
+                
+                if (endDate < now) {
+                    console.log('Phát hiện voucher hết hạn:', row.find('td:first').text());
+                    // Nếu voucher đã hết hạn và đang hoạt động, tự động cập nhật trạng thái
+                    var voucherId = row.find('td:first').text();
+                    var statusSpan = $(this);
+                    
+                    if (statusSpan.hasClass('status-active')) {
+                        console.log('Tự động cập nhật trạng thái cho voucher:', voucherId);
+                        $.ajax({
+                            url: '@Url.Action("UpdateVoucherStatus")',
+                            type: 'POST',
+                            data: {
+                                voucherId: voucherId,
+                                isActive: false,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                console.log('Response:', response);
+                                if (response.success) {
+                                    console.log('Cập nhật thành công, đang tải lại trang...');
+                                    location.reload();
+                                } else {
+                                    console.error('Lỗi khi cập nhật trạng thái:', response.message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('AJAX Error:', {
+                                    status: status,
+                                    error: error,
+                                    response: xhr.responseText
+                                });
+                            }
+                        });
                     }
-                });
-            }
-        }
+                }
+            });
+        });
     </script>
 }

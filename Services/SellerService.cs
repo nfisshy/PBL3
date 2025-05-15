@@ -7,6 +7,8 @@ using PBL3.Repositories;
 using PBL3.Enums;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace PBL3.Services
 {
@@ -20,6 +22,7 @@ namespace PBL3.Services
         private readonly IVoucherRepositories _voucherRepository;
         private readonly IPlatformWalletRepositories _walletRepository;
         private readonly IBankRepositories _bankRepository;
+        private readonly ILogger<SellerService> _logger;
 
         public SellerService(
             ISellerRepositories sellerRepository,
@@ -29,7 +32,8 @@ namespace PBL3.Services
             IBuyerRepositories buyerRepository,
             IVoucherRepositories voucherRepository,
             IPlatformWalletRepositories walletRepository,
-            IBankRepositories bankRepository)
+            IBankRepositories bankRepository,
+            ILogger<SellerService> logger)
         {
             _sellerRepository = sellerRepository;
             _productRepository = productRepository;
@@ -39,6 +43,7 @@ namespace PBL3.Services
             _voucherRepository = voucherRepository;
             _walletRepository = walletRepository;
             _bankRepository = bankRepository;
+            _logger = logger;
         }
 
         public bool IsSellerProfileComplete(int sellerId)
@@ -232,6 +237,13 @@ namespace PBL3.Services
                     return null;
                 }
 
+                // Lấy thông tin người bán để lấy địa chỉ
+                var seller = _sellerRepository.GetById(sellerId);
+                if (seller == null)
+                {
+                    throw new Exception("Không tìm thấy thông tin người bán");
+                }
+
                 // Lấy danh sách đánh giá
                 var reviews = _reviewRepository.GetByProductId(productId);
                 var reviewDTOs = reviews?.Select(r => {
@@ -242,7 +254,7 @@ namespace PBL3.Services
                         ProductName = product.ProductName,
                         ReviewId = r.ReviewId,
                         Comment = r.Comment,
-                        BuyerName = buyer != null ? buyer.Name : $"Người dùng {r.BuyerId}", // nếu người dùng không tồn tại thì sẽ tạo 1 chuỗi tên mặc định 
+                        BuyerName = buyer != null ? buyer.Name : $"Người dùng {r.BuyerId}",
                         Rating = r.Rating,
                         DateReview = r.DateReview
                     };
@@ -264,6 +276,8 @@ namespace PBL3.Services
                     Image = product.ProductImage,
                     Rating = averageRating,
                     SoldQuantity = soldQuantity,
+                    InitialQuantity = product.ProductQuantity,  // Thêm số lượng ban đầu
+                    AddressSeller = seller.AddressSeller,  // Thêm địa chỉ lấy hàng
                     Comments = reviewDTOs
                 };
             }
@@ -547,11 +561,30 @@ namespace PBL3.Services
                     throw new Exception("Không tìm thấy đơn hàng");
                 }
 
+                _logger.LogInformation("Getting order details for order {OrderId}. OrderDetails count: {OrderDetailsCount}", 
+                    orderId, order.OrderDetails?.Count ?? 0);
+
                 var buyer = _buyerRepository.GetById(order.BuyerId);
                 
                 // Kiểm tra khả năng cập nhật trạng thái
                 bool canUpdateToPending = order.OrderStatus == OrdStatus.WaitConfirm;
                 bool canUpdateToDelivering = order.OrderStatus == OrdStatus.Pending;
+
+                var orderItems = order.OrderDetails?.Select(od => {
+                    _logger.LogInformation("Processing order detail: ProductId={ProductId}, ProductName={ProductName}, Quantity={Quantity}", 
+                        od.ProductId, od.Product?.ProductName, od.Quantity);
+                    return new Seller_ChiTietDonHangItemDTO
+                    {
+                        ProductId = od.ProductId,
+                        ProductName = od.Product?.ProductName ?? "Unknown Product",
+                        Quantity = od.Quantity,
+                        Price = od.Product?.Price ?? 0,
+                        Image = od.Product?.ProductImage,
+                        TotalPrice = (od.Product?.Price ?? 0) * od.Quantity
+                    };
+                }).ToList() ?? new List<Seller_ChiTietDonHangItemDTO>();
+
+                _logger.LogInformation("Created {OrderItemsCount} order items", orderItems.Count);
 
                 return new Seller_ChiTietDonHangDTO
                 {
@@ -567,18 +600,12 @@ namespace PBL3.Services
                     PaymentStatus = order.PaymentStatus,
                     CanUpdateToPending = canUpdateToPending,
                     CanUpdateToDelivering = canUpdateToDelivering,
-                    OrderItems = order.OrderDetails?.Select(od => new Seller_ChiTietDonHangItemDTO
-                    {
-                        ProductId = od.ProductId,
-                        ProductName = od.Product.ProductName,
-                        Quantity = od.Quantity,
-                        Price = od.Product.Price,
-                        Image = od.Product.ProductImage
-                    }).ToList() ?? new List<Seller_ChiTietDonHangItemDTO>()
+                    OrderItems = orderItems
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error getting order detail for order {orderId}");
                 throw new Exception($"Lỗi khi lấy chi tiết đơn hàng: {ex.Message}", ex);
             }
         }
@@ -832,6 +859,36 @@ namespace PBL3.Services
             // Cập nhật số dư ví
             wallet.WalletBalance -= model.AmountMoney;
             _walletRepository.Update(wallet);
+        }
+
+        public void UpdateProduct(int sellerId, int productId, EditProductDTO model)
+        {
+            try
+            {
+                var product = _productRepository.GetById(productId);
+                if (product == null || product.SellerId != sellerId)
+                {
+                    throw new Exception("Không tìm thấy sản phẩm");
+                }
+
+                // Cập nhật thông tin sản phẩm
+                product.ProductName = model.ProductName;
+                product.Price = model.Price;
+                product.ProductQuantity = model.ProductQuantity;
+                product.ProductDescription = model.Description;
+
+                // Cập nhật hình ảnh nếu có
+                if (model.ProductImage != null && model.ProductImage.Length > 0)
+                {
+                    product.ProductImage = model.ProductImage;
+                }
+
+                _productRepository.Update(product);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật sản phẩm: " + ex.Message, ex);
+            }
         }
     }
 } 
