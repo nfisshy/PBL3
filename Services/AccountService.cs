@@ -92,7 +92,6 @@ namespace PBL3.Services
                         Date = registerDTO.Date ?? DateTime.Now,
                         IsActive = true,
                         Location = "",
-                        OTP = 0,
                     };
                 }
                 else if (registerDTO.RoleName == Roles.Seller)
@@ -111,7 +110,6 @@ namespace PBL3.Services
                         EmailGeneral = "",
                         JoinedDate = DateTime.Now,
                         StoreName = "",
-                        OTP = 0,
                     };
                 }
                 else

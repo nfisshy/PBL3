@@ -76,8 +76,8 @@ namespace PBL3.Controllers
                     orderDTO.BuyerId = buyerId;
                     _orderService.CreateOrder(orderDTO);
                 }
-                
-               // HttpContext.Session.Remove("SelectedCartItems"); // Xóa các sản phẩm đã đặt hàng khỏi giỏ
+
+                // HttpContext.Session.Remove("SelectedCartItems"); // Xóa các sản phẩm đã đặt hàng khỏi giỏ
                 TempData["Success"] = "Đặt hàng thành công";
                 return Json(new { success = true, redirectUrl = Url.Action("Success", "Order") });
             }
@@ -128,5 +128,61 @@ namespace PBL3.Controllers
             }
             return View();
         }
+
+        [HttpGet]
+        public IActionResult OrderDetailHome(OrdStatus? status = null)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                _logger.LogInformation("Bắt đầu lấy đơn hàng cho buyerId = {buyerId}, status = {status}", buyerId, status);
+                var orders = _orderService.GetOrdersByStatus(buyerId, status);
+
+                _logger.LogInformation("Số đơn hàng lấy được: {count}", orders.Count);
+                ViewBag.CurrentStatus = status;
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải danh sách đơn hàng cho buyerId = {buyerId}, status = {status}", buyerId, status);
+                TempData["Error"] = "Có lỗi xảy ra khi tải danh sách đơn hàng";
+                return RedirectToAction("Index", "Product");
+            }
+        }
+        [HttpGet]
+        public IActionResult OrderDetail(int orderId)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var order = _orderService.GetOrderById(orderId);
+
+                // Kiểm tra nếu đơn hàng không tồn tại hoặc không thuộc về buyer hiện tại
+                if (order == null || order.BuyerId != buyerId)
+                {
+                    TempData["Error"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn hàng này.";
+                    return RedirectToAction("OrderDetailHome");
+                }
+
+                return View(order);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy chi tiết đơn hàng ID: {OrderId} cho buyerId: {BuyerId}", orderId, buyerId);
+                TempData["Error"] = "Có lỗi xảy ra khi tải chi tiết đơn hàng.";
+                return RedirectToAction("OrderDetailHome");
+            }
+        }
+
     }
 } 

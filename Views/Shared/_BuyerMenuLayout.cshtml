@@ -95,9 +95,41 @@
             Thông báo
             </a>
         </li>
-        <li><a class="buyer-menu-link" href="#">Quản lý đơn hàng</a></li>
-        <li><a class="buyer-menu-link" href="#">Sổ địa chỉ</a></li>
-        <li><a class="buyer-menu-link" href="#">Ví</a></li>
-        <li><a class="buyer-menu-link" href="#">Đánh giá sản phẩm</a></li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "OrderDetailHome" ? "active" : "")"
+            href="@Url.Action("OrderDetailHome", "Order")">
+                Quản lý đơn hàng
+            </a>
+        </li>
+        </li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ExchangeHome" ? "active" : "")"
+            href="@Url.Action("ExchangeHome", "Buyer")">
+                Quản lý đổi trả
+            </a>
+        </li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "AddressHome" ? "active" : "")"
+            href="@Url.Action("AddressHome", "Buyer")">
+                Sổ địa chỉ
+            </a>
+        </li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "WalletHome" ? "active" : "")"
+            href="@Url.Action("WalletHome", "Buyer")">
+                Ví
+            </a>
+        </li>
+        </li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "VoucherHome" ? "active" : "")"
+            href="@Url.Action("VoucherHome", "Buyer")">
+                Kho voucher
+            </a>
+        </li>
+        <li>
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ReviewHome" ? "active" : "")"
+            href="@Url.Action("ReviewHome", "Buyer")">
+                Đánh giá của tôi
+            </a>
+        </li>
     </ul>
 </div>

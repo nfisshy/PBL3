@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PBL3.Services;
 using PBL3.DTO.Buyer;
 using PBL3.Enums;
+using PBL3.Repositories;
 using System;
 using Microsoft.AspNetCore.Http;
 
@@ -12,11 +13,20 @@ namespace PBL3.Controllers
         private readonly BuyerService _buyerService;
         private readonly ProductService _productService;
         private readonly ILogger<BuyerController> _logger;
-        public BuyerController(BuyerService buyerService, ILogger<BuyerController> logger, ProductService productService)
+        private readonly ReviewService _reviewService;
+        private readonly IProductRepositories _productRepository;
+        private readonly WalletService _walletService;
+        public BuyerController(BuyerService buyerService, ILogger<BuyerController> logger,
+                                ProductService productService, ReviewService reviewService,
+                                IProductRepositories productRepository,
+                                WalletService walletService)
         {
             _buyerService = buyerService;
             _logger = logger;
             _productService = productService;
+            _reviewService = reviewService;
+            _productRepository = productRepository;
+            _walletService = walletService;
         }
 
         public IActionResult Index()
@@ -48,7 +58,7 @@ namespace PBL3.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             try
             {
                 var model = _buyerService.GetThongTinCaNhan(buyerId);
@@ -163,7 +173,7 @@ namespace PBL3.Controllers
             {
                 _buyerService.UpdateName(buyerId, model.Name);
                 DateTime date;
-                if(DateTime.TryParse(model.Date.ToString(), out date))
+                if (DateTime.TryParse(model.Date.ToString(), out date))
                     _buyerService.UpdateDate(buyerId, date);
                 // if(Enum.TryParse(typeof(PBL3.Enums.Gender), model.Sex.ToString(), out var gender))
                 //     _buyerService.UpdateSex(buyerId, (PBL3.Enums.Gender)gender);
@@ -175,5 +185,370 @@ namespace PBL3.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        public ActionResult AddressHome()
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            var addresses = _buyerService.GetAllAddressByBuyerId(buyerId);
+            return View(addresses);
+        }
+
+        public ActionResult AddAddress()
+        {
+
+            int? buyerId = HttpContext.Session.GetInt32("UserId");
+
+            if (buyerId == null || buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = new Buyer_SoDiaChiDTO
+            {
+                BuyerId = buyerId.Value
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddAddress(Buyer_SoDiaChiDTO dto)
+        {
+            int? buyerId = HttpContext.Session.GetInt32("UserId");
+
+            if (buyerId == null || buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            dto.BuyerId = buyerId.Value;
+
+            // if (!ModelState.IsValid)
+            // {
+            //     return View("AddAddress",dto);
+            // }
+            try
+            {
+                _buyerService.AddAddress(dto);
+                return RedirectToAction("AddressHome");
+            }
+            catch (ArgumentNullException ex)
+            {
+                // Lỗi DTO null
+                ModelState.AddModelError("", "Dữ liệu địa chỉ không được để trống.");
+            }
+            catch (ArgumentException ex)
+            {
+                // Bắt lỗi cụ thể theo tên trường bị lỗi
+                switch (ex.ParamName)
+                {
+                    case "Ward":
+                        ModelState.AddModelError("Ward", ex.Message);
+                        break;
+                    case "District":
+                        ModelState.AddModelError("District", ex.Message);
+                        break;
+                    case "City":
+                        ModelState.AddModelError("City", ex.Message);
+                        break;
+                    default:
+                        ModelState.AddModelError("", ex.Message);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Lỗi không xác định
+                ModelState.AddModelError("", "Đã xảy ra lỗi khi thêm địa chỉ: " + ex.Message);
+            }
+
+            return View("AddAddress", dto);
+        }
+
+        [HttpPost]
+        public JsonResult DeleteAddress([FromBody] int addressId)
+        {
+            int? buyerId = HttpContext.Session.GetInt32("UserId");
+
+            if (buyerId == null || buyerId == 0)
+            {
+                return Json(new { success = false, message = "Bạn chưa đăng nhập." });
+            }
+
+            try
+            {
+                _buyerService.DeleteAddress(addressId);
+                return Json(new { success = true, message = "Xóa địa chỉ thành công." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public ActionResult EditAddress(int addressId)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Lấy địa chỉ đã tách sẵn từ service
+            var dto = _buyerService.GetAddressById(addressId);
+
+            // Kiểm tra địa chỉ có tồn tại và thuộc về buyer hiện tại không
+            if (dto == null || dto.BuyerId != buyerId)
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi tìm địa chỉ";
+                return RedirectToAction("AddressHome");
+            }
+
+            return View(dto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditAddress(Buyer_SoDiaChiDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            dto.BuyerId = buyerId;
+            try
+            {
+                _buyerService.UpdateAddress(dto);
+                return RedirectToAction("AddressHome");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+
+                // Nếu cần load lại dữ liệu để hiển thị (ví dụ dropdown, mặc định,...), xử lý ở đây
+
+                return View(dto);
+            }
+        }
+
+        public IActionResult ReviewHome()
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            try
+            {
+                var reviews = _reviewService.GetAllReviewsByBuyer(buyerId);
+                return View(reviews); // View `ReviewHome.cshtml` nhận List<Buyer_DanhGiaDTO>
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy đánh giá");
+                TempData["Error"] = "Không thể tải đánh giá.";
+                return View(new List<Buyer_DanhGiaDTO>());
+            }
+        }
+
+        [HttpGet]
+        public IActionResult EditComment(int reviewId)
+        {
+            var dto = _reviewService.GetReviewById(reviewId);
+            if (dto == null) return NotFound();
+
+            return PartialView("_EditComment", dto); // _EditComment.cshtml là popup sửa đánh giá
+        }
+
+        // POST: Cập nhật đánh giá
+        [HttpPost]
+        public IActionResult EditComment([FromBody] Buyer_DanhGiaDTO dto)
+        {
+            _logger.LogInformation("Đã bấm vào nút sửa đánh giá");
+            _logger.LogInformation("EditComment called with reviewId: {ReviewId}, content: {Content}, rating: {Rating}",
+                dto.ReviewId, dto.Content, dto.Rating);
+
+            try
+            {
+                _reviewService.UpdateReview(dto.ReviewId, dto.Content, dto.Rating);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi sửa đánh giá");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult WriteComment(int productId)
+        {
+            var product = _productRepository.GetById(productId);
+            if (product == null) return NotFound();
+
+            var dto = new Buyer_DanhGiaDTO
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                ProductImage = product.ProductImage
+            };
+            return PartialView("_WriteComment", dto); // _WriteComment.cshtml là popup viết đánh giá
+        }
+
+        // POST: Gửi comment
+        [HttpPost]
+        public IActionResult WriteComment([FromBody] Buyer_DanhGiaDTO dto)
+        {
+            dto.BuyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            try
+            {
+                _reviewService.AddReview(dto);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi thêm đánh giá");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public IActionResult WalletHome()
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return RedirectToAction("Login", "Account");
+            if (TempData["PinVerified"] != null)
+            {
+                var wallet = _walletService.OpenWallet(userId);
+                return View("WalletHome", wallet);
+            }
+            bool isInitialized = _walletService.IsWalletInitialized(userId);
+            ViewBag.IsWalletInitialized = isInitialized;
+
+            return View(); // View trắng ban đầu, sẽ hiện popup yêu cầu nhập/tạo PIN
+        }
+
+        // Thiết lập mã PIN lần đầu
+        [HttpPost]
+        public IActionResult SetWalletPin(int newPin)
+        {
+            string str = newPin.ToString();
+            if (str.Length != 6 || !str.All(char.IsDigit))
+            {
+                TempData["Error"] = "Mã PIN phải gồm đúng 6 chữ số.";
+                return RedirectToAction("WalletHome");
+            }
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+            bool result = _walletService.InitializeWalletPin(userId, newPin);
+            if (!result)
+            {
+                TempData["Error"] = "Không thể thiết lập mã PIN. Có thể bạn đã thiết lập trước đó.";
+                return RedirectToAction("WalletHome");
+            }
+
+            TempData["Success"] = "Thiết lập mã PIN thành công. Vui lòng đăng nhập ví.";
+            return RedirectToAction("WalletHome");
+        }
+
+        // Mở ví bằng mã PIN
+        [HttpPost]
+        public IActionResult SubmitPin(int pin)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+
+            int attempts = HttpContext.Session.GetInt32("WalletLoginAttempts") ?? 0;
+
+            var wallet = _walletService.OpenWallet(userId, pin);
+            if (wallet == null)
+            {
+                attempts++;
+                HttpContext.Session.SetInt32("WalletLoginAttempts", attempts);
+
+                if (attempts >= 5)
+                {
+                    TempData["Error"] = "Bạn đã nhập sai mã PIN quá 5 lần.";
+                    HttpContext.Session.Remove("WalletLoginAttempts");
+                    return RedirectToAction("Index");
+                }
+
+                TempData["Error"] = $"Mã PIN không đúng. Lần sai thứ {attempts}/5.";
+                return RedirectToAction("WalletHome");
+            }
+
+            HttpContext.Session.Remove("WalletLoginAttempts");
+            return View("WalletHome", wallet);
+        }
+
+        // Nạp tiền
+        [HttpPost]
+        public IActionResult Recharge(decimal amount)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+
+            bool result = _walletService.Recharge(userId, amount);
+            if (!result)
+            {
+                TempData["Error"] = "Nạp tiền thất bại.";
+            }
+            else
+            {
+                TempData["Success"] = $"Đã nạp {amount:N0} VNĐ vào ví.";
+                TempData["PinVerified"] = true; // Gắn cờ không cần nhập lại PIN
+            }
+
+            return RedirectToAction("WalletHome");
+        }
+
+        // Đổi mã PIN
+        [HttpPost]
+        public IActionResult ChangeWalletPin(int oldPin, int newPin)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+            string str = newPin.ToString();
+            if (str.Length != 6 || !str.All(char.IsDigit))
+            {
+                TempData["Error"] = "Cả mã PIN cũ và mới đều phải gồm đúng 6 chữ số.";
+                return RedirectToAction("WalletHome");
+            }
+            bool result = _walletService.ChangeWalletPin(userId, oldPin, newPin);
+            if (!result)
+            {
+                TempData["Error"] = "Mã PIN cũ không đúng. Không thể đổi mã PIN.";
+            }
+            else
+            {
+                TempData["Success"] = "Đổi mã PIN thành công.";
+            }
+
+            return RedirectToAction("WalletHome");
+        }
+
+        public IActionResult VoucherHome()
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+                return RedirectToAction("Login", "Account");
+            try
+            {
+
+
+                List<Buyer_VoucherDTO> vouchers = _buyerService.GetVouchersByBuyerId(buyerId);
+                return View("VoucherHome", vouchers);
+            }
+            catch (Exception ex)
+            {
+                // Có thể log lỗi tại đây nếu cần
+                return BadRequest("Đã xảy ra lỗi: " + ex.Message);
+            }
+        }
     }
+
 } 

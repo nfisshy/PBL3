@@ -7,6 +7,8 @@ namespace PBL3.DTO.Buyer
     public class Buyer_SoDiaChiDTO
     {
         public int AddressId { get; set; }
+        public int BuyerId { get; set; }
+        public string LocationName { get; set; } 
         public string Street { get; set; }    // Số nhà, tên đường
         public string Ward { get; set; }       // Phường/Xã
         public string District { get; set; }   // Quận/Huyện

@@ -10,5 +10,6 @@ namespace PBL3.Repositories
         void Update(OrderDetail orderDetail);
         void Delete(int orderId, int productId);
         OrderDetail GetById(int orderId, int productId);
+        public List<OrderDetail> GetByOrderId(int orderId);
     }
 }

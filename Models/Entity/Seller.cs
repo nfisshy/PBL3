@@ -12,7 +12,6 @@ namespace PBL3.Entity
         private DateTime joinedDate;
         private string emailGeneral;
         private string addressSeller;
-        private bool isActive;
 
         public byte[]? Avatar
         {
@@ -39,11 +38,7 @@ namespace PBL3.Entity
             get { return addressSeller; }
             set { addressSeller = value; }
         }
-        public bool IsActive
-        {
-            get { return isActive; }
-            set { isActive = value; }
-        }
+
         public ICollection<Product> Products { get; set; }
         public ICollection<Order> Orders { get; set; }
         public ICollection<Voucher> Vouchers { get; set; }

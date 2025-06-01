@@ -27,9 +27,11 @@ namespace PBL3.DTO.Buyer
         public List<OrderDetailDTO> OrderDetails { get; set; }
         public string BuyerName { get; set; }
         public string SellerStoreName { get; set; }
-        public string Address {get; set; } 
+        public string Address { get; set; }
 
-        public string BuyerPhone {get; set; }
+        public string BuyerPhone { get; set; }
+        
+        public decimal Discount { get; set; } // Giảm giá nếu có
     }
 
     public class OrderDetailDTO

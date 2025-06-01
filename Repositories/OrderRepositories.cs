@@ -58,7 +58,12 @@ namespace PBL3.Repositories
         {
             return _context.Orders.Where(o => o.OrderStatus == status).ToList();
         }
-
+        public IEnumerable<Order> GetByBuyer_Status(int buyerId, OrdStatus status)
+        {
+            return _context.Orders
+                .Where(o => o.BuyerId == buyerId && o.OrderStatus == status)
+                .ToList();
+        }
         public IEnumerable<Seller_TopSanPhamDTO> GetTopSellingProducts(int sellerId, DateTime startDate, DateTime endDate, int limit)
         {
             return _context.OrderDetails

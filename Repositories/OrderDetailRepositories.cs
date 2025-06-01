@@ -39,5 +39,11 @@ namespace PBL3.Repositories
         {
             return _context.OrderDetails.Find(orderId, productId);
         }
+        public List<OrderDetail> GetByOrderId(int orderId)
+        {
+            return _context.OrderDetails
+                        .Where(od => od.OrderId == orderId)
+                        .ToList();
+        }
     }
 }

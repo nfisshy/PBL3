@@ -63,5 +63,11 @@ namespace PBL3.Repositories
                 .Take(limit)
                 .ToList();
         }
+        public List<Review> GetByBuyerId(int buyerId)
+        {
+            return _context.Reviews
+                .Where(r => r.BuyerId == buyerId && r.IsActive)
+                .ToList();
+        }
     }
 }
