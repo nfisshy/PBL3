@@ -7,6 +7,6 @@ namespace PBL3.Enums
         Selling,
         StopSelling,
         Violation,
-        Deleted
+        WaitConfirm
     }
 }

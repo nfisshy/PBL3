@@ -1,0 +1,282 @@
+@model PBL3.Models.Pagination.PaginatedList<PBL3.DTO.Admin.Admin_ProductManagementDTO>
+
+@{
+    ViewData["Title"] = "Product Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <!-- Page Title -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-box"></i> Product Management</h2>
+    </div>
+
+    <!-- Filter & Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="ProductManagement" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm sản phẩm..." value="@ViewBag.CurrentSearch">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">Tất cả danh mục</option>
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <option value="@category.Value" selected="@(category.Value == ViewBag.CurrentCategory)">@category.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        @foreach (var status in ViewBag.Statuses)
+                        {
+                            <option value="@status.Value" selected="@(status.Value == ViewBag.CurrentStatus)">@status.Text</option>
+                        }
+                    </select>
+                </div>                <div class="col-md-2">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results Summary -->
+    @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch) || !string.IsNullOrEmpty(ViewBag.CurrentCategory) || !string.IsNullOrEmpty(ViewBag.CurrentStatus))
+    {
+        <div class="alert alert-info mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-info-circle me-2"></i>
+                    Tìm thấy <strong>@Model.TotalPages</strong> sản phẩm
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                    {
+                        <span>với từ khóa "<strong>@ViewBag.CurrentSearch</strong>"</span>
+                    }
+                </span>
+            </div>
+        </div>
+    }
+
+    <!-- Products Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">                    <tr>
+                        <th>Mã</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Danh mục</th>
+                        <th>Người bán</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>@product.Id</td>
+                                <td>
+                                    @if (product.Image != null)
+                                    {
+                                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Image)" 
+                                             class="rounded" alt="@product.ProductName" style="width: 50px; height: 50px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>@product.ProductName</td>
+                                <td>@product.Price.ToString("N0") VNĐ</td>
+                                <td>@product.Category</td>
+                                <td>@product.SellerName</td>                                <td>
+                                    <span class="badge @(product.Status == "Selling" ? "bg-success" : 
+                                                       product.Status == "StopSelling" ? "bg-warning" : 
+                                                       "bg-danger")">
+                                        @(product.Status == "Selling" ? "Đang bán" :
+                                          product.Status == "StopSelling" ? "Ngừng bán" :
+                                          product.Status == "Violation" ? "Vi phạm" :
+                                          product.Status == "WaitConfirm" ? "Chờ xác nhận" :
+                                          product.Status)
+                                    </span>
+                                </td><td>                                    
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-info me-1" onclick="viewProduct(@product.Id)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        @if (product.Status == "WaitConfirm")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success me-1" onclick="confirmProduct(@product.Id)"
+                                                    title="Xác nhận sản phẩm">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger me-1" onclick="rejectProduct(@product.Id)"
+                                                    title="Từ chối sản phẩm">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm @(product.Status == "Violation" ? "btn-success" : "btn-danger")"
+                                                    onclick="toggleProductViolation(@product.Id)"
+                                                    title="@(product.Status == "Violation" ? "Bỏ cấm sản phẩm" : "Cấm sản phẩm")">
+                                                <i class="fas @(product.Status == "Violation" ? "fa-unlock" : "fa-ban")"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-database me-2"></i> No products found
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("ProductManagement", new { page = Model.PageIndex - 1, search = ViewBag.CurrentSearch, category = ViewBag.CurrentCategory, status = ViewBag.CurrentStatus })">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("ProductManagement", new { page = i, search = ViewBag.CurrentSearch, category = ViewBag.CurrentCategory, status = ViewBag.CurrentStatus })">@i</a>
+                    </li>
+                }
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("ProductManagement", new { page = Model.PageIndex + 1, search = ViewBag.CurrentSearch, category = ViewBag.CurrentCategory, status = ViewBag.CurrentStatus })">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function() {
+                $('input[name="search"]').val('');
+                $('select[name="category"]').val('');
+                $('select[name="status"]').val('');
+                window.location.href = '@Url.Action("ProductManagement", "Admin")';
+            });
+        });
+
+        function viewProduct(productId) {
+            window.location.href = '@Url.Action("ProductDetails", "Admin")/' + productId;
+        }
+
+        function confirmProduct(productId) {
+            if (!confirm('Bạn có chắc chắn muốn xác nhận sản phẩm này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ConfirmProduct", "Admin")',
+                type: 'POST',
+                data: { id: productId },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xác nhận sản phẩm');
+                }
+            });
+        }
+
+        function rejectProduct(productId) {
+            if (!confirm('Bạn có chắc chắn muốn từ chối sản phẩm này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("RejectProduct", "Admin")',
+                type: 'POST',
+                data: { id: productId },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi từ chối sản phẩm');
+                }
+            });
+        }
+
+        function toggleProductViolation(productId) {
+            if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái cấm của sản phẩm này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ToggleProductViolation", "Admin")',
+                type: 'POST',
+                data: { id: productId },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        alert(response.message);
+                        
+                        // Refresh the page to show updated status
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi thực hiện thao tác này');
+                }
+            });
+        }
+    </script>
+}
