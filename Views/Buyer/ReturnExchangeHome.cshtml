@@ -1,0 +1,108 @@
+@model List<PBL3.DTO.Buyer.ExchangeStuffDTO>
+@using PBL3.Enums
+
+@{
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+
+    string GetStatusBadge(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.WaitConfirm => "🕒 Chờ xử lý",
+            ExchangeStatus.Approved => "✅ Đã chấp nhận",
+            ExchangeStatus.Rejected => "❌ Bị từ chối",
+            _ => "Không xác định"
+        };
+    }
+
+    string GetStatusColor(ExchangeStatus status)
+    {
+        return status switch
+        {
+            ExchangeStatus.WaitConfirm => "bg-yellow-100 text-yellow-700",
+            ExchangeStatus.Approved => "bg-green-100 text-green-700",
+            ExchangeStatus.Rejected => "bg-red-100 text-red-700",
+            _ => "bg-gray-100 text-gray-600"
+        };
+    }
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Yêu cầu đổi/trả</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="flex">
+    <!-- Sidebar -->
+    <div class="w-1/4 pr-4 border-r border-gray-300">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+
+    <!-- Main content -->
+    <div class="w-3/4 pl-4">
+        <h2 class="text-2xl font-bold mb-4 text-green-700">Yêu cầu đổi/trả</h2>
+
+        @if (!Model.Any())
+        {
+            <div class="text-gray-500 italic">Bạn chưa gửi yêu cầu đổi/trả nào.</div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                var statusBadge = GetStatusBadge(item.Status);
+                var statusColor = GetStatusColor(item.Status);
+
+                <div class="border border-gray-300 rounded-lg p-4 mb-6 shadow hover:shadow-lg transition-shadow duration-200">
+                    <!-- Header -->
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex flex-col">
+                            <span class="text-green-700 font-semibold">Yêu cầu #@item.ReturnExchangeId</span>
+                            <span class="text-sm text-gray-500">Đơn hàng ID: @item.OrderId</span>
+                            <span class="text-sm text-gray-500">Ngày gửi: @item.RequestDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="px-3 py-1 rounded-full text-sm font-medium @statusColor">
+                            @statusBadge
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 border-t pt-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 bg-gray-100 border border-gray-300 rounded overflow-hidden flex items-center justify-center">
+                                @{
+                                    var base64Image = item.ProductImage != null
+                                        ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.ProductImage)}"
+                                        : null;
+                                }
+                                @if (base64Image != null)
+                                {
+                                    <img src="@base64Image" alt="Ảnh sản phẩm" class="w-full h-full object-cover" />
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400 text-xs">Không có ảnh</span>
+                                }
+                            </div>
+                            <div>
+                                <div class="font-medium">@item.ProductName</div>
+                                <div class="text-sm text-gray-500">Số lượng: @item.Quantity</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex justify-end items-center mt-4 border-t pt-4">
+                        <a asp-action="ReturnExchangeDetail" asp-route-id="@item.ReturnExchangeId"
+                           class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded shadow">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+</body>
+</html>

@@ -131,7 +131,7 @@
                 @foreach (var item in Model.OrderDetails)
                 {
                     var unitPrice = item.Quantity > 0 ? item.TotalPrice / item.Quantity : 0;
-                    bool canReturn = Model.OrderStatus == OrdStatus.Completed && DateTime.Now <= Model.OrderDate.AddDays(14);
+                    bool canReturn = true;//Model.OrderStatus == OrdStatus.Completed && DateTime.Now <= Model.OrderDate.AddDays(14);
                     bool canComment = Model.OrderStatus == OrdStatus.Completed;
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-4">
@@ -151,7 +151,7 @@
                             }
                             @if (canReturn)
                             {
-                                <a href="@Url.Action("ReturnProduct", "Return", new { productId = item.ProductId, orderId = Model.OrderId })"
+                                <a href="@Url.Action("AddReturnExchange", "Buyer", new { productId = item.ProductId, orderId = Model.OrderId })"
                                 class="btn-green">Trả hàng</a>
                             }
                         </td>

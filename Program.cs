@@ -28,6 +28,7 @@ builder.Services.AddScoped<IAddressBuyerRepositories, AddressBuyerRepositories>(
 builder.Services.AddScoped<IBankRepositories, BankRepositories>();
 builder.Services.AddScoped<IVoucherRepositories, VoucherRepositories>();
 builder.Services.AddScoped<IVoucher_BuyerRepositories, Voucher_BuyerRepositories>();
+builder.Services.AddScoped<IReturnExchangeRepositories, ReturnExchangeRepositories>();
 
 // Đăng ký các Service
 builder.Services.AddScoped<AccountService>();
@@ -38,6 +39,7 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<WalletService>();
+builder.Services.AddScoped<ReturnExchangeService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

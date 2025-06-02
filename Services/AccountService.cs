@@ -4,7 +4,7 @@ using PBL3.DTO.Shared;
 using PBL3.Entity;
 using PBL3.Enums;
 using PBL3.Repositories;
-
+using System.Text.RegularExpressions;
 namespace PBL3.Services
 {
     public class AccountService
@@ -36,9 +36,9 @@ namespace PBL3.Services
                     throw new InvalidOperationException("Tài khoản hoặc mật khẩu không đúng");
                 }
                 
-                // if(user.IsActive == 0){
-                //     throw new InvalidOperationException("Tài khoản của bạn đã bị khoá. Hãy liên hệ với chúng tôi qua email cdtstore@gmail.com để biết thêm thông tin chi tiết");
-                // }
+                if(user.IsActive == false){
+                    throw new InvalidOperationException("Tài khoản của bạn đã bị khoá. Hãy liên hệ với chúng tôi qua email cdtstore@gmail.com để biết thêm thông tin chi tiết");
+                }
 
                 return user;
             }
@@ -60,6 +60,14 @@ namespace PBL3.Services
                     string.IsNullOrEmpty(registerDTO.PhoneNumber))
                 {
                     throw new ArgumentException("Vui lòng điền đầy đủ thông tin");
+                }
+                if (registerDTO.Password.Length < 6)
+                {
+                    throw new ArgumentException("Mật khẩu phải có ít nhất 6 ký tự");
+                }
+                if (!Regex.IsMatch(registerDTO.PhoneNumber, @"^\d{10}$"))
+                {
+                    throw new ArgumentException("Số điện thoại phải bao gồm đúng 10 chữ số");
                 }
 
                 if (registerDTO.Password != registerDTO.RePassword)

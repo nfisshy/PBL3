@@ -90,20 +90,14 @@
             </a>
         </li>
         <li>
-            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ThongBao" ? "active" : "")"
-            href="@Url.Action("ThongBao", "Buyer")">
-            Thông báo
-            </a>
-        </li>
-        <li>
             <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "OrderDetailHome" ? "active" : "")"
             href="@Url.Action("OrderDetailHome", "Order")">
                 Quản lý đơn hàng
             </a>
         </li>
         </li>
-            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ExchangeHome" ? "active" : "")"
-            href="@Url.Action("ExchangeHome", "Buyer")">
+            <a class="buyer-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ReturnExchangeHome" ? "active" : "")"
+            href="@Url.Action("ReturnExchangeHome", "Buyer")">
                 Quản lý đổi trả
             </a>
         </li>

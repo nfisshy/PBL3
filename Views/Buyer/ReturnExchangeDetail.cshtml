@@ -1,0 +1,123 @@
+@model PBL3.DTO.Buyer.ExchangeStuffDTO
+@using PBL3.Enums;
+@{
+    ViewData["Title"] = "Chi tiết yêu cầu đổi/trả";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+     string GetStatusBadge(PBL3.Enums.ExchangeStatus status)
+    {
+        return status switch
+        {
+            PBL3.Enums.ExchangeStatus.WaitConfirm => "🕒 Chờ xử lý",
+            PBL3.Enums.ExchangeStatus.Approved => "✅ Đã chấp nhận",
+            PBL3.Enums.ExchangeStatus.Rejected => "❌ Bị từ chối",
+            _ => "Không xác định"
+        };
+    }
+
+    string GetStatusColor(PBL3.Enums.ExchangeStatus status)
+    {
+        return status switch
+        {
+            PBL3.Enums.ExchangeStatus.WaitConfirm => "bg-yellow-100 text-yellow-700",
+            PBL3.Enums.ExchangeStatus.Approved => "bg-green-100 text-green-700",
+            PBL3.Enums.ExchangeStatus.Rejected => "bg-red-100 text-red-700",
+            _ => "bg-gray-100 text-gray-600"
+        };
+    }
+}
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+    .theme-green-text { color: #219150; }
+    .theme-green-bg { background-color: #219150; color: #fff; }
+    .section-box {
+        background-color: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+    }
+    .product-image { width: 100px; height: 100px; object-fit: cover; border-radius: 0.5rem; }
+</style>
+
+<div class="flex gap-6">
+    <div class="w-1/5 pr-4 border-r border-gray-200">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+
+    <div class="flex-1 p-6 bg-white rounded-lg shadow-md">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold theme-green-text">Chi tiết yêu cầu đổi / trả #@Model.ReturnExchangeId</h2>
+            <span class="px-3 py-1 rounded-full font-semibold text-sm @(GetStatusColor(Model.Status))">
+                @GetStatusBadge(Model.Status)
+            </span>
+        </div>
+        <!-- Phần người gửi / người nhận -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="section-box">
+                <h3 class="font-semibold mb-2">Yêu cầu từ:</h3>
+                <p><strong>@Model.BuyerName</strong></p>
+                <p>Ngày gửi yêu cầu: @Model.RequestDate.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+            <div class="section-box">
+                <h3 class="font-semibold mb-2">Gửi đến:</h3>
+                <p><strong>@Model.SellerStoreName</strong></p>
+                @if (Model.ResponseDate != null)
+                {
+                    if (Model.ResponseDate.Date == new DateTime(2001, 1, 1))
+                    {
+                        <p>Phản hồi: Chưa phản hồi</p>
+                    }
+                    else
+                    {
+                        <p>Phản hồi: @Model.ResponseDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    }
+                }
+                else
+                {
+                    <p>Phản hồi: Chưa phản hồi</p>
+                }
+            </div>
+        </div>
+
+        <!-- Thẻ chính nội dung -->
+        <div class="bg-gray-50 p-6 rounded-lg border space-y-6">
+
+            <!-- Thông tin sản phẩm -->
+            <div class="flex gap-6 items-center">
+                <img src="@Model.ProductImage" alt="Ảnh sản phẩm" class="product-image border" />
+                <div class="flex flex-col space-y-1">
+                    <p class="font-semibold text-lg">@Model.ProductName</p>
+                    <p>Mã sản phẩm: @Model.ProductId</p>
+                    <p>Số lượng yêu cầu: <strong>@Model.Quantity</strong></p>
+                    <p>Mã đơn hàng: #@Model.OrderId</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <!-- Lý do -->
+            <div>
+                <h3 class="font-semibold mb-2">Lý do đổi / trả:</h3>
+                <p class="text-gray-700">@Model.Reason</p>
+            </div>
+
+            <hr />
+
+            <!-- Ảnh minh chứng -->
+            <div>
+                <h3 class="font-semibold mb-2">Ảnh minh chứng:</h3>
+                @if (Model.Image != null && Model.Image.Length > 0)
+                {
+                    var base64Image = Convert.ToBase64String(Model.Image);
+                    var imageSrc = $"data:image/png;base64,{base64Image}";
+                    <img src="@imageSrc" alt="Ảnh minh chứng" class="h-80 w-auto mx-auto rounded border" />
+                }
+                else
+                {
+                    <img src="https://via.placeholder.com/200x150?text=No+Image" alt="Placeholder" class="h-80 w-auto mx-auto rounded border" />
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
