@@ -1,0 +1,324 @@
+@model PBL3.DTO.Buyer.Buyer_WalletDTO
+@{
+    ViewBag.Title = "Ví cá nhân";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    var isInitialized = ViewBag.IsWalletInitialized ?? false;
+}
+
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        background-color: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .page-container {
+        max-width: 900px;
+        margin: 30px auto;
+        background-color: white;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .header-banner {
+        background-color: #28a745;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .header-banner h1 {
+        margin: 0;
+        font-size: 1.8em;
+        font-weight: 500;
+    }
+
+    .wallet-content {
+        padding: 25px;
+    }
+
+    .wallet-info {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+
+    .wallet-info strong {
+        display: inline-block;
+        width: 150px;
+    }
+
+    .edit-review-button {
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        padding: 10px 18px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.95em;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .edit-review-button:hover {
+        background-color: #1e7e34;
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .popup {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 350px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .popup h2 {
+        margin-bottom: 20px;
+    }
+
+    .popup input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 1em;
+    }
+
+    .popup button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        font-size: 1em;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .popup button:hover {
+        background-color: #1e7e34;
+    }
+
+    .flash-message {
+        padding: 10px 20px;
+        margin: 10px auto;
+        max-width: 900px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .flash-message.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .flash-message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+
+    .wallet-balance {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+
+    .action-buttons {
+        margin-top: 20px;
+    }
+
+    .action-buttons button {
+        margin-right: 10px;
+    }
+
+    .bank-list {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 6px;
+    }
+
+    .bank-list h4 {
+        margin-bottom: 10px;
+    }
+
+    .bank-item {
+        margin-bottom: 8px;
+    }
+
+    .wallet-main-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .popup-overlay {
+        /* như cũ */
+    }
+
+    .popup {
+        width: 400px;
+    }
+
+    select.bank-dropdown {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 1em;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="flash-message success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="flash-message error">@TempData["Error"]</div>
+}
+<div class="flex gap-6"> <!-- Layout cha: chia menu và nội dung -->
+    <!-- Sidebar -->
+    <div class="w-1/4">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+
+    <!-- Nội dung ví -->
+    <div class="w-3/4 page-container">
+        <div class="header-banner">
+            <h1>Ví của bạn</h1>
+        </div>
+
+        @if (Model != null)
+        {
+            <div class="wallet-content">
+                <div class="wallet-main-flex">
+                    <div>
+                        <div class="wallet-info"><strong>Chủ ví:</strong> @Model.BuyerName</div>
+                        <div class="wallet-info wallet-balance">Số dư: @Model.WalletBalance.ToString("N0") VNĐ</div>
+
+                        <div class="action-buttons">
+                            <button class="edit-review-button" onclick="showPopup('recharge-popup')">Nạp tiền</button>
+                            <button class="edit-review-button" onclick="showPopup('change-pin-popup')">Đổi mã PIN</button>
+                        </div>
+                    </div>
+
+                    <div class="bank-list">
+                        <h4>Ngân hàng liên kết:</h4>
+                        @if (Model.Banks != null && Model.Banks.Any())
+                        {
+                            foreach (var bank in Model.Banks)
+                            {
+                                var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
+                                <div class="bank-item">@bank.BankName - @maskedAcc</div>
+                            }
+                        }
+                        else
+                        {
+                            <div>Không có ngân hàng liên kết</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- POPUP: Nhập mã PIN hoặc thiết lập ví -->
+        @if (Model == null)
+        {
+            <div class="popup-overlay">
+                <div class="popup">
+                    <h2>@(isInitialized ? "Nhập mã PIN ví" : "Thiết lập mã PIN ví")</h2>
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="flash-message error" style="margin-bottom: 15px;">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <form method="post" asp-action="@(isInitialized ? "SubmitPin" : "SetWalletPin")">
+                        <input type="password"
+                               name="@(isInitialized ? "pin" : "newPin")"
+                               placeholder="Nhập mã PIN 6 số"
+                               required
+                               pattern="\d{6}"
+                               maxlength="6"
+                               title="Mã PIN phải gồm đúng 6 chữ số" />
+                        <button type="submit">@((isInitialized ? "Mở ví" : "Thiết lập"))</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+<!-- POPUP: Nạp tiền -->
+@if (Model != null)
+{
+    <!-- POPUP: Nạp tiền -->
+    <div id="recharge-popup" class="popup-overlay" style="display: none;">
+        <div class="popup">
+            <h2>Nạp tiền vào ví</h2>
+            <form asp-action="Recharge" method="post">
+                <select class="bank-dropdown" name="bankAccountId" required>
+                    <option value="">-- Chọn ngân hàng --</option>
+                    @foreach (var bank in Model.Banks)
+                    {
+                        var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
+                        <option value="@bank.BankId">@bank.BankName - @maskedAcc</option>
+                    }
+                </select>
+                <input type="number" name="amount" placeholder="Nhập số tiền muốn nạp" required
+                       style="padding: 10px; width: 100%; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px;" />
+                <button type="submit">Nạp tiền</button>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- POPUP: Đổi mã PIN -->
+<div id="change-pin-popup" class="popup-overlay" style="display: none;">
+    <div class="popup">
+        <h2>Đổi mã PIN</h2>
+        <form asp-action="ChangeWalletPin" method="post">
+            <input type="password" name="oldPin" placeholder="Mã PIN hiện tại" required pattern="\d{6}" maxlength="6" />
+            <input type="password" name="newPin" placeholder="Mã PIN mới (6 số)" required pattern="\d{6}" maxlength="6" />
+            <button type="submit">Đổi PIN</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showPopup(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    // Cho phép đóng popup khi click ra ngoài
+    document.querySelectorAll('.popup-overlay').forEach(function (overlay) {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                overlay.style.display = 'none';
+            }
+        });
+    });
+</script>

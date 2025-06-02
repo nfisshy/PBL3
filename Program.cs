@@ -36,8 +36,8 @@ builder.Services.AddScoped<BuyerService>();
 builder.Services.AddScoped<SellerService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
-
-
+builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<WalletService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

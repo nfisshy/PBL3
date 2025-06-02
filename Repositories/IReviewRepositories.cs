@@ -15,5 +15,6 @@ namespace PBL3.Repositories
         Review GetById(int reviewId);
         IEnumerable<Review> GetByProductId(int productId);
         IEnumerable<Seller_TopSanPhamDTO> GetTopRatedProducts(int sellerId, int limit);
+        public List<Review> GetByBuyerId(int buyerId);
     }
 }

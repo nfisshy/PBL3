@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PBL3.Dbcontext;
 
@@ -11,9 +12,11 @@ using PBL3.Dbcontext;
 namespace PBL_3.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601121945_AddDb")]
+    partial class AddDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,48 +253,6 @@ namespace PBL_3.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("PBL3.Entity.ReturnExchange", b =>
-                {
-                    b.Property<int>("ReturnExchangeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReturnExchangeId"));
-
-                    b.Property<byte[]>("Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ResponseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReturnExchangeId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ReturnExchanges");
                 });
 
             modelBuilder.Entity("PBL3.Entity.Review", b =>
@@ -566,25 +527,6 @@ namespace PBL_3.Migrations
                         .IsRequired();
 
                     b.Navigation("Seller");
-                });
-
-            modelBuilder.Entity("PBL3.Entity.ReturnExchange", b =>
-                {
-                    b.HasOne("PBL3.Entity.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("PBL3.Entity.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("PBL3.Entity.Review", b =>

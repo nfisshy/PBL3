@@ -768,8 +768,8 @@ namespace PBL3.Services
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
             // Kiểm tra OTP
-            if (model.OTP != seller.OTP)
-                throw new ArgumentException("OTP không đúng");
+            // if (model.OTP != seller.OTP)
+            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
 
             // Kiểm tra xem đã có tài khoản ngân hàng chưa
             var existingBank = _bankRepository.GetByWalletId(wallet.WalletId)?.FirstOrDefault();
@@ -793,17 +793,17 @@ namespace PBL3.Services
             }
         }
 
-        public void UpdateOTP(int sellerId)
-        {
-            var seller = _sellerRepository.GetById(sellerId);
-            if (seller == null)
-                throw new KeyNotFoundException($"Không tìm thấy người bán với ID: {sellerId}");
+        // public void UpdateOTP(int sellerId)
+        // {
+        //     var seller = _sellerRepository.GetById(sellerId);
+        //     if (seller == null)
+        //         throw new KeyNotFoundException($"Không tìm thấy người bán với ID: {sellerId}");
 
-            // Tạo OTP ngẫu nhiên 6 chữ số
-            Random random = new Random();
-            seller.OTP = random.Next(100000, 999999);
-            _sellerRepository.Update(seller);
-        }
+        //     // Tạo OTP ngẫu nhiên 6 chữ số
+        //     Random random = new Random();
+        //     seller.OTP = random.Next(100000, 999999);
+        //     _sellerRepository.Update(seller);
+        // }
 
         public void NapTien(int sellerId, Seller_RutNapTienDTO model)
         {
@@ -819,8 +819,8 @@ namespace PBL3.Services
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
             // Kiểm tra OTP
-            if (model.OTP != seller.OTP)
-                throw new ArgumentException("OTP không đúng");
+            // if (model.OTP != seller.OTP)
+            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
 
             // Kiểm tra số tiền nạp
             if (model.AmountMoney <= 0)
@@ -845,8 +845,8 @@ namespace PBL3.Services
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
             // Kiểm tra OTP
-            if (model.OTP != seller.OTP)
-                throw new ArgumentException("OTP không đúng");
+            // if (model.OTP != seller.OTP)
+            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
 
             // Kiểm tra số tiền rút
             if (model.AmountMoney <= 0)
@@ -873,7 +873,8 @@ namespace PBL3.Services
 
                 // Lấy danh sách sản phẩm của cửa hàng
                 var products = _productRepository.GetBySellerId(sellerId);
-                var productDTOs = products?.Select(p => {
+                var productDTOs = products?.Select(p =>
+                {
                     var reviews = _reviewRepository.GetByProductId(p.ProductId);
                     double averageRating = reviews?.Any() == true ? reviews.Average(r => r.Rating) : 0;
 

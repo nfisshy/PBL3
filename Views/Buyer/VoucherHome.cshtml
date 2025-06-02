@@ -1,0 +1,145 @@
+@model List<PBL3.DTO.Buyer.Buyer_VoucherDTO>
+
+@{
+    ViewData["Title"] = "Voucher của bạn";
+}
+
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .page-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background-color: #fff;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .header-banner {
+        background-color: #27ae60;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .header-banner h1 {
+        margin: 0;
+        font-size: 1.8em;
+        font-weight: 500;
+    }
+
+    .voucher-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .voucher-card {
+        flex: 0 1 calc(50% - 8px);
+        background: #e6f3eb;
+        border: 1px dashed #27ae60;
+        border-radius: 10px;
+        padding: 16px 18px;
+        box-sizing: border-box;
+    }
+
+    .voucher-card h3 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: 1.2em;
+        color: #2c3e50;
+    }
+
+    .voucher-card p {
+        margin: 4px 0;
+    }
+
+    .voucher-meta {
+        font-size: 0.9em;
+        color: #555;
+    }
+
+    .voucher-card .btn {
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95em;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .voucher-card .btn:hover {
+        background: #219150;
+    }
+
+    .no-voucher {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        padding: 30px 0;
+    }
+</style>
+
+<div class="page-container">
+    <div class="header-banner">
+        <h1>Voucher của bạn</h1>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="voucher-list">
+            @foreach (var voucher in Model)
+            {
+                <div class="voucher-card">
+                    <h3>@voucher.VoucherId</h3>
+                    <p>@voucher.Description</p>
+                    <p class="voucher-meta">
+                        🗓 Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy") &nbsp;&nbsp;
+                        ⏳ Kết thúc: @voucher.EndDate.ToString("dd/MM/yyyy")
+                    </p>
+                    <p class="voucher-meta">
+                        🔥 Giảm: 
+                        @if (voucher.DiscountPercentage > 0)
+                        {
+                            @($"{voucher.DiscountPercentage}%")
+                        }
+                        else if (voucher.DiscountAmount > 0)
+                        {
+                            @($"{voucher.DiscountAmount:N0} đ")
+                        }
+                        else
+                        {
+                            <text>Không xác định</text>
+                        }
+                        &nbsp;&nbsp;🎯 Tối đa: @voucher.MaxDiscount đ
+                    </p>
+                    <p class="voucher-meta">
+                        Trạng thái: <strong>@(voucher.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</strong>
+                    </p>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-voucher">
+            Bạn chưa có voucher nào trong danh sách.
+        </div>
+    }
+</div>
+

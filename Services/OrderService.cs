@@ -19,8 +19,8 @@ namespace PBL3.Services
 
         private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IOrderRepositories orderRepository, 
-                          IOrderDetailRepositories orderDetailRepository, 
+        public OrderService(IOrderRepositories orderRepository,
+                          IOrderDetailRepositories orderDetailRepository,
                           IBuyerRepositories buyerRepository,
                           ISellerRepositories sellerRepository,
                           ILogger<OrderService> logger)
@@ -31,7 +31,8 @@ namespace PBL3.Services
             _sellerRepository = sellerRepository;
             _logger = logger;
         }
-        public PurchaseDTO PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem){
+        public PurchaseDTO PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem)
+        {
             var result = new PurchaseDTO();
             // Get buyer information
             var buyer = _buyerRepository.GetById(buyerID);
@@ -72,15 +73,15 @@ namespace PBL3.Services
                     };
                     totalPrice += orderDetail.TotalPrice;
                     _logger.LogInformation("djfldfhsdahfkldhlfkj");
-                    _logger.LogInformation("${totalPrice}",totalPrice);
+                    _logger.LogInformation("${totalPrice}", totalPrice);
                     orderDTO.OrderDetails.Add(orderDetail);
-                    _logger.LogInformation("${totalPrice}",totalPrice);
+                    _logger.LogInformation("${totalPrice}", totalPrice);
                 }
                 orderDTO.OrderPrice = totalPrice;
                 result.Orders.Add(orderDTO);
                 result.purchasePrice += orderDTO.OrderPrice;
             }
-            
+
             return result;
         }
         public void CreateOrder(OrderDTO orderDTO)
@@ -135,6 +136,86 @@ namespace PBL3.Services
                 order.PaymentStatus = paymentStatus;
                 _orderRepository.Update(order);
             }
+        }
+
+        public List<OrderDTO> GetOrdersByStatus(int buyerId, OrdStatus? status = null)
+        {
+            var orders = status.HasValue
+                ? _orderRepository.GetByBuyer_Status(buyerId, status.Value)
+                : _orderRepository.GetByBuyerId(buyerId);
+
+            var orderDTOs = new List<OrderDTO>();
+
+            foreach (var order in orders)
+            {
+                var buyer = _buyerRepository.GetById(order.BuyerId);
+                var seller = _sellerRepository.GetById(order.SellerId);
+
+                // Lấy order details từ repository
+                var orderDetails = _orderDetailRepository.GetByOrderId(order.OrderId)
+                    .Select(od => new OrderDetailDTO
+                    {
+                        ProductId = od.ProductId,
+                        ProductName = od.Productname ?? "Unknown",
+                        Quantity = od.Quantity,
+                        TotalPrice = od.Price,
+                        Image = od?.Image
+                    }).ToList();
+
+                orderDTOs.Add(new OrderDTO
+                {
+                    OrderId = order.OrderId,
+                    OrderDate = order.OrderDate,
+                    OrderPrice = order.OrderPrice,
+                    OrderStatus = order.OrderStatus,
+                    PaymentMethod = order.PaymentMethod,
+                    PaymentStatus = order.PaymentStatus,
+                    SellerStoreName = seller?.StoreName ?? "N/A",
+                    OrderDetails = orderDetails
+                });
+            }
+
+            return orderDTOs;
+        }
+        
+        public OrderDTO GetOrderById(int orderId)
+        {
+            var order = _orderRepository.GetById(orderId);
+            if (order == null)
+                return null;
+
+            var buyer = _buyerRepository.GetById(order.BuyerId);
+            var seller = _sellerRepository.GetById(order.SellerId);
+
+            // Lấy order details từ repository
+            var orderDetails = _orderDetailRepository.GetByOrderId(order.OrderId)
+                .Select(od => new OrderDetailDTO
+                {
+                    ProductId = od.ProductId,
+                    ProductName = od.Productname ?? "Unknown",
+                    Quantity = od.Quantity,
+                    TotalPrice = od.Price,
+                    Image = od?.Image
+                }).ToList();
+
+            var orderDTO = new OrderDTO
+            {
+                OrderId = order.OrderId,
+                BuyerId = order.BuyerId,
+                OrderDate = order.OrderDate,
+                OrderPrice = order.OrderPrice,
+                OrderStatus = order.OrderStatus,
+                PaymentMethod = order.PaymentMethod,
+                PaymentStatus = order.PaymentStatus,
+                SellerStoreName = seller?.StoreName ?? "N/A",
+                BuyerName = buyer?.Username ?? "N/A",
+                BuyerPhone = buyer?.PhoneNumber ?? "N/A",
+                Address = order.Address,
+                Discount = order.Discount,
+                OrderDetails = orderDetails
+            };
+
+            return orderDTO;
         }
     }
 } 

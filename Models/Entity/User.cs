@@ -18,7 +18,7 @@ namespace PBL3.Entity
         protected string phoneNumber;
         protected DateTime date;
         protected Roles roleName;
-        private int otp;
+        private bool isActive;
 
 
         [Key]
@@ -64,10 +64,10 @@ namespace PBL3.Entity
             get { return roleName; }
             set { roleName = value; }
         }
-        public int OTP
+        public bool IsActive
         {
-            get { return otp; }
-            set { otp = value; }
+            get { return isActive; }
+            set { isActive = value; }
         }
 
         public PlatformWallet Wallet { get; set; }

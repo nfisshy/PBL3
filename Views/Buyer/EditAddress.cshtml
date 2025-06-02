@@ -1,0 +1,81 @@
+@model PBL3.DTO.Buyer.Buyer_SoDiaChiDTO
+
+@{
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    bool isDefault = Model.IsDefault;
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .theme-green-bg { background-color: #219150; color: #fff }
+        .theme-green-text { color: #219150; }
+        .hover-theme-green-bg:hover { background-color: #219150; color: #fff }
+    </style>
+}
+<div class="flex gap-6">
+    <div class="w-1/4">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+     <div class="w-3/4 p-6 bg-white rounded-xl shadow-md mt-10 font-[Inter]">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Chỉnh sửa địa chỉ</h2>
+
+        @Html.ValidationSummary(true, "", new { @class = "text-red-500 text-sm mb-4" })
+
+        @using (Html.BeginForm("EditAddress", "Buyer", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.AddressId)
+            @Html.HiddenFor(m => m.BuyerId)
+
+            <div class="space-y-5">
+
+                <!-- Số nhà, tên đường -->
+                <div>
+                    <label for="Street" class="block text-sm font-medium text-gray-700">Số nhà, tên đường</label>
+                    @Html.TextBoxFor(m => m.Street, new { @class = "w-full mt-1 p-3 border border-gray-300 rounded-md", placeholder = "VD: 123 Lê Duẩn" })
+                    @Html.ValidationMessageFor(m => m.Street, "", new { @class = "text-red-500 text-sm mt-1" })
+                </div>
+
+                <!-- Phường/Xã -->
+                <div>
+                    <label for="Ward" class="block text-sm font-medium text-gray-700">Phường/Xã</label>
+                    @Html.TextBoxFor(m => m.Ward, new { @class = "w-full mt-1 p-3 border border-gray-300 rounded-md", placeholder = "VD: Phường Hòa Minh" })
+                    @Html.ValidationMessageFor(m => m.Ward, "", new { @class = "text-red-500 text-sm mt-1" })
+                </div>
+
+                <!-- Quận/Huyện -->
+                <div>
+                    <label for="District" class="block text-sm font-medium text-gray-700">Quận/Huyện</label>
+                    @Html.TextBoxFor(m => m.District, new { @class = "w-full mt-1 p-3 border border-gray-300 rounded-md", placeholder = "VD: Quận Liên Chiểu" })
+                    @Html.ValidationMessageFor(m => m.District, "", new { @class = "text-red-500 text-sm mt-1" })
+                </div>
+
+                <!-- Tỉnh/Thành phố -->
+                <div>
+                    <label for="City" class="block text-sm font-medium text-gray-700">Tỉnh/Thành phố</label>
+                    @Html.TextBoxFor(m => m.City, new { @class = "w-full mt-1 p-3 border border-gray-300 rounded-md", placeholder = "VD: Đà Nẵng" })
+                    @Html.ValidationMessageFor(m => m.City, "", new { @class = "text-red-500 text-sm mt-1" })
+                </div>
+
+                <!-- Đặt làm địa chỉ mặc định -->
+                @if (!isDefault)
+                {
+                    <div class="flex items-center">
+                        @Html.CheckBoxFor(m => m.IsDefault, new { @class = "form-checkbox h-5 w-5 text-green-600" })
+                        <label for="IsDefault" class="ml-2 text-sm text-gray-700">Đặt làm địa chỉ mặc định</label>
+                    </div>
+                }
+
+                <!-- Nút submit -->
+                <div class="text-right">
+                    <button type="submit" class="theme-green-bg px-6 py-3 rounded-md hover-theme-green-bg transition duration-200">
+                        <i class="fas fa-save mr-2"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

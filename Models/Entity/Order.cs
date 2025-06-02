@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using PBL3.Enums;
+using System.Data;
 
 namespace PBL3.Entity
 {
@@ -19,6 +20,7 @@ namespace PBL3.Entity
         private string address;
         private decimal discount;
         private int quantityTypeOfProduct;
+        private DateTime orderReceivedDate; // Ngày nhận hàng, nếu có
 
         [Key]
         public int OrderId
@@ -80,6 +82,11 @@ namespace PBL3.Entity
             get { return quantityTypeOfProduct; }
             set { quantityTypeOfProduct = value; }
 
+        }
+        public DateTime OrderReceivedDate
+        {
+            get { return orderReceivedDate; }
+            set { orderReceivedDate = value; }
         }
         public ICollection<OrderDetail> OrderDetails { get; set; }
         public Buyer Buyer {  get; set; }

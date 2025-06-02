@@ -39,5 +39,11 @@ namespace PBL3.Repositories
                 _context.SaveChanges();
             }
         }
+        public List<AddressBuyer> GetAllByBuyerId(int buyerId)
+        {
+            return _context.AddressBuyers
+                .Where(a => a.BuyerId == buyerId)
+                .ToList();
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace PBL3.Repositories
         void Add(AddressBuyer addressBuyer);
         void Update(AddressBuyer addressBuyer);
         void Delete(int id);
+        public List<AddressBuyer> GetAllByBuyerId(int buyerId);
     }
 }

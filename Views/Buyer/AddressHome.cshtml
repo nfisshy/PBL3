@@ -1,0 +1,113 @@
+@model List<PBL3.DTO.Buyer.Buyer_SoDiaChiDTO>
+@{
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .theme-green-bg { background-color: #219150; color: #fff }
+        .theme-green-text { color: #219150; }
+        .hover-theme-green-bg:hover { background-color: #219150; color: #fff }
+    </style>
+}
+<div class="flex gap-6">
+    <div class="w-1/4">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
+    </div>
+    <div class="w-3/4 p-6 bg-white rounded-xl shadow-md mt-10 font-[Inter]">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Sổ địa chỉ</h2>
+
+        <!-- Thêm địa chỉ mới -->
+        <div class="border-2 border-dashed rounded-lg p-5 mb-6 text-center cursor-pointer hover:bg-gray-50">
+            <a href="@Url.Action("AddAddress", "Buyer")" class="inline-flex items-center justify-center text-lg font-medium text-white px-4 py-2 rounded-md theme-green-bg hover-theme-green-bg">
+                <i class="fas fa-plus mr-2"></i> Thêm địa chỉ mới
+            </a>
+        </div>
+
+        <!-- Danh sách địa chỉ -->
+        <div id="address-list">
+        @foreach (var address in Model)
+        {
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4 border border-gray-200" data-address-id="@address.AddressId">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-base font-semibold uppercase text-gray-800">@address.LocationName</h3>
+                    <div class="flex space-x-3">
+                        <a href="@Url.Action("EditAddress", "Buyer", new { addressId = address.AddressId })"
+                        class="text-sm text-blue-600 hover:underline">
+                            <i class="fas fa-edit mr-1"></i>Chỉnh sửa
+                        </a>
+
+                        @if (!address.IsDefault)
+                        {
+                            <button type="button" class="delete-address-btn text-sm text-red-600 hover:underline flex items-center gap-1" data-id="@address.AddressId">
+                                <i class="fas fa-trash-alt"></i> Xóa
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                @if (address.IsDefault)
+                {
+                    <p class="theme-green-text text-sm mb-2 flex items-center gap-1">
+                        <i class="fas fa-check-circle"></i> Địa chỉ mặc định
+                    </p>
+                }
+            </div>
+        }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lấy tất cả nút xóa
+            const deleteButtons = document.querySelectorAll(".delete-address-btn");
+
+            deleteButtons.forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const addressId = this.getAttribute("data-id");
+
+                    if (!confirm("Bạn có chắc chắn muốn xóa địa chỉ này không?")) {
+                        return;
+                    }
+
+                    fetch("@Url.Action("DeleteAddress", "Buyer")", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": getAntiForgeryToken()
+                        },
+                        body: JSON.stringify(addressId)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Xóa phần tử địa chỉ khỏi DOM
+                            const addressDiv = this.closest("[data-address-id='" + addressId + "']");
+                            if (addressDiv) {
+                                addressDiv.remove();
+                            }
+                            alert(data.message);
+                        } else {
+                            alert("Lỗi: " + data.message);
+                        }
+                    })
+                    .catch(err => {
+                        alert("Đã có lỗi xảy ra khi xóa địa chỉ.");
+                        console.error(err);
+                    });
+                });
+            });
+
+            // Hàm lấy token chống CSRF (nếu có)
+            function getAntiForgeryToken() {
+                const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+                return tokenElement ? tokenElement.value : "";
+            }
+        });
+    </script>
+}

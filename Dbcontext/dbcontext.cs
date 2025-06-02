@@ -27,6 +27,7 @@ namespace PBL3.Dbcontext
         public DbSet<Bank> Banks { get; set; }
         public DbSet<Voucher> Vouchers { get; set; }
         public DbSet<Voucher_Buyer> Voucher_Buyers { get; set; }
+        public DbSet<ReturnExchange> ReturnExchanges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) // pt nay giup cau hinh cac bang va mqh giua cac bang truoc khi EF framework core tao ra cac bang trong db
         {
@@ -143,6 +144,19 @@ namespace PBL3.Dbcontext
                 .HasForeignKey(vb => vb.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // 1 ReturnExchange -> 1 Product
+            modelBuilder.Entity<ReturnExchange>()
+                .HasOne(re => re.Product)
+                .WithMany()
+                .HasForeignKey(re => re.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho phép xóa Product nếu có ReturnExchange liên kết
+
+            // 1 ReturnExchange -> 1 Order
+            modelBuilder.Entity<ReturnExchange>()
+                .HasOne(re => re.Order)
+                .WithMany()
+                .HasForeignKey(re => re.OrderId)
+                .OnDelete(DeleteBehavior.Restrict); 
         }
 
     }

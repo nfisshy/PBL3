@@ -7,7 +7,6 @@ namespace PBL3.Entity
     {
         private byte[]? avatar;
         private string location;
-        private bool isActive;
 
         public byte[]? Avatar
         {
@@ -18,11 +17,6 @@ namespace PBL3.Entity
         {
             get { return location; }
             set { location = value; }
-        }
-        public bool IsActive
-        {
-            get { return isActive; }
-            set { isActive = value; }
         }
 
         public ICollection<AddressBuyer> Addresses { get; set; } // thiet lap mqh 2 chieu giua address va buyer

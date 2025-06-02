@@ -19,5 +19,6 @@ namespace PBL3.Repositories
         IEnumerable<Seller_TopSanPhamDTO> GetTopSellingProducts(int sellerId, DateTime startDate, DateTime endDate, int limit);
         decimal GetTotalRevenue(int sellerId, DateTime startDate, DateTime endDate);
         int GetTotalOrders(int sellerId, DateTime startDate, DateTime endDate);
+        public IEnumerable<Order> GetByBuyer_Status(int buyerId, OrdStatus status);
     }
 }

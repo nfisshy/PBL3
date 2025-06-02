@@ -808,8 +808,8 @@ namespace PBL_3.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                _sellerService.UpdateOTP(sellerId.Value);
-                TempData["Success"] = "OTP mới đã được tạo";
+                // _sellerService.UpdateOTP(sellerId.Value);
+                // TempData["Success"] = "OTP mới đã được tạo"; // sửa .............................
             }
             catch (Exception ex)
             {
@@ -836,7 +836,7 @@ namespace PBL_3.Controllers
                 if (shopInfo == null)
                 {
                     TempData["Error"] = "Không tìm thấy thông tin cửa hàng";
-                    return RedirectToAction("Index","Product");
+                    return RedirectToAction("Index", "Product");
                 }
 
                 return View(shopInfo);
@@ -849,6 +849,8 @@ namespace PBL_3.Controllers
             }
         }
 
+            }
+        }
         public IActionResult EditProduct(int id)
         {
             try
