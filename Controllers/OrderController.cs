@@ -94,14 +94,17 @@ namespace PBL3.Controllers
             try
             {
                 _orderService.UpdateOrderStatus(orderId, newStatus);
-                return Json(new { success = true, message = "Cập nhật trạng thái đơn hàng thành công" });
+                TempData["Success"] = "Cập nhật trạng thái đơn hàng thành công";
+                return RedirectToAction("OrderDetailHome");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi cập nhật trạng thái đơn hàng ID: {OrderId}", orderId);
-                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng" });
+                TempData["Error"] = "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng";
+                return RedirectToAction("OrderDetailHome");
             }
         }
+
 
         [HttpPost]
         public IActionResult UpdatePaymentStatus(int orderId, bool paymentStatus)

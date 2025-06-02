@@ -909,7 +909,18 @@ namespace PBL3.Services
                         SoldQuantity = p.SoldProduct
                     };
                 }).ToList() ?? new List<Seller_ViewShopProductDTO>();
-
+                var vouchers = _voucherRepository.GetBySellerId(sellerId);
+                var voucherDTOs = vouchers?.Select(v => new Seller_ViewShopVoucherDTO
+                {
+                    VoucherId = v.VoucherId,
+                    Description = v.Description,
+                    StartDate = v.StartDate,
+                    EndDate = v.EndDate,
+                    DiscountPercentage = v.PercentDiscount,
+                    MaxDiscount = v.MaxDiscount,
+                    IsActive = v.IsActive && v.EndDate > DateTime.Now,
+                    SellerId = v.SellerId
+                }).ToList() ?? new List<Seller_ViewShopVoucherDTO>();
                 return new Seller_ViewShopDTO
                 {
                     StoreName = seller.StoreName,
@@ -917,7 +928,8 @@ namespace PBL3.Services
                     AddressSeller = seller.AddressSeller,
                     Avatar = seller.Avatar,
                     TotalProducts = products?.Count() ?? 0,
-                    Products = productDTOs
+                    Products = productDTOs,
+                    Vouchers = voucherDTOs
                 };
             }
             catch (Exception ex)

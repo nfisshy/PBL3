@@ -351,7 +351,7 @@ namespace PBL3.Services
                         EndDate = voucher.EndDate,
                         DiscountPercentage = voucher.PercentDiscount,
                         MaxDiscount = voucher.MaxDiscount,
-                        IsActive = voucher.IsActive,
+                        IsActive = voucher.EndDate > DateTime.Now,
                         BuyerId = vb.BuyerId
                     });
                 }
@@ -366,21 +366,34 @@ namespace PBL3.Services
             if (buyerId <= 0 || string.IsNullOrEmpty(voucherId))
                 throw new ArgumentException("Thông tin không hợp lệ.");
 
+            // Kiểm tra đã từng lưu
             var existing = _voucherBuyerRepositories.GetById(buyerId, voucherId);
             if (existing != null)
                 throw new InvalidOperationException("Voucher đã được lưu cho người dùng này.");
 
+            // Lấy voucher từ repo
             var voucher = _voucherRepositories.GetById(voucherId);
             if (voucher == null)
                 throw new KeyNotFoundException("Không tìm thấy voucher.");
 
+            // Kiểm tra số lượng còn lại
+            if (voucher.VoucherQuantity <= 0)
+                throw new InvalidOperationException("Voucher đã hết lượt sử dụng.");
+
+            // Tạo và lưu voucher cho người dùng
             var voucherBuyer = new Voucher_Buyer
             {
                 BuyerId = buyerId,
                 VoucherId = voucherId
             };
-
             _voucherBuyerRepositories.Add(voucherBuyer);
+
+            // Trừ số lượng voucher
+            voucher.VoucherQuantity -= 1;
+            if (voucher.VoucherQuantity == 0)
+                voucher.IsActive = false; // Nếu hết số lượng, đánh dấu không hoạt động 
+            _voucherRepositories.Update(voucher);
         }
+
     }
 } 

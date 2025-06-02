@@ -39,6 +39,7 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<WalletService>();
+builder.Services.AddScoped<ReturnExchangeService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

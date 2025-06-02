@@ -16,10 +16,11 @@ namespace PBL3.Controllers
         private readonly ReviewService _reviewService;
         private readonly IProductRepositories _productRepository;
         private readonly WalletService _walletService;
+        private readonly ReturnExchangeService _returnExchangeService;
         public BuyerController(BuyerService buyerService, ILogger<BuyerController> logger,
                                 ProductService productService, ReviewService reviewService,
                                 IProductRepositories productRepository,
-                                WalletService walletService)
+                                WalletService walletService, ReturnExchangeService returnExchangeService)
         {
             _buyerService = buyerService;
             _logger = logger;
@@ -27,6 +28,7 @@ namespace PBL3.Controllers
             _reviewService = reviewService;
             _productRepository = productRepository;
             _walletService = walletService;
+            _returnExchangeService = returnExchangeService;
         }
 
         public IActionResult Index()
@@ -506,6 +508,36 @@ namespace PBL3.Controllers
             return RedirectToAction("WalletHome");
         }
 
+        [HttpPost]
+        public IActionResult AddBank(string bankName, string accountNumber)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                _walletService.AddBank(userId, bankName, accountNumber);
+
+                TempData["Success"] = "Thêm tài khoản ngân hàng thành công.";
+                TempData["PinVerified"] = true;
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["Error"] = ex.Message; // Lỗi do thiếu thông tin hoặc không tìm thấy ví
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message; // Lỗi trùng tài khoản ngân hàng
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi không xác định khi thêm tài khoản ngân hàng.";
+            }
+
+            return RedirectToAction("WalletHome");
+        }
+
+
         // Đổi mã PIN
         [HttpPost]
         public IActionResult ChangeWalletPin(int oldPin, int newPin)
@@ -549,6 +581,149 @@ namespace PBL3.Controllers
                 return BadRequest("Đã xảy ra lỗi: " + ex.Message);
             }
         }
-    }
 
+        [HttpGet]
+        public IActionResult ReturnExchangeHome()
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            try
+            {
+                var allExchanges = _returnExchangeService.GetAll(buyerId);
+                return View("ReturnExchangeHome", allExchanges);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đổi trả");
+                TempData["Error"] = "Có lỗi xảy ra khi tải danh sách yêu cầu đổi trả";
+                return View("ReturnExchangeHome", new List<ExchangeStuffDTO>());
+            }
+        }
+
+
+
+        // 2. Xem chi tiết yêu cầu đổi trả
+        [HttpGet]
+        public IActionResult ReturnExchangeDetail(int id)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            try
+            {
+                var detail = _returnExchangeService.GetById(id, buyerId);
+                if (detail == null)
+                {
+                    TempData["Error"] = "Không tìm thấy yêu cầu đổi trả";
+                    return RedirectToAction("ReturnExchangeHome");
+                }
+
+                return View("ReturnExchangeDetail", detail);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy chi tiết yêu cầu đổi trả ID: {Id}", id);
+                TempData["Error"] = "Có lỗi xảy ra khi tải thông tin yêu cầu";
+                return RedirectToAction("ReturnExchangeHome");
+            }
+        }
+
+
+        // 3. Thêm yêu cầu đổi trả (POST)
+        [HttpPost]
+        public IActionResult AddReturnExchange(ExchangeStuffDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            dto.BuyerId = buyerId;
+            dto.RequestDate = DateTime.Now;
+            dto.ResponseDate = new DateTime(2001, 1, 1);
+            dto.Status = ExchangeStatus.WaitConfirm;
+
+            // Nếu có file ảnh được upload, chuyển sang byte[]
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    dto.ImageFile.CopyTo(ms);
+                    dto.Image = ms.ToArray(); // Gán vào byte[] Image
+                }
+            }
+
+            try
+            {
+                _returnExchangeService.Add(dto); // Thêm yêu cầu vào hệ thống
+                TempData["Success"] = "Gửi yêu cầu đổi/trả thành công.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi thêm yêu cầu đổi/trả");
+                TempData["Error"] = "Có lỗi xảy ra khi gửi yêu cầu đổi trả.";
+            }
+
+            return RedirectToAction("ReturnExchangeHome");
+        }
+
+
+
+
+        [HttpGet]
+        public IActionResult AddReturnExchange(int productId, int orderId)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+
+            var product = _productRepository.GetById(productId);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            var dto = new ExchangeStuffDTO
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                ProductImage = product.ProductImage, // byte[]
+                OrderId = orderId,
+            };
+
+            return View(dto);
+        }
+        
+        [HttpPost]
+        public IActionResult SaveVoucher(string voucherId)
+        {
+            try
+            {
+                int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                if (buyerId == 0)
+                {
+                    return Json(new { requireLogin = true });
+                }
+
+                _buyerService.SaveVoucherForBuyer(buyerId, voucherId);
+
+                return Json(new { success = true, message = "Đã lưu voucher thành công!" });
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi lưu voucher." });
+            }
+        }
+
+    }
 } 

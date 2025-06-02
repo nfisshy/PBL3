@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Voucher của bạn";
+    Layout = "~/Views/Shared/BuyerLayout.cshtml";
 }
 
 <style>
@@ -15,9 +16,19 @@
         line-height: 1.6;
     }
 
-    .page-container {
-        max-width: 900px;
+    .main-content-wrapper {
+        display: flex;
+        max-width: 1200px;
         margin: 20px auto;
+        gap: 20px;
+    }
+
+    .buyer-menu {
+        flex: 0 0 250px;
+    }
+
+    .page-container {
+        flex: 1;
         background-color: #fff;
         box-shadow: 0 0 15px rgba(0,0,0,0.1);
         padding: 20px;
@@ -95,51 +106,56 @@
     }
 </style>
 
-<div class="page-container">
-    <div class="header-banner">
-        <h1>Voucher của bạn</h1>
+<div class="main-content-wrapper">
+    <div class="buyer-menu">
+        @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
     </div>
 
-    @if (Model != null && Model.Count > 0)
-    {
-        <div class="voucher-list">
-            @foreach (var voucher in Model)
-            {
-                <div class="voucher-card">
-                    <h3>@voucher.VoucherId</h3>
-                    <p>@voucher.Description</p>
-                    <p class="voucher-meta">
-                        🗓 Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy") &nbsp;&nbsp;
-                        ⏳ Kết thúc: @voucher.EndDate.ToString("dd/MM/yyyy")
-                    </p>
-                    <p class="voucher-meta">
-                        🔥 Giảm: 
-                        @if (voucher.DiscountPercentage > 0)
-                        {
-                            @($"{voucher.DiscountPercentage}%")
-                        }
-                        else if (voucher.DiscountAmount > 0)
-                        {
-                            @($"{voucher.DiscountAmount:N0} đ")
-                        }
-                        else
-                        {
-                            <text>Không xác định</text>
-                        }
-                        &nbsp;&nbsp;🎯 Tối đa: @voucher.MaxDiscount đ
-                    </p>
-                    <p class="voucher-meta">
-                        Trạng thái: <strong>@(voucher.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</strong>
-                    </p>
-                </div>
-            }
+    <div class="page-container">
+        <div class="header-banner">
+            <h1>Voucher của bạn</h1>
         </div>
-    }
-    else
-    {
-        <div class="no-voucher">
-            Bạn chưa có voucher nào trong danh sách.
-        </div>
-    }
-</div>
 
+        @if (Model != null && Model.Count > 0 && Model.Any(v => v.IsActive))
+        {
+            <div class="voucher-list">
+                @foreach (var voucher in Model)
+                {
+                    <div class="voucher-card">
+                        <h3>@voucher.VoucherId</h3>
+                        <p>@voucher.Description</p>
+                        <p class="voucher-meta">
+                            🗓 Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy") &nbsp;&nbsp;
+                            ⏳ Kết thúc: @voucher.EndDate.ToString("dd/MM/yyyy")
+                        </p>
+                        <p class="voucher-meta">
+                            🔥 Giảm:
+                            @if (voucher.DiscountPercentage > 0)
+                            {
+                                @($"{voucher.DiscountPercentage}%")
+                            }
+                            else if (voucher.DiscountAmount > 0)
+                            {
+                                @($"{voucher.DiscountAmount:N0} đ")
+                            }
+                            else
+                            {
+                                <text>Không xác định</text>
+                            }
+                            &nbsp;&nbsp;🎯 Tối đa: @voucher.MaxDiscount đ
+                        </p>
+                        <p class="voucher-meta">
+                            Trạng thái: <strong>@(voucher.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</strong>
+                        </p>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-voucher">
+                Bạn chưa có voucher nào trong danh sách.
+            </div>
+        }
+    </div>
+</div>

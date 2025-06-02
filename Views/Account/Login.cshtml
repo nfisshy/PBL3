@@ -92,6 +92,11 @@
     }
 
     <form asp-action="Login" method="post">
+        <input type="hidden" name="returnUrl" value="@Context.Request.Query["returnUrl"]" />
+        <input type="hidden" name="addToCartProductId" value="@Context.Request.Query["addToCartProductId"]" />
+        <input type="hidden" name="addToCartQuantity" value="@Context.Request.Query["addToCartQuantity"]" />
+        <input type="hidden" name="saveVoucherId" value="@Context.Request.Query["saveVoucherId"]" />
+        <input type="hidden" name="sellerId" value="@Context.Request.Query["sellerId"]" />
         @{
             var accountError = ViewData.ModelState["Account"]?.Errors.FirstOrDefault()?.ErrorMessage;
             var passwordError = ViewData.ModelState["Password"]?.Errors.FirstOrDefault()?.ErrorMessage;
@@ -117,7 +122,7 @@
             <span class="text-danger">@firstError</span>
         }
 
-        <button type="submit" class="btn-login">Sign in</button>
+        <button type="submit" class="btn-login">Đăng nhập</button>
     </form>
 
     <div class="footer-text">

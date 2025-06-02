@@ -12,8 +12,8 @@ using PBL3.Dbcontext;
 namespace PBL_3.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250513135709_UpdateEntity2")]
-    partial class UpdateEntity2
+    [Migration("20250602141256_ByThanh")]
+    partial class ByThanh
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -127,6 +127,9 @@ namespace PBL_3.Migrations
                     b.Property<decimal>("OrderPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("OrderReceivedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("OrderStatus")
                         .HasColumnType("int");
 
@@ -174,6 +177,9 @@ namespace PBL_3.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("TotalNetProfit")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("OrderId", "ProductId");
 
                     b.HasIndex("ProductId");
@@ -189,7 +195,7 @@ namespace PBL_3.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WalletId"));
 
-                    b.Property<int>("Otp")
+                    b.Property<int>("Pin")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -239,11 +245,56 @@ namespace PBL_3.Migrations
                     b.Property<int>("SellerId")
                         .HasColumnType("int");
 
+                    b.Property<int>("SoldProduct")
+                        .HasColumnType("int");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("SellerId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("PBL3.Entity.ReturnExchange", b =>
+                {
+                    b.Property<int>("ReturnExchangeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReturnExchangeId"));
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ResponseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReturnExchangeId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ReturnExchanges");
                 });
 
             modelBuilder.Entity("PBL3.Entity.Review", b =>
@@ -291,6 +342,9 @@ namespace PBL_3.Migrations
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -384,9 +438,6 @@ namespace PBL_3.Migrations
                     b.Property<byte[]>("Avatar")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -408,9 +459,6 @@ namespace PBL_3.Migrations
                     b.Property<string>("EmailGeneral")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("JoinedDate")
                         .HasColumnType("datetime2");
@@ -521,6 +569,25 @@ namespace PBL_3.Migrations
                         .IsRequired();
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("PBL3.Entity.ReturnExchange", b =>
+                {
+                    b.HasOne("PBL3.Entity.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PBL3.Entity.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("PBL3.Entity.Review", b =>

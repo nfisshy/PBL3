@@ -175,7 +175,12 @@
                     <button type="submit" formaction="@Url.Action("BuyNow")" class="btn btn-buy">Mua ngay</button>
                 </div>
             </form>
-            <div id="addToCartMsg" class="mt-2"></div>
+            <div id="addToCartMsg">
+                @if (TempData["AddToCartSuccess"] != null && (bool)TempData["AddToCartSuccess"] == true)
+                {
+                    <span class="text-success">Đã thêm vào giỏ hàng!</span>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -339,6 +344,7 @@
             var form = document.getElementById('addToCartForm');
             var productId = form.productId.value;
             var quantity = form.quantity.value;
+            
             fetch('/Cart/AddToCart', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -348,7 +354,8 @@
             .then(data => {
                 var msg = document.getElementById('addToCartMsg');
                 if (data.requireLogin) {
-                    window.location.href = '/Account/Login';
+                    const returnUrl = encodeURIComponent(window.location.pathname);
+                    window.location.href = `/Account/Login?returnUrl=${returnUrl}&addToCartProductId=${productId}&addToCartQuantity=${quantity}`;
                 } else if (data.success) {
                     msg.innerHTML = '<span class="text-success">Đã thêm vào giỏ hàng!</span>';
                 } else {
@@ -360,5 +367,6 @@
             });
             return false;
         }
+
     </script>
 }

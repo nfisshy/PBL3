@@ -20,7 +20,7 @@ namespace PBL3.Entity
         private string address;
         private decimal discount;
         private int quantityTypeOfProduct;
-        private DateTime? orderReceivedDate; // Ngày nhận hàng, nếu có
+        private DateTime orderReceivedDate; // Ngày nhận hàng, nếu có
 
         [Key]
         public int OrderId
@@ -83,7 +83,7 @@ namespace PBL3.Entity
             set { quantityTypeOfProduct = value; }
 
         }
-        public DateTime? OrderReceivedDate
+        public DateTime OrderReceivedDate
         {
             get { return orderReceivedDate; }
             set { orderReceivedDate = value; }

@@ -39,24 +39,24 @@ namespace PBL3.Services
             var buyer = _buyerRepo.GetById(wallet.UserId); // Lấy thông tin người mua
 
             // Chuyển đổi danh sách Bank entity sang BankDTO
-                var banks = _bankRepo.GetByWalletId(wallet.WalletId)
-                    .Select(b => new BankDTO
-                    {
-                        BankId = b.BankAccountId,
-                        BankName = b.BankName,
-                        AccountNumber = b.BankNumber
-                    })
-                    .ToList();
-
-                return new Buyer_WalletDTO
+            var banks = _bankRepo.GetByWalletId(wallet.WalletId)
+                .Select(b => new BankDTO
                 {
-                    WalletId = wallet.WalletId,
-                    WalletBalance = wallet.WalletBalance,
-                    UserId = wallet.UserId,
-                    Pin = wallet.Pin,
-                    BuyerName = buyer?.Name ?? "Unknown",
-                    Banks = banks
-                };
+                    BankId = b.BankAccountId,
+                    BankName = b.BankName,
+                    AccountNumber = b.BankNumber
+                })
+                .ToList();
+
+            return new Buyer_WalletDTO
+            {
+                WalletId = wallet.WalletId,
+                WalletBalance = wallet.WalletBalance,
+                UserId = wallet.UserId,
+                Pin = wallet.Pin,
+                BuyerName = buyer?.Name ?? "Unknown",
+                Banks = banks
+            };
         }
 
         public Buyer_WalletDTO? OpenWallet(int userId)
@@ -65,24 +65,24 @@ namespace PBL3.Services
             var buyer = _buyerRepo.GetById(wallet.UserId); // Lấy thông tin người mua
 
             // Chuyển đổi danh sách Bank entity sang BankDTO
-                var banks = _bankRepo.GetByWalletId(wallet.WalletId)
-                    .Select(b => new BankDTO
-                    {
-                        BankId = b.BankAccountId,
-                        BankName = b.BankName,
-                        AccountNumber = b.BankNumber
-                    })
-                    .ToList();
-
-                return new Buyer_WalletDTO
+            var banks = _bankRepo.GetByWalletId(wallet.WalletId)
+                .Select(b => new BankDTO
                 {
-                    WalletId = wallet.WalletId,
-                    WalletBalance = wallet.WalletBalance,
-                    UserId = wallet.UserId,
-                    Pin = wallet.Pin,
-                    BuyerName = buyer?.Name ?? "Unknown",
-                    Banks = banks
-                };
+                    BankId = b.BankAccountId,
+                    BankName = b.BankName,
+                    AccountNumber = b.BankNumber
+                })
+                .ToList();
+
+            return new Buyer_WalletDTO
+            {
+                WalletId = wallet.WalletId,
+                WalletBalance = wallet.WalletBalance,
+                UserId = wallet.UserId,
+                Pin = wallet.Pin,
+                BuyerName = buyer?.Name ?? "Unknown",
+                Banks = banks
+            };
         }
 
         // 3. Nạp tiền vào ví
@@ -117,5 +117,35 @@ namespace PBL3.Services
             _walletRepo.Update(wallet);
             return true;
         }
+        public void AddBank(int userId, string bankName, string accountNumber)
+        {
+            var wallet = _walletRepo.GetByUserId(userId);
+            if (wallet == null)
+                throw new ArgumentException("Không tìm thấy ví cho người dùng.");
+
+            if (string.IsNullOrWhiteSpace(bankName))
+                throw new ArgumentException("Tên ngân hàng không được để trống.");
+
+            if (string.IsNullOrWhiteSpace(accountNumber))
+                throw new ArgumentException("Số tài khoản không được để trống.");
+
+            // Kiểm tra tài khoản ngân hàng đã tồn tại chưa
+            var existingBank = _bankRepo.GetByWalletId(wallet.WalletId)
+                .FirstOrDefault(b => b.BankName == bankName && b.BankNumber == accountNumber);
+
+            if (existingBank != null)
+                throw new InvalidOperationException("Tài khoản ngân hàng này đã được liên kết với ví.");
+
+            var newBank = new Bank
+            {
+                BankName = bankName,
+                BankNumber = accountNumber,
+                WalletId = wallet.WalletId
+            };
+
+            _bankRepo.Add(newBank);
+        }
+
+
     }
 }
