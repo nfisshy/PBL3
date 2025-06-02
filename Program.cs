@@ -28,6 +28,7 @@ builder.Services.AddScoped<IAddressBuyerRepositories, AddressBuyerRepositories>(
 builder.Services.AddScoped<IBankRepositories, BankRepositories>();
 builder.Services.AddScoped<IVoucherRepositories, VoucherRepositories>();
 builder.Services.AddScoped<IVoucher_BuyerRepositories, Voucher_BuyerRepositories>();
+builder.Services.AddScoped<IReturnExchangeRepositories, ReturnExchangeRepositories>();
 
 // Đăng ký các Service
 builder.Services.AddScoped<AccountService>();

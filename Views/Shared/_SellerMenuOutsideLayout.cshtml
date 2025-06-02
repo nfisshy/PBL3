@@ -116,6 +116,12 @@
             </a>
         </li>
         <li>
+            <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "ReturnExchangeManagement" ? "active" : "")" 
+            href="@Url.Action("ReturnExchangeManagement", "Seller")">
+                <i class="fas fa-undo-alt"></i> Quản lý đổi trả
+            </a>
+        </li>
+        <li>
             <a class="seller-menu-link @(ViewContext.RouteData.Values["action"].ToString() == "Notifications" ? "active" : "")" 
             href="@Url.Action("Notifications", "Seller")">
                 <i class="fas fa-bell"></i> Thông báo

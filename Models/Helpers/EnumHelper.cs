@@ -1,5 +1,6 @@
 using PBL3.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace PBL3.Helpers
 {
@@ -28,6 +29,20 @@ namespace PBL3.Helpers
                 TypeProduct.Thethao => "Thể thao",
                 _ => type.ToString()
             };
+        }
+                // Extension method chung cho mọi enum (nhờ reflection lấy [Display(Name=)] hoặc fallback ToString)
+        public static string GetDisplayName(this Enum enumValue)
+        {
+            var member = enumValue.GetType().GetMember(enumValue.ToString());
+            if (member != null && member.Length > 0)
+            {
+                var attr = member[0].GetCustomAttribute<DisplayAttribute>();
+                if (attr != null)
+                {
+                    return attr.Name;
+                }
+            }
+            return enumValue.ToString();
         }
     }
 } 

@@ -1,0 +1,70 @@
+@model PBL3.DTO.Seller.Seller_TaoPinDTO
+
+@{
+    ViewBag.Title = "Tạo mã PIN";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .pin-form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 25px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+        }
+
+        .text-danger {
+            font-size: 0.9rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="pin-form">
+        <h3 class="text-center text-primary mb-4">Tạo mã PIN</h3>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center">
+                @Html.Raw(TempData["Error"])
+            </div>
+        }
+
+        @using (Html.BeginForm("CreatePin", "Seller", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger text-center" })
+
+            @if (Model.HasPin)
+            {
+                <div class="form-group">
+                    <label for="CurrentPin">Mã PIN hiện tại</label>
+                    <input type="password" class="form-control" name="CurrentPin" placeholder="Nhập mã PIN hiện tại" />
+                    @Html.ValidationMessage("CurrentPin", "", new { @class = "text-danger" })
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="NewPin">Mã PIN mới</label>
+                <input type="password" class="form-control" name="NewPin" placeholder="Nhập mã PIN mới" />
+                @Html.ValidationMessage("NewPin", "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary">Xác nhận</button>
+                <a href="@Url.Action("Wallet", "Seller")" class="btn btn-secondary">Hủy</a>
+            </div>
+        }
+    </div>
+</div>
