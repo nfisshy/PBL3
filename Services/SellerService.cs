@@ -901,6 +901,8 @@ namespace PBL3.Services
             catch (Exception ex)
             {
                 throw new Exception("Lỗi khi xem thông tin cửa hàng: " + ex.Message, ex);
+            }
+        }
         public void UpdateProduct(int sellerId, int productId, EditProductDTO model)
         {
             try

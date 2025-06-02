@@ -846,6 +846,9 @@ namespace PBL_3.Controllers
                 _logger.LogError(ex, "Lỗi khi xem thông tin cửa hàng");
                 TempData["Error"] = "Có lỗi xảy ra khi tải thông tin cửa hàng";
                 return RedirectToAction("Dashboard");
+            }
+        }
+
         public IActionResult EditProduct(int id)
         {
             try
