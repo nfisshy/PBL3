@@ -116,7 +116,7 @@
             <h1>Voucher của bạn</h1>
         </div>
 
-        @if (Model != null && Model.Count > 0)
+        @if (Model != null && Model.Count > 0 && Model.Any(v => v.IsActive))
         {
             <div class="voucher-list">
                 @foreach (var voucher in Model)

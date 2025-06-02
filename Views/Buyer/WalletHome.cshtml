@@ -224,20 +224,24 @@
                     </div>
 
                     <div class="bank-list">
-                        <h4>Ngân hàng liên kết:</h4>
-                        @if (Model.Banks != null && Model.Banks.Any())
+                    <h4>Ngân hàng liên kết:</h4>
+                    @if (Model.Banks != null && Model.Banks.Any())
+                    {
+                        foreach (var bank in Model.Banks)
                         {
-                            foreach (var bank in Model.Banks)
-                            {
-                                var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
-                                <div class="bank-item">@bank.BankName - @maskedAcc</div>
-                            }
+                            var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
+                            <div class="bank-item">@bank.BankName - @maskedAcc</div>
                         }
-                        else
-                        {
-                            <div>Không có ngân hàng liên kết</div>
-                        }
-                    </div>
+                    }
+                    else
+                    {
+                        <div>Không có ngân hàng liên kết</div>
+                    }
+
+                    <!-- Nút thêm ngân hàng -->
+                    <button class="edit-review-button" style="margin-top: 15px;" onclick="showPopup('add-bank-popup')">Thêm ngân hàng</button>
+                </div>
+
                 </div>
             </div>
         }
@@ -307,7 +311,19 @@
         </form>
     </div>
 </div>
-
+<!-- POPUP: Thêm ngân hàng -->
+<div id="add-bank-popup" class="popup-overlay" style="display: none;">
+    <div class="popup">
+        <h2>Thêm ngân hàng</h2>
+        <form asp-action="AddBank" method="post">
+            <input type="text" name="bankName" placeholder="Tên ngân hàng" required
+                   style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc;" />
+            <input type="text" name="accountNumber" placeholder="Số tài khoản" required pattern="\d{6,20}" title="Số tài khoản từ 6 đến 20 chữ số"
+                   style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc;" />
+            <button type="submit">Liên kết</button>
+        </form>
+    </div>
+</div>
 <script>
     function showPopup(id) {
         document.getElementById(id).style.display = 'flex';

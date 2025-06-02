@@ -70,34 +70,49 @@
             </div>
         </div>
     </div>
-    <!-- Vouchers (giả lập) -->
+
+<!-- Vouchers thực tế từ Model -->
+@if (Model.Vouchers != null && Model.Vouchers.Any(v => v.IsActive))
+{
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="voucher-card">
-                <div class="fw-bold text-danger">₫120k off</div>
-                <div>Đơn tối thiểu ₫1tr</div>
-                <div class="text-muted small">Sắp hết hạn: Còn 1 phút</div>
-                <button class="btn btn-sm mt-2">Lưu</button>
+        @foreach (var voucher in Model.Vouchers.Where(v => v.IsActive))
+        {
+            <div class="col-md-4">
+                <div class="voucher-card">
+                    <div class="fw-bold text-danger">
+                        @voucher.Description
+                    </div>
+                    <div class="text-danger">
+                        @if (voucher.DiscountAmount > 0)
+                        {
+                            @($"{voucher.DiscountAmount:N0} đ off")
+                        }
+                        else
+                        {
+                            @($"{voucher.DiscountPercentage}% off")
+                        }
+                    </div>
+                    <div>
+                        @if (voucher.DiscountAmount > 0)
+                        {
+                            @($"Tối đa giảm: {voucher.MaxDiscount:N0} đ")
+                        }
+                        else
+                        {
+                            @($"Giảm tối đa: {voucher.MaxDiscount:N0} đ")
+                        }
+                    </div>
+                    <div class="text-muted small">
+                        HSD: @voucher.EndDate.ToString("dd/MM/yyyy")
+                    </div>
+                    <button class="btn btn-sm mt-2" onclick="saveVoucher('@voucher.VoucherId','@voucher.SellerId')">Lưu</button>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="voucher-card">
-                <div class="fw-bold text-danger">₫80k off</div>
-                <div>Đơn tối thiểu ₫800k</div>
-                <div class="text-muted small">Sắp hết hạn: Còn 1 phút</div>
-                <button class="btn btn-sm mt-2">Lưu</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="voucher-card">
-                <div class="fw-bold text-danger">₫50k off</div>
-                <div>Đơn tối thiểu ₫500k</div>
-                <div class="text-warning small">Voucher khách hàng mới</div>
-                <div class="text-muted small">Đã dùng 69%, HSD: 31.05.2025</div>
-                <button class="btn btn-sm mt-2">Lưu</button>
-            </div>
-        </div>
+        }
     </div>
+}
+
+
     <!-- Sản phẩm của shop -->
     <div class="product-section-title">Tất cả sản phẩm</div>
     <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
@@ -144,7 +159,41 @@
     </div>
 </div>
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        // Thêm các script cần thiết ở đây
+        function saveVoucher(voucherId, sellerId) {
+            fetch('/Buyer/SaveVoucher', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `voucherId=${voucherId}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.requireLogin) {
+                    const returnUrl = encodeURIComponent(window.location.pathname);
+                    window.location.href = `/Account/Login?returnUrl=${returnUrl}&saveVoucherId=${voucherId}&sellerId=${sellerId}`;
+                } else if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert("❌ " + data.message);
+                }
+            })
+            .catch(() => {
+                alert("Đã xảy ra lỗi khi kết nối đến server.");
+            });
+        }
     </script>
+    @if (TempData["SaveVoucherSuccess"] != null)
+    {
+        <script>
+            alert("✅ @Html.Raw(TempData["SaveVoucherSuccess"])");
+        </script>
+    }
+    @if (TempData["SaveVoucherError"] != null)
+    {
+        <script>
+            alert("❌ @Html.Raw(TempData["SaveVoucherError"])");
+        </script>
+    }
 }
+

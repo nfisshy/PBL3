@@ -20,6 +20,7 @@ namespace PBL3.DTO.Buyer
         public int BuyerId { get; set; }
         public int SellerId { get; set; }
         public DateTime OrderDate { get; set; }
+        public DateTime DeliveryDate { get; set; } // Ngày giao hàng, có thể null nếu chưa giao
         public decimal OrderPrice { get; set; }
         public OrdStatus OrderStatus { get; set; }
         public PayMethod PaymentMethod { get; set; }

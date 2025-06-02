@@ -508,6 +508,36 @@ namespace PBL3.Controllers
             return RedirectToAction("WalletHome");
         }
 
+        [HttpPost]
+        public IActionResult AddBank(string bankName, string accountNumber)
+        {
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                _walletService.AddBank(userId, bankName, accountNumber);
+
+                TempData["Success"] = "Thêm tài khoản ngân hàng thành công.";
+                TempData["PinVerified"] = true;
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["Error"] = ex.Message; // Lỗi do thiếu thông tin hoặc không tìm thấy ví
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message; // Lỗi trùng tài khoản ngân hàng
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi không xác định khi thêm tài khoản ngân hàng.";
+            }
+
+            return RedirectToAction("WalletHome");
+        }
+
+
         // Đổi mã PIN
         [HttpPost]
         public IActionResult ChangeWalletPin(int oldPin, int newPin)
@@ -599,7 +629,7 @@ namespace PBL3.Controllers
 
 
         // 3. Thêm yêu cầu đổi trả (POST)
-       [HttpPost]
+        [HttpPost]
         public IActionResult AddReturnExchange(ExchangeStuffDTO dto)
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
@@ -634,7 +664,7 @@ namespace PBL3.Controllers
 
 
 
-        
+
         [HttpGet]
         public IActionResult AddReturnExchange(int productId, int orderId)
         {
@@ -644,7 +674,7 @@ namespace PBL3.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            
+
             var product = _productRepository.GetById(productId);
             if (product == null)
             {
@@ -660,6 +690,39 @@ namespace PBL3.Controllers
             };
 
             return View(dto);
+        }
+        
+        [HttpPost]
+        public IActionResult SaveVoucher(string voucherId)
+        {
+            try
+            {
+                int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                if (buyerId == 0)
+                {
+                    return Json(new { requireLogin = true });
+                }
+
+                _buyerService.SaveVoucherForBuyer(buyerId, voucherId);
+
+                return Json(new { success = true, message = "Đã lưu voucher thành công!" });
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi lưu voucher." });
+            }
         }
 
     }

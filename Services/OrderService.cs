@@ -124,6 +124,10 @@ namespace PBL3.Services
             if (order != null)
             {
                 order.OrderStatus = newStatus;
+                if( newStatus == OrdStatus.Completed)
+                {
+                    order.OrderReceivedDate = DateTime.Now; // Cập nhật ngày giao hàng nếu trạng thái là Completed
+                }
                 _orderRepository.Update(order);
             }
         }
@@ -203,6 +207,7 @@ namespace PBL3.Services
                 OrderId = order.OrderId,
                 BuyerId = order.BuyerId,
                 OrderDate = order.OrderDate,
+                DeliveryDate = order.OrderReceivedDate,
                 OrderPrice = order.OrderPrice,
                 OrderStatus = order.OrderStatus,
                 PaymentMethod = order.PaymentMethod,

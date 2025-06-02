@@ -545,6 +545,7 @@
             document.getElementById('selectionError').classList.remove('hidden');
             return;
         }
+        console.log("Dữ liệu gửi lên server:", selectedItems);
         fetch('/Order/Order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

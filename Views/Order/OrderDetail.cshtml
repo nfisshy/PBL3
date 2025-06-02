@@ -109,6 +109,16 @@
             <div class="bg-gray-50 p-4 rounded border">
                 <h3 class="font-semibold mb-2">HÌNH THỨC GIAO HÀNG</h3>
                 <p>Phí vận chuyển: 22.000₫</p>
+
+                @if (Model.DeliveryDate == new DateTime(0001, 1, 1))
+                {
+                    var estimatedDate = Model.OrderDate.AddDays(5);
+                    <p>Ngày nhận dự kiến: @estimatedDate.ToString("dd/MM/yyyy")</p>
+                }
+                else
+                {
+                    <p>Ngày nhận: @Model.DeliveryDate.ToString("dd/MM/yyyy")</p>
+                }
             </div>
             <div class="bg-gray-50 p-4 rounded border">
                 <h3 class="font-semibold mb-2">HÌNH THỨC THANH TOÁN</h3>
@@ -131,7 +141,7 @@
                 @foreach (var item in Model.OrderDetails)
                 {
                     var unitPrice = item.Quantity > 0 ? item.TotalPrice / item.Quantity : 0;
-                    bool canReturn = true;//Model.OrderStatus == OrdStatus.Completed && DateTime.Now <= Model.OrderDate.AddDays(14);
+                    bool canReturn = Model.OrderStatus == OrdStatus.Completed && DateTime.Now <= Model.DeliveryDate.AddDays(7);
                     bool canComment = Model.OrderStatus == OrdStatus.Completed;
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-4">
