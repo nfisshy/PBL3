@@ -6,17 +6,20 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using PBL3.Enums;
 using Newtonsoft.Json;
+using PBL3.Entity;
 namespace PBL3.Controllers
 {
     public class OrderController : Controller
     {
         private readonly OrderService _orderService;
+        private readonly BuyerService _buyerService;
         private readonly ILogger<OrderController> _logger;
 
-        public OrderController(OrderService orderService, ILogger<OrderController> logger)
+        public OrderController(OrderService orderService, BuyerService buyerService, ILogger<OrderController> logger)
         {
             _orderService = orderService;
             _logger = logger;
+            _buyerService = buyerService;
         }
         //đã sửa
         [HttpGet]
@@ -189,6 +192,29 @@ namespace PBL3.Controllers
                 _logger.LogError(ex, "Lỗi khi lấy chi tiết đơn hàng ID: {OrderId} cho buyerId: {BuyerId}", orderId, buyerId);
                 TempData["Error"] = "Có lỗi xảy ra khi tải chi tiết đơn hàng.";
                 return RedirectToAction("OrderDetailHome");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult AddressChoose()
+        {
+            _logger.LogInformation("đã nhấn vào AddressChoose");
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var addresses = _buyerService.GetAllAddressByBuyerId(buyerId);
+                return PartialView("AddressChoose", addresses); // Tạo view AddressList.cshtml để hiển thị
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách địa chỉ cho Buyer ID: {BuyerId}", buyerId);
+                TempData["Error"] = "Không thể tải danh sách địa chỉ.";
+                return RedirectToAction("Index", "Home");
             }
         }
 

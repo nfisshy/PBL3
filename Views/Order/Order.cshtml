@@ -89,6 +89,30 @@
                 grid-template-columns: 3fr 2fr; /* Two columns for medium screens and up */
             }
         }
+         #addressChooseModal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        #addressChooseModal .modal-content {
+            width: 100%;
+            max-width: 32rem; /* tương đương w-full max-w-md */
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
     </style>
 @* 
 <script>
@@ -210,11 +234,11 @@
                         <div class="bg-white rounded-lg shadow p-6 address-box">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-lg font-semibold text-gray-700">Giao tới</h2>
-                                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Thay đổi</a>
+                                <a href="javascript:void(0)" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium" onclick="openAddressChoose()">Thay đổi</a>
                             </div>
                             <div class="text-gray-600">
                                 <p class="font-semibold">@firstOrder.BuyerName | @firstOrder.BuyerPhone</p>
-                                <p class="text-sm">@firstOrder.Address</p>
+                                <p class="text-sm" id="selected-address-display">@firstOrder.Address</p>
                             </div>
                         </div>
                         <div class="bg-white rounded-lg shadow p-6 sticky top-8">
@@ -271,12 +295,36 @@
             </div>
         </div>
     }
+</div>
+<!-- Modal for Address Selection -->
+    <div id="addressChooseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Nội dung modal -->
+        <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <span class="close-btn absolute top-2 right-4 text-2xl cursor-pointer" onclick="closeAddressModal()">&times;</span>
+            <div id="address-modal-body"></div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function openAddressChoose(userId) {
+            $.get('@Url.Action("AddressChoose")', function (data) {
+                $('#address-modal-body').html(data);
+                $('#addressChooseModal').css('display', 'flex');
+            });
+        }
+
+        function closeAddressModal() {
+            $('#addressChooseModal').css('display', 'none');
+            $('#address-modal-body').html('');
+        }
+    </script>
 </body>
 </html>
 
 @section Scripts {
     <script>
        // document.getElementById("submitBtn").addEventListener("click", submitOrder);
+       window.selectedAddressData = null;
         function submitOrder() {
             // Lấy dữ liệu từ Model Razor (Orders đã có đủ thông tin)
             var orders = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Orders));
@@ -285,13 +333,15 @@
             @* orders.forEach(function(order) {
                 order.PaymentMethod = paymentMethod;
             }); *@
+            console.log("Orders before processing:");
+            console.log("địa chỉ thanh toán:", window.selectedAddressData);
             console.log(JSON.stringify(orders));
                 orders = orders.map(o => ({
                 SellerId: o.SellerId,
                 BuyerId: o.BuyerId,
                 OrderPrice: o.OrderPrice,
                // PaymentMethod: o.PaymentMethod,
-                Address: o.Address,
+                Address: (window.selectedAddressData != null) ? window.selectedAddressData : o.Address,
                 OrderDetails: o.OrderDetails.map(d => ({
                     ProductId: d.ProductId,
                     ProductName: d.ProductName,
