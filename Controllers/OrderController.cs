@@ -37,6 +37,7 @@ namespace PBL3.Controllers
             if (buyerId == 0)
                 return RedirectToAction("Login", "Account");
 
+
             try
             {
                 var cartItems = selectedItem;
@@ -46,11 +47,13 @@ namespace PBL3.Controllers
                     return RedirectToAction("Cart", "Cart");
                 }
 
+
                 var previewOrders = _orderService.PreviewOrder(buyerId, cartItems);
                 //return View("Order",previewOrders);
                 TempData["PreviewOrders"] = JsonConvert.SerializeObject(previewOrders);
                 return Ok(new { redirectUrl = Url.Action("Preview") });
             }
+
 
             catch (Exception ex)
             {
@@ -59,6 +62,8 @@ namespace PBL3.Controllers
                 return RedirectToAction("Cart", "Cart");
             }
         }
+
+
         //đã sửa 
         [HttpPost]
         public IActionResult CreateOrder([FromBody] List<OrderDTO> orderDTOs)

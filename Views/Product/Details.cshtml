@@ -1,4 +1,5 @@
 @model PBL3.DTO.Buyer.Buyer_ChiTietSanPhamDTO
+@using Newtonsoft.Json
 @{
     ViewBag.Title = Model.ProductName;
     //Layout = "~/Views/Shared/BuyerLayout.cshtml";
@@ -172,7 +173,7 @@
                 </div>
                 <div class="product-actions">
                     <button type="submit" class="btn btn-cart">Thêm vào giỏ hàng</button>
-                    <button type="submit" formaction="@Url.Action("BuyNow")" class="btn btn-buy">Mua ngay</button>
+                    <button type="button" onclick="buyNowAjax(event)" class="btn btn-buy">Mua ngay</button>
                 </div>
             </form>
             <div id="addToCartMsg">
@@ -367,6 +368,64 @@
             });
             return false;
         }
+
+        function buyNowAjax(event) {
+            event.preventDefault();
+
+            const productId = @Model.ProductId;
+            const sellerId = @Model.sellerId;
+            const sellerName = "@Model.StoreName";
+            const quantity = parseInt(document.getElementById("quantity").value);
+            const price = @Model.Price;
+
+            const cartItem = {
+                productId: productId,
+                productName: @Html.Raw(JsonConvert.SerializeObject(Model.ProductName)),
+                price: price,
+                quantity: quantity,
+                image: null,
+                isSelected: true,
+                currentQuantity: @Model.Quantity
+            };
+
+            const cartDTO = [
+                {
+                    sellerID: sellerId,
+                    sellerName: sellerName,
+                    cartItems: [cartItem]
+                }
+            ];
+
+            fetch("@Url.Action("Order", "Order")", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(cartDTO)
+            })
+            .then(response => {
+                if (response.status === 302 || response.redirected) {
+                    // Người dùng chưa đăng nhập → lưu dữ liệu vào sessionStorage
+                    sessionStorage.setItem("buyNowData", JSON.stringify(cartDTO));
+                    // Điều hướng tới trang đăng nhập
+                    window.location.href = "@Url.Action("Login", "Account")";
+                    return;
+                }
+                if (!response.ok) throw new Error("Lỗi khi gửi dữ liệu mua ngay");
+
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.redirectUrl)
+                    window.location.href = data.redirectUrl;
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Không thể xử lý đơn hàng. Vui lòng thử lại.");
+            });
+        }
+
+
 
     </script>
 }
