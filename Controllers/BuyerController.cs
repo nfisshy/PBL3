@@ -691,7 +691,7 @@ namespace PBL3.Controllers
 
             return View(dto);
         }
-        
+
         [HttpPost]
         public IActionResult SaveVoucher(string voucherId)
         {
@@ -722,6 +722,34 @@ namespace PBL3.Controllers
             catch (Exception)
             {
                 return Json(new { success = false, message = "Có lỗi xảy ra khi lưu voucher." });
+            }
+        }
+        
+        [HttpPost]
+        public IActionResult MarkVoucherAsUsed(string voucherId)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            try
+            {
+                _buyerService.UpdateVoucherIsUsed(buyerId, voucherId);
+                return Json(new { success = true, message = "Voucher đã được đánh dấu là đã sử dụng." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nếu cần
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật voucher." });
             }
         }
 

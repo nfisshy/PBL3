@@ -198,7 +198,6 @@ namespace PBL3.Controllers
         [HttpGet]
         public IActionResult AddressChoose()
         {
-            _logger.LogInformation("đã nhấn vào AddressChoose");
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (buyerId == 0)
             {
@@ -215,6 +214,29 @@ namespace PBL3.Controllers
                 _logger.LogError(ex, "Lỗi khi lấy danh sách địa chỉ cho Buyer ID: {BuyerId}", buyerId);
                 TempData["Error"] = "Không thể tải danh sách địa chỉ.";
                 return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult VoucherChoose([FromForm] List<int> sellerIds)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                // Gọi service với buyerId và danh sách sellerId
+                var vouchers = _buyerService.GetVouchersByBuyerIdAndSellers(buyerId, sellerIds);
+                // Trả về PartialView để hiển thị trong modal
+                return PartialView(vouchers);
+            }
+            catch (Exception ex)
+            {
+                // TODO: log lỗi nếu cần
+                return PartialView(new List<Buyer_VoucherDTO>());
             }
         }
 
