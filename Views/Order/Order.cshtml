@@ -226,16 +226,19 @@
                                     {
                                         foreach (var detail in order.OrderDetails)
                                         {
-                                            string imgSrc = "https://placehold.co/80x80/e2e8f0/cbd5e0?text=No+Image&font=inter";
-                                            if (detail.Image != null && detail.Image.Length > 0)
-                                            {
-                                                try
-                                                {
-                                                    var base64 = Convert.ToBase64String(detail.Image);
-                                                    imgSrc = $"data:image/jpeg;base64,{base64}";
-                                                }
-                                                catch { }
-                                            }
+string imgSrc = "https://placehold.co/80x80/e2e8f0/cbd5e0?text=No+Image&font=inter";
+
+if (!string.IsNullOrEmpty(detail.ImageData))
+{
+    try
+    {
+        imgSrc = $"data:image/jpeg;base64,{detail.ImageData}";
+    }
+    catch
+    {
+        // Nếu ImageData không hợp lệ thì giữ nguyên placeholder
+    }
+}
 
                                             <div class="flex items-start py-3 border-b border-gray-100 last:border-b-0">
                                                 <img src="@imgSrc" alt="@detail.ProductName"
@@ -574,6 +577,7 @@
                     BuyerId: o.BuyerId,
                     OrderPrice: finalPrice,
                     PaymentMethod: paymentMethodValue,
+                    PaymentStatus: (paymentMethodValue === 1) ? true : false,
                     Address: (window.selectedAddressData != null) ? window.selectedAddressData : o.Address,
                     Discount: discount,
                     OrderDetails: o.OrderDetails.map(d => ({
@@ -582,6 +586,7 @@
                         Quantity: d.Quantity,
                         TotalPrice: d.TotalPrice,
                         Image: d.Image,
+                        ImageData: d.ImageData || null // Giữ nguyên nếu không có
                     }))
                 };
             });

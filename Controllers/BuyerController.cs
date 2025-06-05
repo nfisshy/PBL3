@@ -167,26 +167,49 @@ namespace PBL3.Controllers
             }
         }
         [HttpPost]
-        public IActionResult UpdateProfile([FromBody] Buyer_ThongTinCaNhanDTO model)
+        public IActionResult UpdateProfile(IFormCollection form, IFormFile Avatar)
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (buyerId == 0) return Json(new { success = false, message = "Chưa đăng nhập" });
+
             try
             {
-                _buyerService.UpdateName(buyerId, model.Name);
-                DateTime date;
-                if (DateTime.TryParse(model.Date.ToString(), out date))
+                string name = form["Name"];
+                string phoneNumber = form["PhoneNumber"];
+                string dateStr = form["Date"];
+                string sexStr = form["Sex"];
+
+                _buyerService.UpdateName(buyerId, name);
+
+                if (DateTime.TryParse(dateStr, out DateTime date))
                     _buyerService.UpdateDate(buyerId, date);
-                // if(Enum.TryParse(typeof(PBL3.Enums.Gender), model.Sex.ToString(), out var gender))
-                //     _buyerService.UpdateSex(buyerId, (PBL3.Enums.Gender)gender);
-                _buyerService.UpdatePhoneNumber(buyerId, model.PhoneNumber);
-                return Json(new { success = true });
+
+                if (int.TryParse(sexStr, out int sexInt) &&
+                    Enum.IsDefined(typeof(Gender), sexInt))
+                    _buyerService.UpdateSex(buyerId, (Gender)sexInt);
+
+                _buyerService.UpdatePhoneNumber(buyerId, phoneNumber);
+
+                string? avatarBase64 = null;
+                if (Avatar != null && Avatar.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        Avatar.CopyTo(ms);
+                        var bytes = ms.ToArray();
+                        _buyerService.UpdateAvatar(buyerId, bytes); // bạn cần có hàm này
+                        avatarBase64 = "data:" + Avatar.ContentType + ";base64," + Convert.ToBase64String(bytes);
+                    }
+                }
+
+                return Json(new { success = true, avatarBase64 });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
 
         public ActionResult AddressHome()
         {
@@ -583,13 +606,14 @@ namespace PBL3.Controllers
         }
 
         [HttpGet]
-        public IActionResult ReturnExchangeHome()
+        public IActionResult ReturnExchangeHome(ExchangeStatus? status = null)
         {
             int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             try
             {
-                var allExchanges = _returnExchangeService.GetAll(buyerId);
+                var allExchanges = _returnExchangeService.GetAll(buyerId, status);
+                ViewBag.CurrentStatus = status;
                 return View("ReturnExchangeHome", allExchanges);
             }
             catch (Exception ex)

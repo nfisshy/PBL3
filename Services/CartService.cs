@@ -40,6 +40,7 @@ namespace PBL3.Services
                             Quantity = ci.Quantity,
                             IsSelected = false,
                             currentQuantity = product?.ProductQuantity ?? 0,
+                            IsActive = product.ProductStatus == PBL3.Enums.ProductStatus.Selling
                         };
                     }).ToList();
                     return new Buyer_CartDTO

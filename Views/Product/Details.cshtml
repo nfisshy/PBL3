@@ -132,7 +132,7 @@
         <!-- Left: Product Image -->
         <div class="product-main-left">
             <div class="product-main-image">
-                <img src="@(Model.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="@Model.ProductName" />
+                <img id="productImage" src="@(Model.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="@Model.ProductName" />
             </div>
             <!-- Thumbnails: nếu có nhiều ảnh, có thể render thêm ở đây -->
             @* <div class="product-thumbnails">
@@ -377,13 +377,18 @@
             const sellerName = "@Model.StoreName";
             const quantity = parseInt(document.getElementById("quantity").value);
             const price = @Model.Price;
+            const imgElement = document.getElementById("productImage");
+            const imageDataUrl = imgElement.src; // Đây là chuỗi "data:image/jpeg;base64,..."
+
+            // Nếu bạn muốn tách lấy phần base64
+            const base64 = imageDataUrl.split(',')[1]; // lấy phần sau dấu phẩy
 
             const cartItem = {
                 productId: productId,
                 productName: @Html.Raw(JsonConvert.SerializeObject(Model.ProductName)),
                 price: price,
                 quantity: quantity,
-                image: null,
+                imageData: base64,
                 isSelected: true,
                 currentQuantity: @Model.Quantity
             };

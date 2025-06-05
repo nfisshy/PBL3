@@ -152,6 +152,15 @@ namespace PBL3.Services
             buyer.PhoneNumber = newPhoneNumber;
             _buyerRepositories.Update(buyer);
         }
+        public void UpdateAvatar(int buyerId, byte[] avatarBytes)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null)
+                throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+
+            buyer.Avatar = avatarBytes;
+            _buyerRepositories.Update(buyer);
+        }
         public List<Buyer_SoDiaChiDTO> GetAllAddressByBuyerId(int buyerId)
         {
             var addresses = _addressBuyerRepositories.GetAllByBuyerId(buyerId);

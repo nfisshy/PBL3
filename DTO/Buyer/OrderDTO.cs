@@ -44,6 +44,7 @@ namespace PBL3.DTO.Buyer
         public decimal TotalPrice { get; set; }
 
         public byte[]? Image { get; set; }
+        public string ImageData { get; set; } // Dữ liệu hình ảnh dưới dạng Base64
     }
 
     public class PinDTO

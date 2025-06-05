@@ -28,11 +28,13 @@ namespace PBL3.Controllers
         [HttpGet]
         public IActionResult Preview()
         {
+            _logger.LogInformation("Vào trang xem trước đơn hàng");
             var json = TempData["PreviewOrders"] as string;
             if (string.IsNullOrEmpty(json))
                 return RedirectToAction("Cart", "Cart");
 
             var previewOrders = JsonConvert.DeserializeObject<PurchaseDTO>(json);
+            
             return View("Order", previewOrders);
         }
         //đã sửa
@@ -55,12 +57,11 @@ namespace PBL3.Controllers
 
 
                 var previewOrders = _orderService.PreviewOrder(buyerId, cartItems);
+
                 //return View("Order",previewOrders);
                 TempData["PreviewOrders"] = JsonConvert.SerializeObject(previewOrders);
                 return Ok(new { redirectUrl = Url.Action("Preview") });
             }
-
-
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi xem trước đơn hàng cho buyer ID: {BuyerId}", buyerId);
@@ -102,9 +103,12 @@ namespace PBL3.Controllers
         [HttpPost]
         public IActionResult UpdateOrderStatus(int orderId, OrdStatus newStatus)
         {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+                return RedirectToAction("Login", "Account");
             try
             {
-                _orderService.UpdateOrderStatus(orderId, newStatus);
+                _orderService.UpdateOrderStatus(orderId, buyerId, newStatus);
                 TempData["Success"] = "Cập nhật trạng thái đơn hàng thành công";
                 return RedirectToAction("OrderDetailHome");
             }

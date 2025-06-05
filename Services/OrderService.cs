@@ -16,6 +16,7 @@ namespace PBL3.Services
         private readonly IOrderDetailRepositories _orderDetailRepository;
         private readonly ISellerRepositories _sellerRepository;
         private readonly IBuyerRepositories _buyerRepository;
+        private readonly IPlatformWalletRepositories _walletRepository;
 
         private readonly ILogger<OrderService> _logger;
 
@@ -23,13 +24,15 @@ namespace PBL3.Services
                           IOrderDetailRepositories orderDetailRepository,
                           IBuyerRepositories buyerRepository,
                           ISellerRepositories sellerRepository,
-                          ILogger<OrderService> logger)
+                          ILogger<OrderService> logger,
+                          IPlatformWalletRepositories walletRepository)
         {
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
             _buyerRepository = buyerRepository;
             _sellerRepository = sellerRepository;
             _logger = logger;
+            _walletRepository = walletRepository;
         }
         public PurchaseDTO PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem)
         {
@@ -69,7 +72,8 @@ namespace PBL3.Services
                         ProductName = cartItem.ProductName,
                         Quantity = cartItem.Quantity,
                         TotalPrice = cartItem.Price * cartItem.Quantity,
-                        Image = cartItem.Image
+                        Image = cartItem.Image,
+                        ImageData = cartItem.ImageData
                     };
                     totalPrice += orderDetail.TotalPrice;
                     _logger.LogInformation("djfldfhsdahfkldhlfkj");
@@ -81,53 +85,86 @@ namespace PBL3.Services
                 result.Orders.Add(orderDTO);
                 result.purchasePrice += orderDTO.OrderPrice;
             }
-
             return result;
         }
         public void CreateOrder(OrderDTO orderDTO)
+{
+    // Create the main order
+    var order = new Order
+    {
+        BuyerId = orderDTO.BuyerId,
+        SellerId = orderDTO.SellerId,
+        OrderDate = DateTime.Now,
+        OrderPrice = orderDTO.OrderPrice + 22000,
+        OrderStatus = OrdStatus.WaitConfirm,
+        PaymentMethod = orderDTO.PaymentMethod,
+        PaymentStatus = orderDTO.PaymentStatus,
+        Address = orderDTO.Address,
+        QuantityTypeOfProduct = orderDTO.OrderDetails.Count,
+        Discount = orderDTO.Discount
+    };
+
+    _orderRepository.Add(order);
+
+    // Create order details
+    foreach (var detail in orderDTO.OrderDetails)
+    {
+        byte[] imageBytes = null;
+
+        if (!string.IsNullOrEmpty(detail.ImageData))
         {
-            // Create the main order
-            var order = new Order
+            try
             {
-                BuyerId = orderDTO.BuyerId,
-                SellerId = orderDTO.SellerId,
-                OrderDate = DateTime.Now,
-                OrderPrice = orderDTO.OrderPrice + 22000,
-                OrderStatus = OrdStatus.WaitConfirm,
-                PaymentMethod = orderDTO.PaymentMethod,
-                PaymentStatus = false,
-                Address = orderDTO.Address,
-                QuantityTypeOfProduct = orderDTO.OrderDetails.Count,
-                Discount = orderDTO.Discount
-            };
+                // Nếu chuỗi base64 có tiền tố data:image/jpeg;base64,... thì cần cắt bỏ
+                var base64Data = detail.ImageData.Contains(",")
+                    ? detail.ImageData.Split(',')[1]
+                    : detail.ImageData;
 
-            _orderRepository.Add(order);
-
-            // Create order details
-            foreach (var detail in orderDTO.OrderDetails)
+                imageBytes = Convert.FromBase64String(base64Data);
+            }
+            catch (FormatException ex)
             {
-                var orderDetail = new OrderDetail
-                {
-                    OrderId = order.OrderId,
-                    ProductId = detail.ProductId,
-                    Quantity = detail.Quantity,
-                    Price = detail.TotalPrice,
-                    Productname = detail.ProductName,
-                    Image = detail.Image
-                };
-                _orderDetailRepository.Add(orderDetail);
+                // Log lỗi base64 không hợp lệ nếu cần
+                imageBytes = null;
             }
         }
 
-        public void UpdateOrderStatus(int orderId, OrdStatus newStatus)
+        var orderDetail = new OrderDetail
+        {
+            OrderId = order.OrderId,
+            ProductId = detail.ProductId,
+            Quantity = detail.Quantity,
+            Price = detail.TotalPrice,
+            Productname = detail.ProductName,
+            Image = imageBytes // gán vào đây
+        };
+
+        _orderDetailRepository.Add(orderDetail);
+    }
+}
+
+
+        public void UpdateOrderStatus(int orderId, int buyerId, OrdStatus newStatus)
         {
             var order = _orderRepository.GetById(orderId);
             if (order != null)
             {
                 order.OrderStatus = newStatus;
-                if( newStatus == OrdStatus.Completed)
+                order.PaymentStatus = true;
+
+                if (newStatus == OrdStatus.Completed)
                 {
-                    order.OrderReceivedDate = DateTime.Now; // Cập nhật ngày giao hàng nếu trạng thái là Completed
+                    order.OrderReceivedDate = DateTime.Now; // Cập nhật ngày giao hàng nếu đã hoàn tất
+                }
+                else if (newStatus == OrdStatus.Canceled)
+                {
+                        var wallet = _walletRepository.GetByUserId(buyerId);
+                        if (wallet != null)
+                        {
+                            wallet.WalletBalance += order.OrderPrice;
+                            _walletRepository.Update(wallet);
+                        }
+
                 }
                 _orderRepository.Update(order);
             }
@@ -180,7 +217,7 @@ namespace PBL3.Services
                 });
             }
 
-            return orderDTOs;
+            return orderDTOs.OrderByDescending(o => o.OrderDate).ToList();
         }
         
         public OrderDTO GetOrderById(int orderId)
