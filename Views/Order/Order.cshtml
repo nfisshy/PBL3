@@ -320,8 +320,9 @@
                                 <select id="paymentMethod" name="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 @foreach (var method in Enum.GetValues(typeof(PBL3.Enums.PayMethod)))
                                 {
+                                    var intValue = (int)method;
                                     var isSelected = firstOrder.PaymentMethod == (PBL3.Enums.PayMethod)method ? "selected" : "";
-                                    <option value="@method" isSelected>
+                                    <option value="@intValue" isSelected>
                                         @(method.ToString() == "CashOnDelivery" ? "Thanh toán khi nhận hàng" :
                                         method.ToString() == "WalletPayment" ? "Ví điện tử" : method.ToString())
                                     </option>
@@ -437,6 +438,7 @@
             window.sellerDiscountMap = {};
             window.selectedVoucher = null;
             window.selectedVoucherData = null;
+            window.PurchaseTotal = window.originalTotalPrice;
             const display = document.getElementById("selected-voucher-amount");
             if (display) {
                 display.innerText = "0 đ";
@@ -461,15 +463,87 @@
             }
         });
     </script>
+</div>
+<div id="pinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-80 shadow-lg text-center">
+        <h2 class="text-lg font-bold mb-4">Xác nhận thanh toán</h2>
+        <p>Vui lòng nhập mã PIN ví:</p>
+        <input type="password" id="pinInput" maxlength="6" class="border rounded p-2 w-full my-3 text-center" />
+        <button id="submitPinBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Xác nhận</button>
+        <p id="pinError" class="text-red-500 mt-2 hidden">Mã PIN không đúng.</p>
+    </div>
+</div>
 </body>
 </html>
 
 @section Scripts {
     <script>
+            let pinAttempts = 0; // đặt ngoài mọi function
+
+    function showPinModal(callback) {
+        document.getElementById("pinModal").classList.remove("hidden");
+        document.getElementById("pinError").classList.add("hidden");
+        document.getElementById("pinInput").value = "";
+        document.getElementById("pinInput").focus();
+
+        const submitBtn = document.getElementById("submitPinBtn");
+        submitBtn.onclick = function () {
+            const enteredPin = document.getElementById("pinInput").value;
+            console.log("parsed:", parseInt(enteredPin));
+            console.log("Entered PIN:", enteredPin);
+            console.log("PIN:",JSON.stringify({ inputPin: parseInt(enteredPin) }))
+            fetch('/Order/VerifyPin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inputPin: parseInt(enteredPin) })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Server returned an error");
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Check balance
+                    fetch('/Order/CheckBalanceAndDeduct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: window.PurchaseTotal }) // Gửi amount trong dto
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        callback(); // Đủ tiền, tiếp tục đặt hàng
+                    } else {
+                        alert(response.message || "Số dư ví không đủ để thanh toán. Vui lòng nạp thêm tiền.");
+                        document.getElementById("pinModal").classList.add("hidden");
+                    }
+                });
+                } else {
+                    pinAttempts++;
+                    if (pinAttempts >= 5) {
+                        alert("Nhập sai PIN quá 5 lần. Đang chuyển về trang chủ...");
+                        window.location.href = '/Buyer/Index';
+                    } else {
+                        document.getElementById("pinError").textContent = `Mã PIN không đúng. Lần nhập sai thứ ${pinAttempts}/5.`;
+                        document.getElementById("pinError").classList.remove("hidden");
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("PIN check error:", err);
+                alert("Mã PIN không đúng hoặc có lỗi xảy ra. Vui lòng thử lại.");
+            });
+        };
+    }
+
         window.addEventListener("DOMContentLoaded", function () {
             const totalPriceText = document.getElementById("total-price")?.innerText || "0";
             // Lưu tổng tiền gốc (dạng số) vào biến toàn cục
             window.originalTotalPrice = parseFloat(totalPriceText.replace(/[₫.,]/g, '')) || 0;
+            window.PurchaseTotal = window.originalTotalPrice;
+            console.log("Purchase Total:", window.PurchaseTotal);
     });
        // document.getElementById("submitBtn").addEventListener("click", submitOrder);
        window.orderTotal = @Model.purchasePrice.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
@@ -480,8 +554,9 @@
             var orders = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Orders));
             console.log("Orders before processing:");
             console.log("địa chỉ thanh toán:", window.selectedAddressData);
-            console.log(JSON.stringify(orders));
-
+            
+            const paymentMethodValue = parseInt(document.getElementById("paymentMethod").value);
+            console.log("Phương thức thanh toán:", paymentMethodValue);
             orders = orders.map(o => {
                 const discount = window.sellerDiscountMap[o.SellerId] || 0;
 
@@ -498,7 +573,9 @@
                     SellerId: o.SellerId,
                     BuyerId: o.BuyerId,
                     OrderPrice: finalPrice,
+                    PaymentMethod: paymentMethodValue,
                     Address: (window.selectedAddressData != null) ? window.selectedAddressData : o.Address,
+                    Discount: discount,
                     OrderDetails: o.OrderDetails.map(d => ({
                         ProductId: d.ProductId,
                         ProductName: d.ProductName,
@@ -508,34 +585,42 @@
                     }))
                 };
             });
-
+            console.log(JSON.stringify(orders));
             // ✅ Nếu có voucher được chọn, gọi API đánh dấu là đã sử dụng
             const voucherId = window.selectedVoucher?.VoucherId;
-            if (voucherId) {
-                fetch('/Buyer/MarkVoucherAsUsed?voucherId=' + encodeURIComponent(voucherId), {
-                    method: 'POST'
-                })
-                .then(res => {
-                    if (!res.ok) throw new Error("Voucher sử dụng thất bại");
-                    return res.json();
-                })
-                .then(result => {
-                    if (result.success) {
-                        console.log("Voucher marked as used:", voucherId);
-                        // Tiếp tục submit đơn hàng
-                        return createOrder(orders);
-                    } else {
-                        alert(result.message || 'Không thể đánh dấu voucher đã dùng.');
-                    }
-                })
-                .catch(err => {
-                    console.error('Lỗi khi đánh dấu voucher:', err);
-                    alert('Không thể sử dụng voucher. Vui lòng thử lại.');
-                });
+            const continueOrder = () => {
+                if (voucherId) {
+                    fetch('/Buyer/MarkVoucherAsUsed?voucherId=' + encodeURIComponent(voucherId), {
+                        method: 'POST'
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Voucher sử dụng thất bại");
+                        return res.json();
+                    })
+                    .then(result => {
+                        if (result.success) {
+                            console.log("Voucher marked as used:", voucherId);
+                            createOrder(orders);
+                        } else {
+                            alert(result.message || 'Không thể đánh dấu voucher đã dùng.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Lỗi khi đánh dấu voucher:', err);
+                        alert('Không thể sử dụng voucher. Vui lòng thử lại.');
+                    });
+                } else {
+                    createOrder(orders);
+                }
+            };
+
+            if (paymentMethodValue === 1) {
+                // Hiển thị modal PIN
+                showPinModal(continueOrder);
             } else {
-                // Không có voucher, tiếp tục đặt hàng
-                createOrder(orders);
+                continueOrder();
             }
+
         }
 
         // ✅ Hàm riêng gửi đơn hàng

@@ -101,6 +101,7 @@ else
             if (totalPriceElement && window.originalTotalPrice) {
                 const discount = discountAmount || 0;
                 const newTotal = window.originalTotalPrice - discount;
+                window.PurchaseTotal = newTotal;
                 totalPriceElement.innerText = `${newTotal.toLocaleString("vi-VN")}₫`;
             }
         }
@@ -112,6 +113,7 @@ else
         // Đóng modal
         if (typeof closeVoucherModal === 'function') {
             closeVoucherModal();
+            console.log("Purchase Total:", window.PurchaseTotal);
         }
     });
 </script>

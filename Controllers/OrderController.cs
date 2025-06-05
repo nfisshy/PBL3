@@ -13,13 +13,16 @@ namespace PBL3.Controllers
     {
         private readonly OrderService _orderService;
         private readonly BuyerService _buyerService;
+        private readonly WalletService _walletService;
         private readonly ILogger<OrderController> _logger;
 
-        public OrderController(OrderService orderService, BuyerService buyerService, ILogger<OrderController> logger)
+        public OrderController(OrderService orderService, BuyerService buyerService, ILogger<OrderController> logger,
+            WalletService walletService)
         {
             _orderService = orderService;
             _logger = logger;
             _buyerService = buyerService;
+            _walletService = walletService;
         }
         //đã sửa
         [HttpGet]
@@ -238,6 +241,44 @@ namespace PBL3.Controllers
                 // TODO: log lỗi nếu cần
                 return PartialView(new List<Buyer_VoucherDTO>());
             }
+        }
+
+        [HttpPost]
+        public IActionResult VerifyPin([FromBody] PinDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            bool isValid = _walletService.VerifyPinForOrder(buyerId, dto.inputPin);
+
+            if (!isValid)
+            {
+                return Json(new { success = false, message = "Mã PIN không đúng." });
+            }
+
+            return Json(new { success = true, message = "Xác minh PIN thành công." });
+        }
+        
+        [HttpPost]
+        public IActionResult CheckBalanceAndDeduct([FromBody]walletPurchaseDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            bool result = _walletService.CheckBalanceAndDeduct(buyerId, dto.amount);
+
+            if (!result)
+            {
+                return Json(new { success = false, message = "Số dư ví không đủ để thanh toán." });
+            }
+
+            return Json(new { success = true, message = "Thanh toán thành công. Số dư đã được trừ." });
         }
 
     }

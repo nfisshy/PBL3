@@ -97,7 +97,8 @@ namespace PBL3.Services
                 PaymentMethod = orderDTO.PaymentMethod,
                 PaymentStatus = false,
                 Address = orderDTO.Address,
-                QuantityTypeOfProduct = orderDTO.OrderDetails.Count
+                QuantityTypeOfProduct = orderDTO.OrderDetails.Count,
+                Discount = orderDTO.Discount
             };
 
             _orderRepository.Add(order);
