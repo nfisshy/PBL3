@@ -2,14 +2,14 @@
 @using PBL3.Enums
 
 @{
-    ViewData["Title"] = "Order Management";
+    ViewData["Title"] = "Quản lý đơn hàng";
     Layout = "_AdminLayout";
 }
 
 <div class="container-fluid">
     <!-- Page Title -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0"><i class="fas fa-shopping-cart"></i> Order Management</h2>
+        <h2 class="mb-0"><i class="fas fa-shopping-cart"></i> Quản lý đơn hàng</h2>
     </div>
 
     <!-- Statistics Cards -->
@@ -105,7 +105,7 @@
             <form method="get" asp-action="OrderManagement" class="row g-3" id="filterForm">
                 <div class="col-md-3">
                     <div class="input-group">
-                        <span class="input-group-text" data-bs-toggle="tooltip" title="Tìm theo mã đơn hàng, tên người mua hoặc người bán"><i class="fas fa-search"></i></span>
+                        <span class="input-group-text" data-bs-toggle="tooltip" title="Tìm theo ID, tên người mua hoặc người bán"><i class="fas fa-search"></i></span>
                         <input type="text" name="search" class="form-control" placeholder="Tìm đơn hàng..." value="@ViewBag.CurrentSearch">
                     </div>
                 </div>
@@ -153,6 +153,18 @@
                     {
                         <span>với từ khóa "<strong>@ViewBag.CurrentSearch</strong>"</span>
                     }
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentFromDate) || !string.IsNullOrEmpty(ViewBag.CurrentToDate))
+                    {
+                        <span>trong khoảng thời gian</span>
+                        @if (!string.IsNullOrEmpty(ViewBag.CurrentFromDate))
+                        {
+                            <span>từ <strong>@ViewBag.CurrentFromDate</strong></span>
+                        }
+                        @if (!string.IsNullOrEmpty(ViewBag.CurrentToDate))
+                        {
+                            <span>đến <strong>@ViewBag.CurrentToDate</strong></span>
+                        }
+                    }
                 </span>
             </div>
         </div>
@@ -163,7 +175,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">                    <tr>
-                        <th>Mã đơn hàng</th>
+                        <th>ID</th>
                         <th>Khách hàng</th>
                         <th>Người bán</th>
                         <th>Tổng tiền</th>
@@ -178,8 +190,7 @@
                     {
                         foreach (var order in Model.Items)
                         {
-                            <tr>
-                                <td>@order.OrderCode</td>
+                            <tr>                                <td>@order.Id</td>
                                 <td>@order.BuyerName</td>
                                 <td>@order.SellerName</td>
                                 <td>@order.TotalAmount.ToString("C")</td>
@@ -265,8 +276,7 @@
 <div class="modal fade" id="orderDetails" tabindex="-1" aria-labelledby="orderDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="orderDetailsLabel">Chi tiết đơn hàng #<span id="orderCode"></span></h5>
+            <div class="modal-header">                <h5 class="modal-title" id="orderDetailsLabel">Chi tiết đơn hàng #<span id="orderId"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -369,10 +379,8 @@
                 $.get('/Admin/GetOrderDetails/' + orderId, function(response) {
                     if (response.success) {
                         var data = response.data;
-                        console.log('Payment Method:', data.paymentMethod);
-                        
-                        // Update modal content
-                        $('#orderCode').text(data.orderCode);
+                        console.log('Payment Method:', data.paymentMethod);                        // Update modal content
+                        $('#orderId').text(data.orderId.toString().padStart(6, '0'));
                         $('#buyerName').text(data.buyerName);
                         $('#buyerPhone').text(data.buyerPhone);
                         $('#sellerName').text(data.sellerName);

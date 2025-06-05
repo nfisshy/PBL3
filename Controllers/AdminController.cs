@@ -28,25 +28,37 @@ namespace PBL3.Controllers
 
         public IActionResult Index()
         {
+            // Tính tổng doanh thu từ các đơn hàng đã hoàn thành và đã thanh toán
+            var completedAndPaidOrders = _context.Orders
+                .Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus)
+                .ToList();
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - o.Discount) * 0.05m); // 5% platform fee
+
             // Chuyển về Dashboard.cshtml
             var dashboardData = new Admin_DashboardDTO
             {
-                TotalUsers = _context.Users.Count(),
+                TotalUsers = _context.Buyers.Count() + _context.Sellers.Count(),
                 TotalProducts = _context.Products.Count(),
                 TotalOrders = _context.Orders.Count(),
-                TotalRevenue = 0
+                TotalRevenue = totalRevenue
             };
             return View("Dashboard", dashboardData);
         }
 
         public IActionResult Dashboard()
         {
+            // Tính tổng doanh thu từ các đơn hàng đã hoàn thành và đã thanh toán
+            var completedAndPaidOrders = _context.Orders
+                .Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus)
+                .ToList();
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - o.Discount) * 0.05m); // 5% platform fee
+
             var dashboardData = new Admin_DashboardDTO
             {
-                TotalUsers = _context.Users.Count(),
+                TotalUsers = _context.Buyers.Count() + _context.Sellers.Count(),
                 TotalProducts = _context.Products.Count(),
                 TotalOrders = _context.Orders.Count(),
-                TotalRevenue = 0
+                TotalRevenue = totalRevenue
             };
             return View(dashboardData);
         }
@@ -219,11 +231,20 @@ namespace PBL3.Controllers
             // Apply filters
             if (!string.IsNullOrEmpty(search))
             {
-                search = search.Trim().ToLower();
-                orders = orders.Where(o => 
-                    o.OrderId.ToString().Contains(search) || 
-                    o.Buyer.Username.ToLower().Contains(search) || 
-                    o.Seller.Username.ToLower().Contains(search));
+                search = search.Trim();
+                if (int.TryParse(search, out int orderId))
+                {
+                    // Tìm chính xác theo ID
+                    orders = orders.Where(o => o.OrderId == orderId);
+                }
+                else 
+                {
+                    // Tìm theo tên người mua hoặc người bán
+                    search = search.ToLower();
+                    orders = orders.Where(o => 
+                        o.Buyer.Username.ToLower().Contains(search) || 
+                        o.Seller.Username.ToLower().Contains(search));
+                }
             }
 
             if (status.HasValue)
@@ -253,7 +274,6 @@ namespace PBL3.Controllers
             var ordersQuery = orders.Select(o => new Admin_OrderManagementDTO
             {
                 Id = o.OrderId,
-                OrderCode = o.OrderId.ToString("D6"),
                 BuyerName = o.Buyer.Username,
                 SellerName = o.Seller.Username,
                 TotalAmount = o.OrderPrice,
@@ -327,7 +347,6 @@ namespace PBL3.Controllers
             var orderDetails = new Admin_OrderDetailDTO
             {
                 OrderId = order.OrderId,
-                OrderCode = order.OrderId.ToString("D6"),
                 BuyerName = order.Buyer.Name,
                 BuyerPhone = order.Buyer.PhoneNumber,
                 SellerName = order.Seller.Name,
@@ -439,8 +458,8 @@ namespace PBL3.Controllers
             // Toggle the product status based on current status
             if (product.ProductStatus == ProductStatus.Violation)
             {
-                // If currently banned, change to StopSelling
-                product.ProductStatus = ProductStatus.StopSelling;
+                // If currently banned, change to Selling
+                product.ProductStatus = ProductStatus.Selling;
             }
             else if (product.ProductStatus == ProductStatus.Selling || product.ProductStatus == ProductStatus.StopSelling)
             {
@@ -479,7 +498,7 @@ namespace PBL3.Controllers
                     return Json(new { success = false, message = "Sản phẩm không trong trạng thái chờ xác nhận" });
                 }
 
-                product.ProductStatus = ProductStatus.StopSelling;
+                product.ProductStatus = ProductStatus.Selling;
                 await _context.SaveChangesAsync();
 
                 return Json(new { 
@@ -523,6 +542,101 @@ namespace PBL3.Controllers
             {
                 return Json(new { success = false, message = "Có lỗi xảy ra khi từ chối sản phẩm" });
             }
+        }
+        public IActionResult RevenueManagement(string search, DateTime? fromDate, DateTime? toDate, int? page)
+        {
+            // Validate date range
+            if (fromDate.HasValue && toDate.HasValue && fromDate.Value > toDate.Value)
+            {
+                TempData["Error"] = "Ngày bắt đầu không thể lớn hơn ngày kết thúc";
+                return RedirectToAction("RevenueManagement");
+            }
+
+            var orders = _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.Seller)
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.Trim().ToLower();
+                // Check if search is a valid order ID format (6 digits)
+                if (int.TryParse(search, out int orderId))
+                {
+                    // Tìm chính xác theo ID
+                    orders = orders.Where(o => o.OrderId == orderId);
+                }
+                else
+                {
+                    // Search by buyer or seller username
+                    orders = orders.Where(o =>
+                        o.Buyer.Username.ToLower().Contains(search) ||
+                        o.Seller.Username.ToLower().Contains(search));
+                }
+            }
+
+            // Apply date filters
+            if (fromDate.HasValue)
+            {
+                var startDate = fromDate.Value.Date;
+                orders = orders.Where(o => o.OrderDate.Date >= startDate);
+            }
+
+            if (toDate.HasValue)
+            {
+                var endDate = toDate.Value.Date.AddDays(1).AddSeconds(-1);
+                orders = orders.Where(o => o.OrderDate.Date <= endDate);
+            }
+
+            // Calculate total filtered orders and revenue
+            var allOrders = orders.ToList();
+            var totalOrders = allOrders.Count;
+            var completedAndPaidOrders = allOrders.Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus).ToList();
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - o.Discount) * 0.05m); // 5% platform fee
+            var averageOrderValue = completedAndPaidOrders.Any() ? completedAndPaidOrders.Average(o => o.OrderPrice) : 0;
+
+            // Create statistics object
+            var statistics = new RevenueStatisticsDTO
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrders = totalOrders,
+                CompletedOrders = completedAndPaidOrders.Count,
+                AverageOrderValue = averageOrderValue
+            };
+
+            // Select and project to DTO
+            var ordersQuery = allOrders.Select(o => new Admin_RevenueManagementDTO
+            {
+                Id = o.OrderId,
+                BuyerName = o.Buyer.Username,
+                SellerName = o.Seller.Username,
+                TotalAmount = o.OrderPrice,
+                Discount = o.Discount,
+                Revenue = (o.OrderPrice - o.Discount) * 0.05m,
+                OrderDate = o.OrderDate,
+                OrderStatus = o.OrderStatus,
+                PaymentStatus = o.PaymentStatus
+            });
+
+            // Pagination
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+            var paginatedList = PaginatedList<Admin_RevenueManagementDTO>.Create(
+                ordersQuery.ToList(),
+                pageNumber,
+                pageSize
+            );
+
+            // Add ViewBag data for filters and statistics
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentFromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentToDate = toDate?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalFilteredOrders = totalOrders;
+            ViewBag.Statistics = statistics;
+
+            return View(paginatedList);
         }
     }
 }
