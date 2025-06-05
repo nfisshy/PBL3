@@ -1,0 +1,120 @@
+@model List<PBL3.DTO.Buyer.Buyer_VoucherDTO>
+@using Newtonsoft.Json
+@{
+    ViewBag.Title = "Chọn Voucher";
+}
+
+<h2 class="text-xl font-semibold mb-4">Voucher của bạn</h2>
+
+@{
+    var activeVouchers = Model.Where(x => x.IsActive).ToList();
+}
+
+@if (activeVouchers.Any())
+{
+    <div class="grid gap-4" id="voucher-selection-form">
+        @foreach (var v in activeVouchers)
+        {
+            var voucherJson = JsonConvert.SerializeObject(v);
+
+            <label class="border border-dashed border-green-500 bg-green-50 p-4 rounded-md shadow-sm cursor-pointer flex items-start space-x-3">
+                <input type="radio"
+                       name="selectedVoucher"
+                       value='@Html.Raw(voucherJson)'
+                       class="mt-1 accent-green-600" />
+                <div>
+                    <p class="text-lg font-semibold text-gray-800 mb-2">@v.Description</p>
+                    <div class="text-sm text-gray-700 space-y-1">
+                        <div>
+                            🔥 <span class="font-medium">Giảm:</span> @v.DiscountPercentage.ToString("0.00")%
+                            <span class="ml-4">🎯 <span class="font-medium">Tối đa:</span> @v.MaxDiscount.ToString("N0") đ</span>
+                        </div>
+                        <div>
+                            🧾 <span class="font-medium">Kết thúc:</span> @v.EndDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                </div>
+            </label>
+        }
+    </div>
+
+    <div class="mt-6 text-right">
+        <button type="button" id="confirm-voucher-btn"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            Chọn voucher
+        </button>
+    </div>
+}
+else
+{
+    <div class="text-gray-600 italic mt-4">
+        Bạn chưa lưu voucher nào hoặc voucher của bạn không phù hợp với đơn hàng này.
+    </div>
+}
+
+<script>
+    // ❗ Chuyển selectedVoucherData thành biến toàn cục
+    window.selectedVoucherData = null;
+
+    document.getElementById('confirm-voucher-btn')?.addEventListener('click', function () {
+        const selected = document.querySelector('input[name="selectedVoucher"]:checked');
+        if (!selected) {
+            alert("Vui lòng chọn một voucher!");
+            return;
+        }
+
+        // Lưu JSON string vào biến toàn cục
+        window.selectedVoucherData = selected.value;
+        const selectedObj = JSON.parse(window.selectedVoucherData);
+
+        // Gán vào biến toàn cục để các phần khác truy cập
+        window.selectedVoucher = selectedObj;
+        console.log("Voucher đã chọn:", window.selectedVoucher.VoucherId);
+
+        // Gán nội dung hiển thị nếu có thẻ ngoài view chính
+        const display = document.getElementById("selected-voucher-amount");
+        if (display) {
+            // ✅ Tìm div tương ứng với seller
+            const orderDiv = document.querySelector(`.order-section[data-seller-id='${selectedObj.SellerId}']`);
+            console.log("Order div:", orderDiv);
+            let orderTotal = 0;
+
+            if (orderDiv) {
+                const totalAttr = orderDiv.getAttribute('data-order-total');
+                orderTotal = parseFloat(totalAttr) || 0;
+            }
+
+            // ✅ Tính giảm giá dựa trên tổng đơn hàng của đúng seller
+            let discountAmount = orderTotal * (selectedObj.DiscountPercentage / 100);
+            if (discountAmount > selectedObj.MaxDiscount) {
+                discountAmount = selectedObj.MaxDiscount;
+            }
+            window.sellerDiscountMap[selectedObj.SellerId] = discountAmount;
+            display.innerText = `${discountAmount.toLocaleString("vi-VN")} đ`;
+
+            const discountSpan = orderDiv.querySelector(".discount-amount");
+            if (discountSpan) {
+                discountSpan.innerText = `${discountAmount.toLocaleString("vi-VN")} đ`;
+            }
+
+            const totalPriceElement = document.getElementById("total-price");
+            if (totalPriceElement && window.originalTotalPrice) {
+                const discount = discountAmount || 0;
+                const newTotal = window.originalTotalPrice - discount;
+                window.PurchaseTotal = newTotal;
+                totalPriceElement.innerText = `${newTotal.toLocaleString("vi-VN")}₫`;
+            }
+        }
+        // Gọi hàm hiển thị voucher bên ngoài (nếu có)
+        if (typeof showSelectedVoucher === 'function') {
+            showSelectedVoucher(selectedObj);
+        }
+
+        // Đóng modal
+        if (typeof closeVoucherModal === 'function') {
+            closeVoucherModal();
+            console.log("Purchase Total:", window.PurchaseTotal);
+        }
+    });
+</script>
+

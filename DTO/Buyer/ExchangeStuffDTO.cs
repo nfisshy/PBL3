@@ -23,6 +23,8 @@ namespace PBL3.DTO.Buyer
         public string SellerStoreName { get; set; } // Tên người bán
         public string BuyerName { get; set; } // Tên người mua
         public IFormFile? ImageFile { get; set; }
+        public string SellerEmail { get; set; } // Email người bán
+        public string SellerPhone { get; set; } // Số điện thoại người bán
 
         }
 }

@@ -111,4 +111,27 @@
             });
         });
     </script>
+    <script>
+        const isLoggedIn = '@TempData["LoginSuccess"]' === 'True';
+        const buyNowData = sessionStorage.getItem("buyNowData");
+
+        if (isLoggedIn && buyNowData) {
+            fetch("/Order/Order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: buyNowData
+            })
+            .then(res => res.json())
+            .then(data => {
+                sessionStorage.removeItem("buyNowData");
+                if (data.redirectUrl) window.location.href = data.redirectUrl;
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Không thể xử lý đơn hàng sau khi đăng nhập.");
+            });
+        }
+    </script>
 }

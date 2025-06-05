@@ -5,9 +5,10 @@ using PBL3.Enums;
 
 namespace PBL3.DTO.Buyer
 {
-    public class PurchaseDTO{
-        public List<OrderDTO> Orders {get; set;}
-        public decimal purchasePrice{get; set; }
+    public class PurchaseDTO
+    {
+        public List<OrderDTO> Orders { get; set; }
+        public decimal purchasePrice { get; set; }
         public PurchaseDTO()
         {
             Orders = new List<OrderDTO>();
@@ -31,7 +32,7 @@ namespace PBL3.DTO.Buyer
         public string Address { get; set; }
 
         public string BuyerPhone { get; set; }
-        
+
         public decimal Discount { get; set; } // Giảm giá nếu có
     }
 
@@ -42,6 +43,17 @@ namespace PBL3.DTO.Buyer
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
 
-        public byte[]? Image {get; set; }
+        public byte[]? Image { get; set; }
+        public string ImageData { get; set; } // Dữ liệu hình ảnh dưới dạng Base64
+    }
+
+    public class PinDTO
+    {
+        public int inputPin { get; set; }
+    }
+
+    public class walletPurchaseDTO
+    {
+        public decimal amount { get; set; }
     }
 } 

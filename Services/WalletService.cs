@@ -58,7 +58,27 @@ namespace PBL3.Services
                 Banks = banks
             };
         }
+        public bool VerifyPinForOrder(int userId, int inputPin)
+        {
+            var wallet = _walletRepo.GetByUserId(userId);
+            if (wallet == null || wallet.Pin != inputPin)
+                return false;
+            return true;
+        }
+        
+        public bool CheckBalanceAndDeduct(int userId, decimal amount)
+        {
+            var wallet = _walletRepo.GetByUserId(userId);
+            if (wallet == null)
+                return false;
 
+            if (wallet.WalletBalance < amount)
+                return false;
+
+            wallet.WalletBalance -= amount;
+            _walletRepo.Update(wallet); // Cập nhật ví sau khi trừ tiền
+            return true;
+        }
         public Buyer_WalletDTO? OpenWallet(int userId)
         {
             var wallet = _walletRepo.GetByUserId(userId);
@@ -79,7 +99,7 @@ namespace PBL3.Services
                 WalletId = wallet.WalletId,
                 WalletBalance = wallet.WalletBalance,
                 UserId = wallet.UserId,
-                Pin = wallet.Pin,
+                //Pin = wallet.Pin,
                 BuyerName = buyer?.Name ?? "Unknown",
                 Banks = banks
             };

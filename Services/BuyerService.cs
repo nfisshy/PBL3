@@ -152,6 +152,15 @@ namespace PBL3.Services
             buyer.PhoneNumber = newPhoneNumber;
             _buyerRepositories.Update(buyer);
         }
+        public void UpdateAvatar(int buyerId, byte[] avatarBytes)
+        {
+            var buyer = _buyerRepositories.GetById(buyerId);
+            if (buyer == null)
+                throw new KeyNotFoundException($"Không tìm thấy người mua với ID: {buyerId}");
+
+            buyer.Avatar = avatarBytes;
+            _buyerRepositories.Update(buyer);
+        }
         public List<Buyer_SoDiaChiDTO> GetAllAddressByBuyerId(int buyerId)
         {
             var addresses = _addressBuyerRepositories.GetAllByBuyerId(buyerId);
@@ -332,7 +341,7 @@ namespace PBL3.Services
 
             return dto;
         }
-        
+
         public List<Buyer_VoucherDTO> GetVouchersByBuyerId(int buyerId)
         {
             var voucherBuyers = _voucherBuyerRepositories.GetByBuyerId(buyerId);
@@ -351,8 +360,36 @@ namespace PBL3.Services
                         EndDate = voucher.EndDate,
                         DiscountPercentage = voucher.PercentDiscount,
                         MaxDiscount = voucher.MaxDiscount,
-                        IsActive = voucher.EndDate > DateTime.Now,
+                        IsActive = voucher.EndDate > DateTime.Now && vb.IsUsed == false,
                         BuyerId = vb.BuyerId
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        public List<Buyer_VoucherDTO> GetVouchersByBuyerIdAndSellers(int buyerId, List<int> sellerIds)
+        {
+            var voucherBuyers = _voucherBuyerRepositories.GetByBuyerId(buyerId);
+            var result = new List<Buyer_VoucherDTO>();
+
+            foreach (var vb in voucherBuyers)
+            {
+                var voucher = _voucherRepositories.GetById(vb.VoucherId);
+                if (voucher != null && sellerIds.Contains(voucher.SellerId)) // 👈 lọc theo SellerId
+                {
+                    result.Add(new Buyer_VoucherDTO
+                    {
+                        VoucherId = voucher.VoucherId,
+                        Description = voucher.Description,
+                        StartDate = voucher.StartDate,
+                        EndDate = voucher.EndDate,
+                        DiscountPercentage = voucher.PercentDiscount,
+                        MaxDiscount = voucher.MaxDiscount,
+                        IsActive = voucher.EndDate > DateTime.Now && vb.IsUsed == false,
+                        BuyerId = vb.BuyerId,
+                        SellerId = voucher.SellerId // 👈 nhớ thêm SellerId nếu cần dùng ở View
                     });
                 }
             }
@@ -393,6 +430,21 @@ namespace PBL3.Services
             if (voucher.VoucherQuantity == 0)
                 voucher.IsActive = false; // Nếu hết số lượng, đánh dấu không hoạt động 
             _voucherRepositories.Update(voucher);
+        }
+        
+        public void UpdateVoucherIsUsed(int buyerId, string voucherId)
+        {
+            if (buyerId <= 0 || string.IsNullOrEmpty(voucherId))
+                throw new ArgumentException("Thông tin không hợp lệ.");
+
+            // Lấy bản ghi Voucher_Buyer từ repository
+            var voucherBuyer = _voucherBuyerRepositories.GetById(buyerId, voucherId);
+            if (voucherBuyer == null)
+                throw new KeyNotFoundException("Không tìm thấy voucher đã lưu cho người dùng.");
+
+            // Cập nhật trạng thái IsUsed
+            voucherBuyer.IsUsed = true;
+            _voucherBuyerRepositories.Update(voucherBuyer);
         }
 
     }

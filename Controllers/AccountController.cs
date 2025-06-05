@@ -66,7 +66,7 @@ namespace PBL_3.Controllers
                     // Nếu có returnUrl, chuyển về
                     if (!string.IsNullOrEmpty(returnUrl))
                         return Redirect(returnUrl);
-
+                    TempData["LoginSuccess"] = true;
                     return RedirectToAction("Index", "Product");
                 }
                 else if (user.RoleName.ToString() == "Seller")

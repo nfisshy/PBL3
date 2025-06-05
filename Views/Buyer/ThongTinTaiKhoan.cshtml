@@ -4,6 +4,21 @@
 @{
     ViewBag.Title = "Thông tin cá nhân";
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
+    string base64Avatar = null;
+
+    if (ViewBag.AvatarBase64 != null)
+    {
+        base64Avatar = ViewBag.AvatarBase64;
+    }
+    else if (Model.Avatar != null && Model.Avatar.Length > 0)
+    {
+        var base64String = Convert.ToBase64String(Model.Avatar);
+        base64Avatar = $"data:image/png;base64,{base64String}";
+    }
+    else
+    {
+        base64Avatar = "https://placehold.co/128x128/E0E0E0/B0B0B0?text=Avatar";
+    }
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -130,15 +145,15 @@
             <form id="profileForm">
                 <div class="space-y-6">
                     <div class="flex flex-col items-center space-y-2">
-                        <div class="avatar-container">
-                            <img id="avatarPreview" src="@(ViewBag.AvatarBase64 ?? "https://placehold.co/128x128/E0E0E0/B0B0B0?text=Avatar")" alt="Avatar" class="avatar-image">
-                             <label for="avatarUpload" class="avatar-edit-button" title="Thay đổi ảnh đại diện">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
-                                </svg>
-                            </label>
-                        </div>
+                    <div class="avatar-container">
+                        <img id="avatarPreview" src="@base64Avatar" alt="Avatar" class="avatar-image">
+                        <label for="avatarUpload" class="avatar-edit-button" title="Thay đổi ảnh đại diện">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+                    </div>
                         <input type="file" id="avatarUpload" name="avatar" class="hidden" accept="image/*">
                     </div>
 
@@ -153,23 +168,26 @@
                     </div>
 
                     <div>
-                        <label class="form-label">Giới tính</label>
-                        <div class="mt-2 flex items-center space-x-4 sm:space-x-6">
-                            @foreach (Gender genderValue in (ViewBag.GenderEnumValues ?? Enum.GetValues(typeof(Gender))))
-                            {
-                                <div class="flex items-center">
-                                    <input id="gender_@(genderValue.ToString().ToLower())" name="sex" type="radio" value="@genderValue"
-                                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                                           @(Model.Sex == genderValue ? "checked" : "")>
-                                    <label for="gender_@(genderValue.ToString().ToLower())" class="form-radio-label">
-                                        @if (genderValue == Gender.Male) { <text>Nam</text> }
-                                        else if (genderValue == Gender.Female) { <text>Nữ</text> }
-                                        else { <text>Khác</text> }
-                                    </label>
-                                </div>
-                            }
-                        </div>
+                    <label class="form-label">Giới tính</label>
+                    <div class="mt-2 flex items-center space-x-4 sm:space-x-6">
+                        @foreach (Gender genderValue in (ViewBag.GenderEnumValues ?? Enum.GetValues(typeof(Gender))))
+                        {
+                            <div class="flex items-center">
+                                <input id="gender_@(genderValue.ToString().ToLower())"
+                                    name="sex"
+                                    type="radio"
+                                    value="@( (int)genderValue )"
+                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                    @(Model.Sex == genderValue ? "checked" : "")>
+                                <label for="gender_@(genderValue.ToString().ToLower())" class="form-radio-label">
+                                    @if (genderValue == Gender.Male) { <text>Nam</text> }
+                                    else if (genderValue == Gender.Female) { <text>Nữ</text> }
+                                    else { <text>Khác</text> }
+                                </label>
+                            </div>
+                        }
                     </div>
+                </div>
 
                     <div>
                         <label for="phoneNumber" class="form-label">Số điện thoại</label>
@@ -177,8 +195,8 @@
                     </div>
 
                     <div>
-                        <label for="addressBuyer" class="form-label">Địa chỉ</label>
-                        <textarea id="addressBuyer" name="addressBuyer" rows="3" class="form-input">@Model.AddressBuyer</textarea>
+                        <label class="form-label">Địa chỉ</label>
+                        <p class="form-input bg-gray-100 border border-gray-300 rounded px-3 py-2">@Model.AddressBuyer</p>
                     </div>
 
                     <div class="pt-4 text-center">
@@ -212,31 +230,38 @@
 
             // Chỉ gửi dữ liệu khi bấm nút Lưu thay đổi
             profileForm.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const data = {
-                    Name: document.getElementById('userName').value.trim(),
-                    Date: document.getElementById('dateOfBirth').value,
-                    //Sex: document.querySelector('input[name="sex"]:checked').value,
-                    PhoneNumber: document.getElementById('phoneNumber').value.trim()
-                    // Có thể thêm Address, Avatar nếu muốn
-                };
-                fetch('/Buyer/UpdateProfile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                })
-                .then(res => res.json())
-                .then(result => {
-                    if (result.success) {
-                        showStatusMessage('Cập nhật thành công!', 'success');
-                    } else {
-                        showStatusMessage(result.message || 'Có lỗi xảy ra khi cập nhật.', 'error');
-                    }
-                })
-                .catch(() => {
-                    showStatusMessage('Có lỗi xảy ra khi cập nhật.', 'error');
-                });
-            });
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append("Name", document.getElementById('userName').value.trim());
+    formData.append("Date", document.getElementById('dateOfBirth').value);
+    formData.append("Sex", document.querySelector('input[name="sex"]:checked').value);
+    formData.append("PhoneNumber", document.getElementById('phoneNumber').value.trim());
+
+    const avatarFile = avatarUploadInput.files[0];
+    if (avatarFile) {
+        formData.append("Avatar", avatarFile);
+    }
+
+    fetch('/Buyer/UpdateProfile', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            showStatusMessage('Cập nhật thành công!', 'success');
+            if (result.avatarBase64) {
+                avatarPreview.src = result.avatarBase64;
+            }
+        } else {
+            showStatusMessage(result.message || 'Có lỗi xảy ra khi cập nhật.', 'error');
+        }
+    })
+    .catch(() => {
+        showStatusMessage('Có lỗi xảy ra khi cập nhật.', 'error');
+    });
+});
 
             function showStatusMessage(message, type) {
                 statusMessage.textContent = message;

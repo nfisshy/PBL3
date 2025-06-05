@@ -3,7 +3,13 @@
 
 @{
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
-
+    var tabs = new List<(string Label, ExchangeStatus? Status)>
+    {
+        ("Tất cả đơn", null),
+        ("Chờ xử lý", ExchangeStatus.WaitConfirm),
+        ("Đã chấp nhận", ExchangeStatus.Approved),
+        ("Bị từ chối", ExchangeStatus.Rejected),
+    };
     string GetStatusBadge(ExchangeStatus status)
     {
         return status switch
@@ -44,7 +50,19 @@
     <!-- Main content -->
     <div class="w-3/4 pl-4">
         <h2 class="text-2xl font-bold mb-4 text-green-700">Yêu cầu đổi/trả</h2>
-
+        <div class="flex space-x-4 mb-6 border-b border-gray-300 pb-2">
+            @foreach (var tab in tabs)
+            {
+                var isActive = ViewBag.CurrentStatus == tab.Status;
+                <a asp-action="ReturnExchangeHome" asp-route-status="@(tab.Status?.ToString())"
+                   class="px-4 py-2 rounded-t-md text-sm font-semibold transition-all duration-200
+                        @(isActive
+                            ? "bg-green-700 text-white shadow-md"
+                            : "text-gray-600 hover:text-green-700 hover:bg-gray-100")">
+                    @tab.Label
+                </a>
+            }
+        </div>
         @if (!Model.Any())
         {
             <div class="text-gray-500 italic">Bạn chưa gửi yêu cầu đổi/trả nào.</div>

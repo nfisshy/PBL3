@@ -89,6 +89,49 @@
                 grid-template-columns: 3fr 2fr; /* Two columns for medium screens and up */
             }
         }
+         #addressChooseModal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        #addressChooseModal .modal-content {
+            width: 100%;
+            max-width: 32rem; /* tương đương w-full max-w-md */
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        #voucherChooseModal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        #voucherChooseModal .modal-content {
+            width: 100%;
+            max-width: 32rem; /* tương đương w-full max-w-md */
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
     </style>
 @* 
 <script>
@@ -150,42 +193,65 @@
                 <div class="lg:w-2/3 w-full space-y-6">
                     @foreach (var order in Model.Orders)
                     {
-                        <div class="card">
+                        var totalPrice = order.OrderDetails?.Sum(d => d.TotalPrice) ?? 0;
+
+                        <div class="card order-section"
+                            data-seller-id="@order.SellerId"
+                            data-order-total="@totalPrice"
+                            data-original-price="@totalPrice">
+
                             <div class="card-header">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                    <div>
+                                    <div class="order-item" data-seller-id="@order.SellerId">
                                         <h2 class="text-lg font-semibold text-indigo-600">Đơn hàng @count</h2>
-                                        <p class="text-xs text-gray-500">Cửa hàng: <span class="font-medium text-gray-700">@order.SellerStoreName</span></p>
+                                        <p class="text-xs text-gray-500">
+                                            Cửa hàng: <span class="font-medium text-gray-700">@order.SellerStoreName</span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        @* <button type="button"
+                                                class="text-sm text-green-600 hover:underline voucher-select-btn"
+                                                data-seller-id="@order.SellerId">
+                                            Chọn voucher
+                                        </button> *@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="p-4 md:p-6">
                                 <div class="product-list-section bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                     <h3 class="text-md font-semibold text-gray-700 mb-4">Danh sách sản phẩm</h3>
+
                                     @if (order.OrderDetails != null && order.OrderDetails.Any())
                                     {
                                         foreach (var detail in order.OrderDetails)
                                         {
+string imgSrc = "https://placehold.co/80x80/e2e8f0/cbd5e0?text=No+Image&font=inter";
+
+if (!string.IsNullOrEmpty(detail.ImageData))
+{
+    try
+    {
+        imgSrc = $"data:image/jpeg;base64,{detail.ImageData}";
+    }
+    catch
+    {
+        // Nếu ImageData không hợp lệ thì giữ nguyên placeholder
+    }
+}
+
                                             <div class="flex items-start py-3 border-b border-gray-100 last:border-b-0">
-                                                @{
-                                                    string imgSrc = $"https://placehold.co/80x80/e2e8f0/cbd5e0?text=No+Image&font=inter";
-                                                    if (detail.Image != null && detail.Image.Length > 0)
-                                                    {
-                                                        try
-                                                        {
-                                                            var base64 = Convert.ToBase64String(detail.Image);
-                                                            imgSrc = String.Format("data:image/jpeg;base64,{0}", base64); // Assuming JPEG
-                                                        }
-                                                        catch { }
-                                                    }
-                                                }
-                                                <img src="@imgSrc" alt="@detail.ProductName" class="product-image mr-4" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e2e8f0/cbd5e0?text=Error&font=inter';"/>
+                                                <img src="@imgSrc" alt="@detail.ProductName"
+                                                    class="product-image mr-4"
+                                                    onerror="this.onerror=null;this.src='https://placehold.co/80x80/e2e8f0/cbd5e0?text=Error&font=inter';"/>
                                                 <div class="flex-grow">
                                                     <p class="font-medium text-gray-800">@detail.ProductName</p>
                                                     <p class="text-xs text-gray-500">Số lượng: @detail.Quantity</p>
                                                 </div>
                                                 <div class="text-right ml-4">
-                                                    <p class="price-text vnd-format">@detail.TotalPrice.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</p>
+                                                    <p class="price-text vnd-format">
+                                                        @detail.TotalPrice.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫
+                                                    </p>
                                                 </div>
                                             </div>
                                         }
@@ -195,10 +261,18 @@
                                         <p class="info-text">Không có sản phẩm nào trong đơn.</p>
                                     }
                                 </div>
+
+                                <!-- Hiển thị giảm giá -->
+                                <div class="mt-4 text-right text-sm text-gray-700">
+                                    <span class="font-medium">Giảm giá áp dụng:</span>
+                                    <span class="text-green-600 font-semibold discount-amount">0₫</span>
+                                </div>
                             </div>
                         </div>
+
                         count++;
                     }
+
                 </div>
                 <!-- Right: Address, Voucher, Payment -->
                 <div class="lg:w-1/3 w-full space-y-6">
@@ -210,29 +284,48 @@
                         <div class="bg-white rounded-lg shadow p-6 address-box">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-lg font-semibold text-gray-700">Giao tới</h2>
-                                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Thay đổi</a>
+                                <a href="javascript:void(0)" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium" onclick="openAddressChoose()">Thay đổi</a>
                             </div>
                             <div class="text-gray-600">
                                 <p class="font-semibold">@firstOrder.BuyerName | @firstOrder.BuyerPhone</p>
-                                <p class="text-sm">@firstOrder.Address</p>
+                                <p class="text-sm" id="selected-address-display">@firstOrder.Address</p>
                             </div>
                         </div>
                         <div class="bg-white rounded-lg shadow p-6 sticky top-8">
                             <div class="mb-6 voucher-box p-4 border border-indigo-200 rounded-lg bg-indigo-50">
                                 <h3 class="text-md font-semibold text-gray-700 mb-2">Mã khuyến mãi</h3>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <input type="text" id="voucherCode" placeholder="Nhập mã khuyến mãi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    <button id="applyVoucherBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md text-sm whitespace-nowrap">Áp dụng</button>
+
+                                <!-- Container chứa cả nút và voucher đã chọn -->
+                                <div class="flex items-center gap-3 mb-3 flex-wrap">
+                                    <!-- Nút chọn voucher -->
+                                    <button id="applyVoucherBtn"
+                                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md text-sm whitespace-nowrap"
+                                            onclick="openVoucherChoose()">
+                                        Chọn voucher
+                                    </button>
+
+                                    <!-- Voucher đã chọn -->
+                                    <div id="selected-voucher-box" class="flex items-center p-2 border border-blue-300 rounded-lg bg-blue-50 relative hidden">
+                                        <span id="selected-voucher-discount" class="font-medium text-blue-700 text-sm">Giảm 0%</span>
+                                        <!-- Nút bỏ chọn -->
+                                        <button id="remove-voucher-btn"
+                                                class="ml-2 bg-white border border-gray-300 text-gray-500 hover:text-red-500 hover:border-red-500 rounded-full w-5 h-5 text-xs leading-none flex items-center justify-center">
+                                            ×
+                                        </button>
+                                    </div>
                                 </div>
-                                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Chọn hoặc nhập mã khác &gt;</a>
+
+                                <p class="text-sm text-gray-500">Bạn có thể chọn voucher để giảm giá đơn hàng(chỉ chọn 1 voucher).</p>
                             </div>
-                                                        <div class="mb-4">
+
+                            <div class="mb-4">
                                 <label for="paymentMethod" class="block text-gray-700 font-medium mb-1">Phương thức thanh toán</label>
                                 <select id="paymentMethod" name="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 @foreach (var method in Enum.GetValues(typeof(PBL3.Enums.PayMethod)))
                                 {
+                                    var intValue = (int)method;
                                     var isSelected = firstOrder.PaymentMethod == (PBL3.Enums.PayMethod)method ? "selected" : "";
-                                    <option value="@method" isSelected>
+                                    <option value="@intValue" isSelected>
                                         @(method.ToString() == "CashOnDelivery" ? "Thanh toán khi nhận hàng" :
                                         method.ToString() == "WalletPayment" ? "Ví điện tử" : method.ToString())
                                     </option>
@@ -253,14 +346,14 @@
                                 </div>
                                 <div class="flex justify-between text-gray-700">
                                     <span>Giảm giá voucher</span>
-                                    <span class="font-medium vnd-format">0₫</span>
+                                    <span class="font-medium vnd-format" id = "selected-voucher-amount">0₫</span>
                                 </div>
                             </div>
 
                             <hr class="my-4 border-gray-200">
                             <div class="flex justify-between font-semibold text-lg text-gray-800 mb-1">
                                 <span>Tổng tiền</span>
-                                <span class="text-indigo-600 vnd-format">
+                                <span class="text-indigo-600 vnd-format" id = "total-price">
                                     @((Model.purchasePrice + 22000*Model.Orders.Count).ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")))₫
                                 </span>
                             </div>
@@ -271,36 +364,272 @@
             </div>
         </div>
     }
+</div>
+<!-- Modal for Address Selection -->
+    <div id="addressChooseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Nội dung modal -->
+        <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <span class="close-btn absolute top-2 right-4 text-2xl cursor-pointer" onclick="closeAddressModal()">&times;</span>
+            <div id="address-modal-body"></div>
+        </div>
+    </div>
+
+    <div id="voucherChooseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Nội dung modal -->
+        <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <span class="close-btn absolute top-2 right-4 text-2xl cursor-pointer" onclick="closeVoucherModal()">&times;</span>
+            <div id="voucher-modal-body"></div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function openAddressChoose(userId) {
+            $.get('@Url.Action("AddressChoose")', function (data) {
+                $('#address-modal-body').html(data);
+                $('#addressChooseModal').css('display', 'flex');
+            });
+        }
+
+        function closeAddressModal() {
+            $('#addressChooseModal').css('display', 'none');
+            $('#address-modal-body').html('');
+        }
+
+        function getSellerIds() {
+            const sellerIds = new Set();
+            document.querySelectorAll('.order-item').forEach(el => {
+                const id = el.getAttribute('data-seller-id');
+                if (id) sellerIds.add(id);
+            });
+            return Array.from(sellerIds);
+        }
+        function openVoucherChoose(userId) {
+            const sellerIds = getSellerIds();
+            $.post('@Url.Action("VoucherChoose")', {
+                sellerIds: sellerIds
+            }, function (data) {
+                $('#voucher-modal-body').html(data);
+                $('#voucherChooseModal').css('display', 'flex');
+            });
+        }
+
+        function closeVoucherModal() {
+            $('#voucherChooseModal').css('display', 'none');
+            $('#voucher-modal-body').html('');
+        }
+        window.showSelectedVoucher = function(voucher) {
+            console.log("Selected Voucher Data:", window.selectedVoucher.DiscountPercentage);
+            // Hiển thị voucher đã chọn
+            const box = document.getElementById("selected-voucher-box");
+            const discount = document.getElementById("selected-voucher-discount");
+
+            if (!box || !discount) return;
+
+            discount.innerText = `Giảm ${voucher.DiscountPercentage.toFixed(2)}%`;
+            box.classList.remove("hidden");
+
+            // Lưu voucher toàn cục (nếu cần submit đơn hàng)
+            window.selectedVoucher = voucher;
+        };
+
+        // Hàm xoá voucher khi bấm nút X
+        window.clearSelectedVoucher = function () {
+            const box = document.getElementById("selected-voucher-box");
+            if (box) {
+                box.classList.add("hidden");
+            }
+            window.sellerDiscountMap = {};
+            window.selectedVoucher = null;
+            window.selectedVoucherData = null;
+            window.PurchaseTotal = window.originalTotalPrice;
+            const display = document.getElementById("selected-voucher-amount");
+            if (display) {
+                display.innerText = "0 đ";
+            }
+            const orderSections = document.querySelectorAll(".order-section");
+            orderSections.forEach(section => {
+                const discountSpan = section.querySelector(".discount-amount");
+                if (discountSpan) {
+                    discountSpan.innerText = "0₫";
+                }
+            });
+            const totalPriceElement = document.getElementById("total-price");
+            if (totalPriceElement && window.originalTotalPrice) {
+                totalPriceElement.innerText = `${window.originalTotalPrice.toLocaleString("vi-VN")}₫`;
+            }
+            console.log("Voucher đã bị xoá.");
+        };
+        document.addEventListener("DOMContentLoaded", function () {
+            const removeBtn = document.getElementById("remove-voucher-btn");
+            if (removeBtn) {
+                removeBtn.addEventListener("click", clearSelectedVoucher);
+            }
+        });
+    </script>
+</div>
+<div id="pinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-80 shadow-lg text-center">
+        <h2 class="text-lg font-bold mb-4">Xác nhận thanh toán</h2>
+        <p>Vui lòng nhập mã PIN ví:</p>
+        <input type="password" id="pinInput" maxlength="6" class="border rounded p-2 w-full my-3 text-center" />
+        <button id="submitPinBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Xác nhận</button>
+        <p id="pinError" class="text-red-500 mt-2 hidden">Mã PIN không đúng.</p>
+    </div>
+</div>
 </body>
 </html>
 
 @section Scripts {
     <script>
+            let pinAttempts = 0; // đặt ngoài mọi function
+
+    function showPinModal(callback) {
+        document.getElementById("pinModal").classList.remove("hidden");
+        document.getElementById("pinError").classList.add("hidden");
+        document.getElementById("pinInput").value = "";
+        document.getElementById("pinInput").focus();
+
+        const submitBtn = document.getElementById("submitPinBtn");
+        submitBtn.onclick = function () {
+            const enteredPin = document.getElementById("pinInput").value;
+            console.log("parsed:", parseInt(enteredPin));
+            console.log("Entered PIN:", enteredPin);
+            console.log("PIN:",JSON.stringify({ inputPin: parseInt(enteredPin) }))
+            fetch('/Order/VerifyPin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inputPin: parseInt(enteredPin) })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Server returned an error");
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Check balance
+                    fetch('/Order/CheckBalanceAndDeduct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: window.PurchaseTotal }) // Gửi amount trong dto
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        callback(); // Đủ tiền, tiếp tục đặt hàng
+                    } else {
+                        alert(response.message || "Số dư ví không đủ để thanh toán. Vui lòng nạp thêm tiền.");
+                        document.getElementById("pinModal").classList.add("hidden");
+                    }
+                });
+                } else {
+                    pinAttempts++;
+                    if (pinAttempts >= 5) {
+                        alert("Nhập sai PIN quá 5 lần. Đang chuyển về trang chủ...");
+                        window.location.href = '/Buyer/Index';
+                    } else {
+                        document.getElementById("pinError").textContent = `Mã PIN không đúng. Lần nhập sai thứ ${pinAttempts}/5.`;
+                        document.getElementById("pinError").classList.remove("hidden");
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("PIN check error:", err);
+                alert("Mã PIN không đúng hoặc có lỗi xảy ra. Vui lòng thử lại.");
+            });
+        };
+    }
+
+        window.addEventListener("DOMContentLoaded", function () {
+            const totalPriceText = document.getElementById("total-price")?.innerText || "0";
+            // Lưu tổng tiền gốc (dạng số) vào biến toàn cục
+            window.originalTotalPrice = parseFloat(totalPriceText.replace(/[₫.,]/g, '')) || 0;
+            window.PurchaseTotal = window.originalTotalPrice;
+            console.log("Purchase Total:", window.PurchaseTotal);
+    });
        // document.getElementById("submitBtn").addEventListener("click", submitOrder);
+       window.orderTotal = @Model.purchasePrice.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+       window.selectedAddressData = null;
+       window.sellerDiscountMap = {};
         function submitOrder() {
-            // Lấy dữ liệu từ Model Razor (Orders đã có đủ thông tin)
+    // Lấy dữ liệu từ Model Razor
             var orders = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Orders));
-            @* var paymentMethod = document.getElementById('paymentMethod').value; *@
-            // Cập nhật phương thức thanh toán cho từng đơn hàng
-            @* orders.forEach(function(order) {
-                order.PaymentMethod = paymentMethod;
-            }); *@
+            console.log("Orders before processing:");
+            console.log("địa chỉ thanh toán:", window.selectedAddressData);
+            
+            const paymentMethodValue = parseInt(document.getElementById("paymentMethod").value);
+            console.log("Phương thức thanh toán:", paymentMethodValue);
+            orders = orders.map(o => {
+                const discount = window.sellerDiscountMap[o.SellerId] || 0;
+
+                const section = document.querySelector(`.order-section[data-seller-id='${o.SellerId}']`);
+                let originalPrice = o.OrderPrice;
+                if (section) {
+                    const raw = section.getAttribute("data-original-price");
+                    originalPrice = parseFloat(raw) || o.OrderPrice;
+                }
+
+                const finalPrice = originalPrice - discount;
+
+                return {
+                    SellerId: o.SellerId,
+                    BuyerId: o.BuyerId,
+                    OrderPrice: finalPrice,
+                    PaymentMethod: paymentMethodValue,
+                    PaymentStatus: (paymentMethodValue === 1) ? true : false,
+                    Address: (window.selectedAddressData != null) ? window.selectedAddressData : o.Address,
+                    Discount: discount,
+                    OrderDetails: o.OrderDetails.map(d => ({
+                        ProductId: d.ProductId,
+                        ProductName: d.ProductName,
+                        Quantity: d.Quantity,
+                        TotalPrice: d.TotalPrice,
+                        Image: d.Image,
+                        ImageData: d.ImageData || null // Giữ nguyên nếu không có
+                    }))
+                };
+            });
             console.log(JSON.stringify(orders));
-                orders = orders.map(o => ({
-                SellerId: o.SellerId,
-                BuyerId: o.BuyerId,
-                OrderPrice: o.OrderPrice,
-               // PaymentMethod: o.PaymentMethod,
-                Address: o.Address,
-                OrderDetails: o.OrderDetails.map(d => ({
-                    ProductId: d.ProductId,
-                    ProductName: d.ProductName,
-                    Quantity: d.Quantity,
-                    TotalPrice: d.TotalPrice,
-                    Image: d.Image,
-                }))
-            }));
-            console.log(JSON.stringify(orders));
+            // ✅ Nếu có voucher được chọn, gọi API đánh dấu là đã sử dụng
+            const voucherId = window.selectedVoucher?.VoucherId;
+            const continueOrder = () => {
+                if (voucherId) {
+                    fetch('/Buyer/MarkVoucherAsUsed?voucherId=' + encodeURIComponent(voucherId), {
+                        method: 'POST'
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Voucher sử dụng thất bại");
+                        return res.json();
+                    })
+                    .then(result => {
+                        if (result.success) {
+                            console.log("Voucher marked as used:", voucherId);
+                            createOrder(orders);
+                        } else {
+                            alert(result.message || 'Không thể đánh dấu voucher đã dùng.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Lỗi khi đánh dấu voucher:', err);
+                        alert('Không thể sử dụng voucher. Vui lòng thử lại.');
+                    });
+                } else {
+                    createOrder(orders);
+                }
+            };
+
+            if (paymentMethodValue === 1) {
+                // Hiển thị modal PIN
+                showPinModal(continueOrder);
+            } else {
+                continueOrder();
+            }
+
+        }
+
+        // ✅ Hàm riêng gửi đơn hàng
+        function createOrder(orders) {
             fetch('/Order/CreateOrder', {
                 method: 'POST',
                 headers: {

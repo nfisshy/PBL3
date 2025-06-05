@@ -122,7 +122,7 @@
             </div>
             <div class="bg-gray-50 p-4 rounded border">
                 <h3 class="font-semibold mb-2">HÌNH THỨC THANH TOÁN</h3>
-                <p>@(Model.PaymentStatus ? "Thanh toán bằng ví" : "Thanh toán khi nhận hàng")</p>
+                <p>@(Model.PaymentMethod ==PayMethod.WalletPayment ? "Thanh toán bằng ví điện tử" : "Thanh toán khi nhận hàng")</p>
             </div>
         </div>
 
@@ -145,7 +145,7 @@
                     bool canComment = Model.OrderStatus == OrdStatus.Completed;
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-4">
-                            <img src="@item.Image" alt="Ảnh sản phẩm" class="product-image border" />
+                            <img src="@(item.Image != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Image)}" : Url.Content("~/images/no-image.jpg"))" alt="Ảnh sản phẩm" class="product-image border" />
                             <div>
                                 <div class="font-semibold">@item.ProductName</div>
                                 <div class="text-gray-500 text-xs">MSP: @item.ProductId</div>
@@ -182,7 +182,7 @@
             </div>
             <div class="flex justify-between mb-2">
                 <span>Giảm giá:</span>
-                <span>-@discount.ToString("N0") ₫</span>
+                <span>@discount.ToString("N0") ₫</span>
             </div>
             <div class="flex justify-between font-semibold text-red-600 border-t pt-2 mt-2 text-lg">
                 <span>Tổng cộng:</span>

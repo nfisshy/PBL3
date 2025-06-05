@@ -117,7 +117,18 @@
                     <img src="https://via.placeholder.com/200x150?text=No+Image" alt="Placeholder" class="h-80 w-auto mx-auto rounded border" />
                 }
             </div>
-
+            @if (Model.Status == ExchangeStatus.Rejected)
+            {
+                <div class="mt-4 p-4 border border-red-300 bg-red-50 text-red-800 rounded">
+                    Yêu cầu đổi/ trả của bạn đã <strong>bị từ chối</strong>. Hãy liên hệ với đơn vị kinh doanh thông qua email <strong>@Model.SellerEmail</strong> hoặc số điện thoại: <strong>@Model.SellerPhone</strong> để biết thêm thông tin chi tiết.
+                </div>
+            }
+            else if (Model.Status == ExchangeStatus.Approved)
+            {
+                <div class="mt-4 p-4 border border-green-300 bg-green-50 text-green-800 rounded">
+                    Yêu cầu đổi/ trả của bạn đã <strong>được chấp nhận</strong>. Đơn hàng sẽ đến tay bạn trong thời gian sớm nhất. Hãy liên hệ với đơn vị kinh doanh qua email <strong>@Model.SellerEmail</strong> hoặc số điện thoại: <strong>@Model.SellerPhone</strong> nếu cần thêm hỗ trợ.
+                </div>
+            }
         </div>
     </div>
 </div>

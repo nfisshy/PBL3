@@ -1,0 +1,66 @@
+
+@using Newtonsoft.Json
+@model List<PBL3.DTO.Buyer.Buyer_SoDiaChiDTO>
+
+<div class="space-y-4" id="address-selection-form">
+    <h2 class="text-lg font-semibold text-gray-800">Chọn địa chỉ giao hàng</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        foreach (var address in Model)
+        {
+            var addressJson = JsonConvert.SerializeObject(address);
+
+            <div class="border border-gray-300 rounded-lg p-4 flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-800">@address.LocationName</p>
+                    @if (address.IsDefault)
+                    {
+                        <span class="text-xs text-green-600 font-semibold">[Mặc định]</span>
+                    }
+                </div>
+                <div>
+                    <input type="radio"
+                           name="selectedAddress"
+                           value='@Html.Raw(addressJson)'
+                           class="accent-green-600"
+                           @(address.IsDefault ? "checked" : "") />
+                </div>
+            </div>
+        }
+
+        <div class="flex justify-end mt-4">
+            <button type="button" id="confirm-address-btn"
+                    class="bg-green-600 text-white text-sm px-5 py-2 rounded-md hover:bg-green-700 transition">
+                Chọn
+            </button>
+        </div>
+    }
+    else
+    {
+        <p class="text-gray-500 text-sm">Bạn chưa có địa chỉ nào. Vui lòng thêm địa chỉ trước khi đặt hàng.</p>
+    }
+</div>
+
+<script>
+    let selectedAddressData = null;
+
+    document.getElementById('confirm-address-btn')?.addEventListener('click', function () {
+        const selected = document.querySelector('input[name="selectedAddress"]:checked');
+        if (selected) {
+            selectedAddressData = selected.value; // Lưu JSON string địa chỉ
+            
+            console.log("Selected Address Data:", selectedAddressData);
+            const selectedObj = JSON.parse(selectedAddressData);
+            console.log("Selected Address Object:", selectedObj);
+            console.log(selectedObj.LocationName);
+            window.selectedAddressData = selectedObj.LocationName; // Lưu vào biến toàn cục để có thể sử dụng ở nơi khác
+            // Hiển thị LocationName ở trang chính
+            const display = document.getElementById('selected-address-display');
+            if (display) {
+                display.textContent = selectedObj.LocationName;
+            }
+            closeAddressModal();
+        }
+    });
+</script>

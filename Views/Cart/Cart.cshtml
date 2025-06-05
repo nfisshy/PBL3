@@ -104,25 +104,39 @@
                             <div class="divide-y divide-gray-200">
                                 @foreach (var item in sellerCart.CartItems)
                                 {
-                                    <div class="p-4 flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-2 cart-item" data-itemid="@item.ProductId" data-sellerid="@sellerCart.sellerID" data-price="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" data-quantity="@item.Quantity">
+                                    var itemInactiveClass = item.IsActive ? "" : "opacity-50 pointer-events-none select-none";
+                                    <div class="p-4 flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-2 cart-item @itemInactiveClass"
+                                        data-itemid="@item.ProductId"
+                                        data-sellerid="@sellerCart.sellerID"
+                                        data-price="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-quantity="@item.Quantity">
+                                        
                                         <div class="flex items-center w-full md:w-2/5 lg:w-3/5">
-                                            <input type="checkbox" name="selectedItems" value="@item.ProductId" class="form-checkbox h-5 w-5 rounded focus:ring-2 focus:ring-offset-0 item-checkbox" data-itemprice="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" @(item.IsSelected ? "checked" : "")/>
+                                            <input type="checkbox" name="selectedItems" value="@item.ProductId"
+                                                class="form-checkbox h-5 w-5 rounded focus:ring-2 focus:ring-offset-0 item-checkbox"
+                                                data-itemprice="@item.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                                @(item.IsSelected ? "checked" : "") />
                                             <div class="ml-3">
-                                            @if (item.Image != null && item.Image.Length > 0)
-                                            {
-                                                var base64 = Convert.ToBase64String(item.Image);
-                                                var imgSrc = String.Format("data:image/png;base64,{0}", base64); // Assuming PNG, adjust if different (e.g., image/jpeg)
-                                                <img src="@imgSrc" alt="@item.ProductName" class="product-image"/>
-                                            }
-                                            else
-                                            {
-                                                <img src="https://placehold.co/80x80/e2e8f0/cbd5e0?text=Ảnh+SP" alt="Placeholder" class="product-image"/>
-                                            }
+                                                @if (item.Image != null && item.Image.Length > 0)
+                                                {
+                                                    var base64 = Convert.ToBase64String(item.Image);
+                                                    var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+                                                    <img src="@imgSrc" alt="@item.ProductName" class="product-image" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="https://placehold.co/80x80/e2e8f0/cbd5e0?text=Ảnh+SP" alt="Placeholder" class="product-image" />
+                                                }
                                             </div>
                                             <div class="ml-4 flex-grow">
                                                 <h3 class="font-medium text-gray-800 hover:theme-green-text transition-colors">@item.ProductName</h3>
-                                                <div class="md:hidden mt-2"> <span class="text-red-600 font-semibold">@item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</span>
+                                                <div class="md:hidden mt-2">
+                                                    <span class="text-red-600 font-semibold">@item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))₫</span>
                                                 </div>
+                                                @if (!item.IsActive)
+                                                {
+                                                    <div class="text-sm text-red-500 font-semibold mt-1">Sản phẩm này hiện không còn hoạt động</div>
+                                                }
                                             </div>
                                         </div>
 
@@ -133,9 +147,18 @@
                                         <div class="w-full md:w-32 flex flex-col items-center justify-start md:justify-center">
                                             <div class="flex items-center">
                                                 <span class="md:hidden font-semibold mr-2 text-sm">Số lượng: </span>
-                                                <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-l transition duration-200" onclick="updateQuantity('@item.ProductId', -1, event)">-</button>
-                                                <input type="number" id="quantity_@item.ProductId" class="quantity-input-el w-12 text-center border-t border-b border-gray-300 p-1 quantity-input" value="@item.Quantity" min="1" max="@item.currentQuantity" data-itemid="@item.ProductId" onchange="handleQuantityInputChange('@item.ProductId')">
-                                                <button type="button" class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-r transition duration-200" onclick="updateQuantity('@item.ProductId', 1, event)">+</button>
+                                                <button type="button"
+                                                        class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-l transition duration-200"
+                                                        onclick="updateQuantity('@item.ProductId', -1, event)">-</button>
+                                                <input type="number"
+                                                    id="quantity_@item.ProductId"
+                                                    class="quantity-input-el w-12 text-center border-t border-b border-gray-300 p-1 quantity-input"
+                                                    value="@item.Quantity" min="1" max="@item.currentQuantity"
+                                                    data-itemid="@item.ProductId"
+                                                    onchange="handleQuantityInputChange('@item.ProductId')">
+                                                <button type="button"
+                                                        class="quantity-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-r transition duration-200"
+                                                        onclick="updateQuantity('@item.ProductId', 1, event)">+</button>
                                             </div>
                                             <div class="text-xs text-center mt-1">
                                                 <span class="text-gray-500">Còn lại: </span>
@@ -151,7 +174,10 @@
                                         </div>
 
                                         <div class="w-full md:w-10 text-right md:text-center">
-                                            <button type="button" class="text-gray-400 hover:text-red-500 transition duration-200 p-2" title="Xóa sản phẩm" onclick="removeItem('@item.ProductId', event)">
+                                            <button type="button"
+                                                    class="text-gray-400 hover:text-red-500 transition duration-200 p-2 pointer-events-auto"
+                                                    title="Xóa sản phẩm"
+                                                    onclick="removeItem('@item.ProductId', event)">
                                                 <i class="fas fa-trash-alt fa-lg"></i>
                                             </button>
                                         </div>
@@ -505,19 +531,9 @@
             // Get the image data from the img element
             const imgElement = itemRow.querySelector('.product-image');
             let imageBytes = null;
-            if (imgElement && imgElement.src) {
-                // If the image is a base64 string, convert it to byte array
-                if (imgElement.src.startsWith('data:image')) {
-                    const base64String = imgElement.src.split(',')[1];
-                    // Convert base64 to byte array
-                    const binaryString = window.atob(base64String);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    imageBytes = Array.from(bytes);
-                }
-            }
+            if (imgElement && imgElement.src && imgElement.src.startsWith('data:image')) {
+            imageData = imgElement.src.split(',')[1]; // Lấy phần Base64
+        }
             
             // Tìm seller trong danh sách đã có
             let sellerGroup = selectedItems.find(s => s.sellerID === sellerId);
@@ -534,7 +550,7 @@
                 ProductId: productId,
                 Quantity: quantity,
                 Price: price,
-                Image: imageBytes,
+                ImageData: imageData,
                 ProductName: productName,
                 IsSelected: true,
                 TotalPrice: price * quantity
