@@ -719,17 +719,36 @@ namespace PBL_3.Controllers
         [HttpPost]
         public IActionResult NapTien(Seller_RutNapTienDTO model)
         {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                _logger.LogInformation("22222222222222222222222222222222");
+                foreach (var key in ModelState.Keys)
+                {
+                    var errors = ModelState[key].Errors;
+                    foreach (var error in errors)
+                    {
+                        _logger.LogWarning($"ModelState Error at '{key}': {error.ErrorMessage}");
+                    }
+                }
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
 
+                // Gán lại các giá trị cho model để giữ hiển thị đúng khi trả về view
+                model.WalletBalance = walletInfo.WalletBalance;
+                model.BankName = walletInfo.BankName;
+                model.BankNumber = walletInfo.BankNumber;
+                return View(model);
+            }
+            
             try
             {
-                var sellerId = HttpContext.Session.GetInt32("UserId");
-                if (!sellerId.HasValue)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
 
+                _logger.LogInformation("33333333333333333333333");
                 _sellerService.NapTien(sellerId.Value, model);
                 TempData["Success"] = "Nạp tiền thành công";
                 return RedirectToAction("Wallet");
@@ -774,16 +793,25 @@ namespace PBL_3.Controllers
         [HttpPost]
         public IActionResult RutTien(Seller_RutNapTienDTO model)
         {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
             if (!ModelState.IsValid)
-                return View(model);
+            {   
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
 
+                // Gán lại các giá trị cho model để giữ hiển thị đúng khi trả về view
+                model.WalletBalance = walletInfo.WalletBalance;
+                model.BankName = walletInfo.BankName;
+                model.BankNumber = walletInfo.BankNumber;
+                
+                return View(model); // render lại view với model hiện tại
+            }
             try
             {
-                var sellerId = HttpContext.Session.GetInt32("UserId");
-                if (!sellerId.HasValue)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+
 
                 _sellerService.RutTien(sellerId.Value, model);
                 TempData["Success"] = "Rút tiền thành công";
@@ -969,12 +997,14 @@ namespace PBL_3.Controllers
         {
             try
             {
+                _logger.LogInformation("ReturnExchangeManagement called with FromDate: {FromDate}, ToDate: {ToDate}, Status: {Status}", fromDate, toDate, status);
                 var sellerId = HttpContext.Session.GetInt32("UserId");
                 if (!sellerId.HasValue)
                 {
+                    _logger.LogWarning("000000000000000000000000000000000000");
                     return RedirectToAction("Login", "Account");
                 }
-
+                _logger.LogInformation("1111111111111111111111111111111111111111");
                 var list = _sellerService.GetAllBySeller(sellerId.Value, fromDate, toDate, status);
                 ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
                 ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");

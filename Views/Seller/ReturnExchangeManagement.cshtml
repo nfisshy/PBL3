@@ -55,7 +55,7 @@
 
             <!-- Form tìm kiếm -->
             <div class="search-form">
-                <form method="get" action="@Url.Action("ReturnExchangeManage")" class="row g-3">
+                <form method="get" action="@Url.Action("ReturnExchangeManagement")" class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Từ ngày</label>
                         <input type="date" class="form-control" name="fromDate" value="@ViewBag.FromDate" />
@@ -70,7 +70,7 @@
                             <option value="">Tất cả</option>
                             @foreach (var status in statuses)
                             {
-                                <option value="@status" selected="@(ViewBag.Status?.ToString() == status.ToString())">
+                                <option value="@status" selected="@(ViewBag.SelectedStatus?.ToString() == status.ToString())">
                                     @EnumHelper.GetDisplayName(status)
                                 </option>
                             }
@@ -80,7 +80,7 @@
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="fas fa-search"></i> Tìm kiếm
                         </button>
-                        <a href="@Url.Action("ReturnExchangeManage")" class="btn btn-secondary">
+                        <a href="@Url.Action("ReturnExchangeManagement")" class="btn btn-secondary">
                             <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>

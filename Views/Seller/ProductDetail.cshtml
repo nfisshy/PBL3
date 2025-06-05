@@ -1,4 +1,5 @@
 @model PBL3.DTO.Seller.Seller_ChiTietSanPhamDTO
+@using PBL3.Enums
 
 @{
     ViewBag.Title = "Quản lý sản phẩm";
@@ -364,9 +365,29 @@
                     <div class="product-info-item">
                         <div class="product-info-label">Trạng thái:</div>
                         <div class="product-info-value">
-                            <span class="badge bg-success">Đang bán</span>
+                            @if (Model.Status == ProductStatus.Selling)
+                            {
+                                <span class="badge bg-success">Đang bán</span>
+                            }
+                            else if (Model.Status == ProductStatus.StopSelling)
+                            {
+                                <span class="badge bg-secondary">Ngừng bán</span>
+                            }
+                            else if (Model.Status == ProductStatus.Violation)
+                            {
+                                <span class="badge bg-danger">Vi phạm</span>
+                            }
+                            else if (Model.Status == ProductStatus.WaitConfirm)
+                            {
+                                <span class="badge bg-warning">Chờ xác nhận</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">@Model.Status</span>
+                            }
                         </div>
                     </div>
+
                     <div class="product-info-item">
                         <div class="product-info-label">Địa chỉ lấy hàng:</div>
                         <div class="product-info-value">@Model.AddressSeller</div>

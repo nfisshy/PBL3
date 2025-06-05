@@ -17,6 +17,7 @@ namespace PBL3.Services
         private readonly ISellerRepositories _sellerRepository;
         private readonly IProductRepositories _productRepository;
         private readonly IOrderRepositories _orderRepository;
+        private readonly IOrderDetailRepositories _orderDetailRepository;
         private readonly IReviewRepositories _reviewRepository;
         private readonly IBuyerRepositories _buyerRepository;
         private readonly IVoucherRepositories _voucherRepository;
@@ -29,6 +30,7 @@ namespace PBL3.Services
             ISellerRepositories sellerRepository,
             IProductRepositories productRepository,
             IOrderRepositories orderRepository,
+            IOrderDetailRepositories orderDetailRepository,
             IReviewRepositories reviewRepository,
             IBuyerRepositories buyerRepository,
             IVoucherRepositories voucherRepository,
@@ -40,6 +42,7 @@ namespace PBL3.Services
             _sellerRepository = sellerRepository;
             _productRepository = productRepository;
             _orderRepository = orderRepository;
+            _orderDetailRepository = orderDetailRepository;
             _reviewRepository = reviewRepository;
             _buyerRepository = buyerRepository;
             _voucherRepository = voucherRepository;
@@ -276,6 +279,7 @@ namespace PBL3.Services
                     ProductName = product.ProductName,
                     Price = product.Price,
                     ProductType = product.ProductType,
+                    Status = product.ProductStatus,
                     Description = product.ProductDescription,
                     Image = product.ProductImage,
                     Rating = averageRating,
@@ -311,7 +315,7 @@ namespace PBL3.Services
                     ProductDescription = model.Description,
                     ProductImage = model.ProductImage,
                     SellerId = sellerId,
-                    ProductStatus = ProductStatus.Selling,
+                    ProductStatus = ProductStatus.WaitConfirm,
                     ProductQuantity = model.ProductQuantity // Sử dụng số lượng từ model
                 };
 
@@ -566,7 +570,7 @@ namespace PBL3.Services
                     throw new Exception("Không tìm thấy đơn hàng");
                 }
 
-                _logger.LogInformation("Getting order details for order {OrderId}. OrderDetails count: {OrderDetailsCount}",
+                _logger.LogInformation("Getting order details for order {OrderId}. OrderDetails count: {OrderDetailsCount} , 000000111111111111111111111111111111111111111111111",
                     orderId, order.OrderDetails?.Count ?? 0);
 
                 var buyer = _buyerRepository.GetById(order.BuyerId);
@@ -575,20 +579,22 @@ namespace PBL3.Services
                 bool canUpdateToPending = order.OrderStatus == OrdStatus.WaitConfirm;
                 bool canUpdateToDelivering = order.OrderStatus == OrdStatus.Pending;
 
-                var orderItems = order.OrderDetails?.Select(od =>
+                var orderDetails = _orderDetailRepository.GetByOrderId(orderId);
+
+                // 🟢 Mapping từng sản phẩm
+                var orderItems = orderDetails.Select(od =>
                 {
-                    _logger.LogInformation("Processing order detail: ProductId={ProductId}, ProductName={ProductName}, Quantity={Quantity}",
-                        od.ProductId, od.Product?.ProductName, od.Quantity);
+
                     return new Seller_ChiTietDonHangItemDTO
                     {
                         ProductId = od.ProductId,
-                        ProductName = od.Product?.ProductName ?? "Unknown Product",
+                        ProductName = od.Productname ?? "Unknown Product",
                         Quantity = od.Quantity,
-                        Price = od.Product?.Price ?? 0,
-                        Image = od.Product?.ProductImage,
-                        TotalPrice = (od.Product?.Price ?? 0) * od.Quantity
+                        Price = od.Price,
+                        Image = od.Image,
+                        TotalPrice = od.TotalNetProfit
                     };
-                }).ToList() ?? new List<Seller_ChiTietDonHangItemDTO>();
+                }).ToList();
 
                 _logger.LogInformation("Created {OrderItemsCount} order items", orderItems.Count);
 
@@ -1005,6 +1011,17 @@ namespace PBL3.Services
 
             _returnExchangeRepo.Update(request);
             return true;
+        }
+
+        public Seller GetInfoSeller(int sellerId)
+        {
+            var seller = _sellerRepository.GetById(sellerId);
+            if (seller == null)
+            {
+                throw new KeyNotFoundException($"Không tìm thấy người bán với ID: {sellerId}");
+            }
+
+            return seller;
         }
     }
 } 

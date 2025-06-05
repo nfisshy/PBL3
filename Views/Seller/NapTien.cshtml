@@ -59,17 +59,6 @@
                     </div>
                 }
 
-                <div class="wallet-info">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Số dư hiện tại:</strong> @Model.WalletBalance.ToString("N0") VNĐ</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Ngân hàng:</strong> @Model.BankName</p>
-                            <p><strong>Số tài khoản:</strong> @Model.BankNumber</p>
-                        </div>
-                    </div>
-                </div>
 
                 @using (Html.BeginForm("NapTien", "Seller", FormMethod.Post))
                 {
@@ -86,6 +75,17 @@
                         </div>
                         @Html.ValidationMessageFor(m => m.AmountMoney, "", new { @class = "text-danger" })
                         <small class="form-text text-muted">Số tiền tối thiểu: 50.000 VNĐ</small>
+                    </div>
+                    <div class="wallet-info mb-4" style="background-color:#f8f9fa; padding:15px; border-radius:8px;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Số dư hiện tại:</strong> @Model.WalletBalance.ToString("N0") VNĐ</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Ngân hàng:</strong> @Html.TextBoxFor(m => m.BankName, new { @class = "form-control", @readonly = "readonly" })</p>
+                                <p><strong>Số tài khoản:</strong> @Html.TextBoxFor(m => m.BankNumber, new { @class = "form-control", @readonly = "readonly" })</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">

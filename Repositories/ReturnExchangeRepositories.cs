@@ -1,6 +1,7 @@
 using PBL3.Entity;
 using PBL3.Dbcontext;
 using PBL3.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace PBL3.Repositories
 {
@@ -69,7 +70,7 @@ namespace PBL3.Repositories
 
         public IEnumerable<ReturnExchange> GetAll()
         {
-            return _context.ReturnExchanges.ToList();
+            return _context.ReturnExchanges.Include(r => r.Product).ToList();
         }
     }
 }

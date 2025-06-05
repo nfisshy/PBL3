@@ -11,12 +11,14 @@ namespace PBL_3.Controllers
         private readonly AccountService _accountService;
         private readonly CartService _cartService;
         private readonly BuyerService _buyerService;
+        private readonly SellerService _sellerService;
 
-        public AccountController(AccountService accountService, CartService cartService, BuyerService buyerService)
+        public AccountController(AccountService accountService, CartService cartService, BuyerService buyerService, SellerService sellerService)
         {
             _accountService = accountService;
             _cartService = cartService;
             _buyerService = buyerService;
+            _sellerService = sellerService;
         }
 
         [HttpGet]
@@ -68,7 +70,11 @@ namespace PBL_3.Controllers
                     return RedirectToAction("Index", "Product");
                 }
                 else if (user.RoleName.ToString() == "Seller")
-                {
+                {       
+                        var seller = _sellerService.GetInfoSeller(user.Id);
+                        HttpContext.Session.SetString("StoreName", seller.StoreName ?? "Không tên");
+                        if (seller.Avatar != null)
+                            HttpContext.Session.Set("Avatar", seller.Avatar);
                     return RedirectToAction("Dashboard", "Seller");
                 }
                 else if (user.RoleName.ToString() == "Admin")

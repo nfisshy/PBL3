@@ -1,4 +1,10 @@
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <!-- dùng để chèn thư viện chứa mấy icon trong sidebar  -->
+@{
+    var avatarBytes = Context.Session.Get("Avatar");
+    var avatarBase64 = avatarBytes != null ? $"data:image/png;base64,{Convert.ToBase64String(avatarBytes)}" : Url.Content("~/images/avatar-default.png");
+    var storeName = Context.Session.GetString("StoreName") ?? "Không tên";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
     .seller-menu-container {
@@ -88,11 +94,11 @@
 <div class="seller-menu-container">
     <div class="seller-profile">
         <div class="seller-avatar">
-            <img src="~/images/avatar-default.png" alt="Seller Avatar">
+            <img src="@avatarBase64" alt="Seller Avatar">
         </div>
         <div class="seller-info">
-            <div class="title">Tài khoản của</div>
-            <div class="name">Seller</div>
+            <div class="title">Tên shop</div>
+            <div class="name">@storeName</div>
         </div>
     </div>
 
