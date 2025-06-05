@@ -44,6 +44,7 @@ namespace PBL3.Services
                     ProductName = p.ProductName,
                     Price = p.Price,
                     Image = p.ProductImage,
+                    Status = p.ProductStatus,
                     Rating = CalculateAverageRating(p.ProductId)
                 }).ToList();
             }
@@ -63,7 +64,10 @@ namespace PBL3.Services
                     throw new ArgumentException("Danh mục sản phẩm không hợp lệ", nameof(category));
                 }
 
-                var products = _productRepository.GetByType(category);
+                    var products = _productRepository
+                    .GetByType(category)
+                    .Where(p => p.ProductStatus == ProductStatus.Selling)
+                    .ToList();
                 if (products == null || !products.Any())
                 {
                     return new Buyer_SanPhamTheoDanhMucDTO

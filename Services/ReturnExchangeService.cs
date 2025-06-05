@@ -30,10 +30,14 @@ namespace PBL3.Services
         }
 
         // 1. Lấy toàn bộ bản ghi
-       public List<ExchangeStuffDTO> GetAll(int buyerId)
+        public List<ExchangeStuffDTO> GetAll(int buyerId, ExchangeStatus? status = null)
         {
             var result = new List<ExchangeStuffDTO>();
-            var exchanges = _returnExchangeRepo.GetAll();
+
+            // Lấy tất cả các yêu cầu đổi trả, lọc theo status nếu có
+            var exchanges = _returnExchangeRepo.GetAll()
+                .Where(e => status == null || e.Status == status)
+                .ToList();
 
             foreach (var e in exchanges)
             {
@@ -58,13 +62,15 @@ namespace PBL3.Services
                     Quantity = e.Quantity,
                     Status = e.Status,
                     SellerStoreName = seller?.StoreName ?? "N/A",
-                    BuyerId = buyerId, // nếu cần thiết trong DTO
+                    BuyerId = buyerId,
+                    SellerEmail = seller?.EmailGeneral ?? "N/A",
+                    SellerPhone = seller?.PhoneNumber ?? "N/A",
                 };
 
                 result.Add(dto);
             }
 
-            return result;
+            return result.OrderByDescending(x => x.RequestDate).ToList();
         }
 
 

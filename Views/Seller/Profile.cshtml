@@ -89,6 +89,8 @@
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('avatarFile').click()">
                                 Thay đổi ảnh đại diện
                             </button>
+                            <span id="avatarFileName" class="ms-2"></span>
+
                         </div>
                     </div>
 
@@ -157,6 +159,7 @@
                     $('#avatarPreview').attr('src', e.target.result);
                 };
                 reader.readAsDataURL(input.files[0]);
+                document.getElementById('avatarFileName').textContent = input.files[0].name;
             }
         }
 

@@ -119,10 +119,10 @@
         @if (Model != null && Model.Count > 0 && Model.Any(v => v.IsActive))
         {
             <div class="voucher-list">
-                @foreach (var voucher in Model)
+                @foreach (var voucher in Model.Where(v => v.IsActive))
                 {
                     <div class="voucher-card">
-                        <h3>@voucher.VoucherId</h3>
+                        <h3>Mã voucher: @voucher.VoucherId</h3>
                         <p>@voucher.Description</p>
                         <p class="voucher-meta">
                             🗓 Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy") &nbsp;&nbsp;
@@ -143,9 +143,6 @@
                                 <text>Không xác định</text>
                             }
                             &nbsp;&nbsp;🎯 Tối đa: @voucher.MaxDiscount đ
-                        </p>
-                        <p class="voucher-meta">
-                            Trạng thái: <strong>@(voucher.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</strong>
                         </p>
                     </div>
                 }

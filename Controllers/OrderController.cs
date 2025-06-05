@@ -6,27 +6,35 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using PBL3.Enums;
 using Newtonsoft.Json;
+using PBL3.Entity;
 namespace PBL3.Controllers
 {
     public class OrderController : Controller
     {
         private readonly OrderService _orderService;
+        private readonly BuyerService _buyerService;
+        private readonly WalletService _walletService;
         private readonly ILogger<OrderController> _logger;
 
-        public OrderController(OrderService orderService, ILogger<OrderController> logger)
+        public OrderController(OrderService orderService, BuyerService buyerService, ILogger<OrderController> logger,
+            WalletService walletService)
         {
             _orderService = orderService;
             _logger = logger;
+            _buyerService = buyerService;
+            _walletService = walletService;
         }
         //đã sửa
         [HttpGet]
         public IActionResult Preview()
         {
+            _logger.LogInformation("Vào trang xem trước đơn hàng");
             var json = TempData["PreviewOrders"] as string;
             if (string.IsNullOrEmpty(json))
                 return RedirectToAction("Cart", "Cart");
 
             var previewOrders = JsonConvert.DeserializeObject<PurchaseDTO>(json);
+            
             return View("Order", previewOrders);
         }
         //đã sửa
@@ -37,6 +45,7 @@ namespace PBL3.Controllers
             if (buyerId == 0)
                 return RedirectToAction("Login", "Account");
 
+
             try
             {
                 var cartItems = selectedItem;
@@ -46,12 +55,13 @@ namespace PBL3.Controllers
                     return RedirectToAction("Cart", "Cart");
                 }
 
+
                 var previewOrders = _orderService.PreviewOrder(buyerId, cartItems);
+
                 //return View("Order",previewOrders);
                 TempData["PreviewOrders"] = JsonConvert.SerializeObject(previewOrders);
                 return Ok(new { redirectUrl = Url.Action("Preview") });
             }
-
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi xem trước đơn hàng cho buyer ID: {BuyerId}", buyerId);
@@ -59,6 +69,8 @@ namespace PBL3.Controllers
                 return RedirectToAction("Cart", "Cart");
             }
         }
+
+
         //đã sửa 
         [HttpPost]
         public IActionResult CreateOrder([FromBody] List<OrderDTO> orderDTOs)
@@ -91,9 +103,12 @@ namespace PBL3.Controllers
         [HttpPost]
         public IActionResult UpdateOrderStatus(int orderId, OrdStatus newStatus)
         {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+                return RedirectToAction("Login", "Account");
             try
             {
-                _orderService.UpdateOrderStatus(orderId, newStatus);
+                _orderService.UpdateOrderStatus(orderId, buyerId, newStatus);
                 TempData["Success"] = "Cập nhật trạng thái đơn hàng thành công";
                 return RedirectToAction("OrderDetailHome");
             }
@@ -185,6 +200,89 @@ namespace PBL3.Controllers
                 TempData["Error"] = "Có lỗi xảy ra khi tải chi tiết đơn hàng.";
                 return RedirectToAction("OrderDetailHome");
             }
+        }
+
+        [HttpGet]
+        public IActionResult AddressChoose()
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var addresses = _buyerService.GetAllAddressByBuyerId(buyerId);
+                return PartialView("AddressChoose", addresses); // Tạo view AddressList.cshtml để hiển thị
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách địa chỉ cho Buyer ID: {BuyerId}", buyerId);
+                TempData["Error"] = "Không thể tải danh sách địa chỉ.";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult VoucherChoose([FromForm] List<int> sellerIds)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                // Gọi service với buyerId và danh sách sellerId
+                var vouchers = _buyerService.GetVouchersByBuyerIdAndSellers(buyerId, sellerIds);
+                // Trả về PartialView để hiển thị trong modal
+                return PartialView(vouchers);
+            }
+            catch (Exception ex)
+            {
+                // TODO: log lỗi nếu cần
+                return PartialView(new List<Buyer_VoucherDTO>());
+            }
+        }
+
+        [HttpPost]
+        public IActionResult VerifyPin([FromBody] PinDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            bool isValid = _walletService.VerifyPinForOrder(buyerId, dto.inputPin);
+
+            if (!isValid)
+            {
+                return Json(new { success = false, message = "Mã PIN không đúng." });
+            }
+
+            return Json(new { success = true, message = "Xác minh PIN thành công." });
+        }
+        
+        [HttpPost]
+        public IActionResult CheckBalanceAndDeduct([FromBody]walletPurchaseDTO dto)
+        {
+            int buyerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (buyerId == 0)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            bool result = _walletService.CheckBalanceAndDeduct(buyerId, dto.amount);
+
+            if (!result)
+            {
+                return Json(new { success = false, message = "Số dư ví không đủ để thanh toán." });
+            }
+
+            return Json(new { success = true, message = "Thanh toán thành công. Số dư đã được trừ." });
         }
 
     }

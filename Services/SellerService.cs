@@ -17,41 +17,47 @@ namespace PBL3.Services
         private readonly ISellerRepositories _sellerRepository;
         private readonly IProductRepositories _productRepository;
         private readonly IOrderRepositories _orderRepository;
+        private readonly IOrderDetailRepositories _orderDetailRepository;
         private readonly IReviewRepositories _reviewRepository;
         private readonly IBuyerRepositories _buyerRepository;
         private readonly IVoucherRepositories _voucherRepository;
         private readonly IPlatformWalletRepositories _walletRepository;
         private readonly IBankRepositories _bankRepository;
+        private readonly IReturnExchangeRepositories _returnExchangeRepo;
         private readonly ILogger<SellerService> _logger;
 
         public SellerService(
             ISellerRepositories sellerRepository,
             IProductRepositories productRepository,
             IOrderRepositories orderRepository,
+            IOrderDetailRepositories orderDetailRepository,
             IReviewRepositories reviewRepository,
             IBuyerRepositories buyerRepository,
             IVoucherRepositories voucherRepository,
             IPlatformWalletRepositories walletRepository,
             IBankRepositories bankRepository,
+            IReturnExchangeRepositories returnExchangeRepo,
             ILogger<SellerService> logger)
         {
             _sellerRepository = sellerRepository;
             _productRepository = productRepository;
             _orderRepository = orderRepository;
+            _orderDetailRepository = orderDetailRepository;
             _reviewRepository = reviewRepository;
             _buyerRepository = buyerRepository;
             _voucherRepository = voucherRepository;
             _walletRepository = walletRepository;
             _bankRepository = bankRepository;
+            _returnExchangeRepo = returnExchangeRepo;
             _logger = logger;
         }
 
         public bool IsSellerProfileComplete(int sellerId)
         {
             var seller = _sellerRepository.GetById(sellerId);
-            return seller != null && 
-                   !string.IsNullOrEmpty(seller.StoreName) && 
-                   !string.IsNullOrEmpty(seller.EmailGeneral) && 
+            return seller != null &&
+                   !string.IsNullOrEmpty(seller.StoreName) &&
+                   !string.IsNullOrEmpty(seller.EmailGeneral) &&
                    !string.IsNullOrEmpty(seller.AddressSeller);
         }
 
@@ -246,7 +252,8 @@ namespace PBL3.Services
 
                 // Lấy danh sách đánh giá
                 var reviews = _reviewRepository.GetByProductId(productId);
-                var reviewDTOs = reviews?.Select(r => {
+                var reviewDTOs = reviews?.Select(r =>
+                {
                     var buyer = _buyerRepository.GetById(r.BuyerId);
                     return new Seller_DanhGiaDTO
                     {
@@ -272,6 +279,7 @@ namespace PBL3.Services
                     ProductName = product.ProductName,
                     Price = product.Price,
                     ProductType = product.ProductType,
+                    Status = product.ProductStatus,
                     Description = product.ProductDescription,
                     Image = product.ProductImage,
                     Rating = averageRating,
@@ -307,7 +315,7 @@ namespace PBL3.Services
                     ProductDescription = model.Description,
                     ProductImage = model.ProductImage,
                     SellerId = sellerId,
-                    ProductStatus = ProductStatus.Selling,
+                    ProductStatus = ProductStatus.WaitConfirm,
                     ProductQuantity = model.ProductQuantity // Sử dụng số lượng từ model
                 };
 
@@ -322,7 +330,7 @@ namespace PBL3.Services
         // Add notification methods
         public List<Seller_ThongBaoDTO> GetNewOrders(int sellerId)
         {
-            try 
+            try
             {
                 var orders = _orderRepository.GetBySellerId(sellerId)
                     .Where(o => o != null && o.OrderStatus == OrdStatus.WaitConfirm)
@@ -362,7 +370,7 @@ namespace PBL3.Services
                     .ToList();
 
                 // Calculate total revenue and orders
-                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OrderPrice * (decimal)0.05-o.Discount); // Trừ 5% phí platform
+                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OrderPrice * (decimal)0.05 - o.Discount); // Trừ 5% phí platform
                 var totalOrders = orders.Count;
                 var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
@@ -427,7 +435,8 @@ namespace PBL3.Services
                 foreach (var product in products)
                 {
                     var productReviews = _reviewRepository.GetByProductId(product.ProductId)
-                        .Select(r => {
+                        .Select(r =>
+                        {
                             var buyer = _buyerRepository.GetById(r.BuyerId);
                             return new Seller_DanhGiaDTO
                             {
@@ -561,28 +570,31 @@ namespace PBL3.Services
                     throw new Exception("Không tìm thấy đơn hàng");
                 }
 
-                _logger.LogInformation("Getting order details for order {OrderId}. OrderDetails count: {OrderDetailsCount}", 
+                _logger.LogInformation("Getting order details for order {OrderId}. OrderDetails count: {OrderDetailsCount} , 000000111111111111111111111111111111111111111111111",
                     orderId, order.OrderDetails?.Count ?? 0);
 
                 var buyer = _buyerRepository.GetById(order.BuyerId);
-                
+
                 // Kiểm tra khả năng cập nhật trạng thái
                 bool canUpdateToPending = order.OrderStatus == OrdStatus.WaitConfirm;
                 bool canUpdateToDelivering = order.OrderStatus == OrdStatus.Pending;
 
-                var orderItems = order.OrderDetails?.Select(od => {
-                    _logger.LogInformation("Processing order detail: ProductId={ProductId}, ProductName={ProductName}, Quantity={Quantity}", 
-                        od.ProductId, od.Product?.ProductName, od.Quantity);
+                var orderDetails = _orderDetailRepository.GetByOrderId(orderId);
+
+                // 🟢 Mapping từng sản phẩm
+                var orderItems = orderDetails.Select(od =>
+                {
+
                     return new Seller_ChiTietDonHangItemDTO
                     {
                         ProductId = od.ProductId,
-                        ProductName = od.Product?.ProductName ?? "Unknown Product",
+                        ProductName = od.Productname ?? "Unknown Product",
                         Quantity = od.Quantity,
-                        Price = od.Product?.Price ?? 0,
-                        Image = od.Product?.ProductImage,
-                        TotalPrice = (od.Product?.Price ?? 0) * od.Quantity
+                        Price = od.Price,
+                        Image = od.Image,
+                        TotalPrice = od.TotalNetProfit
                     };
-                }).ToList() ?? new List<Seller_ChiTietDonHangItemDTO>();
+                }).ToList();
 
                 _logger.LogInformation("Created {OrderItemsCount} order items", orderItems.Count);
 
@@ -767,9 +779,8 @@ namespace PBL3.Services
             if (wallet == null)
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
-            // Kiểm tra OTP
-            // if (model.OTP != seller.OTP)
-            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
+            if (model.Pin != wallet.Pin)
+                throw new ArgumentException("Mã PIN không đúng");
 
             // Kiểm tra xem đã có tài khoản ngân hàng chưa
             var existingBank = _bankRepository.GetByWalletId(wallet.WalletId)?.FirstOrDefault();
@@ -793,17 +804,35 @@ namespace PBL3.Services
             }
         }
 
-        // public void UpdateOTP(int sellerId)
-        // {
-        //     var seller = _sellerRepository.GetById(sellerId);
-        //     if (seller == null)
-        //         throw new KeyNotFoundException($"Không tìm thấy người bán với ID: {sellerId}");
+        public void UpdatePin(int sellerId, Seller_TaoPinDTO model)
+        {
+            var wallet = _walletRepository.GetByUserId(sellerId);
+            if (wallet == null)
+                throw new KeyNotFoundException("Không tìm thấy ví của người bán");
+            if (wallet.Pin != null)
+            {
+                if (wallet.Pin != model.CurrentPin)
+                {
+                    throw new InvalidOperationException("Mã PIN hiện tại không đúng");
+                }
+            }
 
-        //     // Tạo OTP ngẫu nhiên 6 chữ số
-        //     Random random = new Random();
-        //     seller.OTP = random.Next(100000, 999999);
-        //     _sellerRepository.Update(seller);
-        // }
+            wallet.Pin = model.NewPin;
+            _walletRepository.Update(wallet);
+        }
+
+        public Seller_TaoPinDTO GetPinStatus(int sellerId)
+        {
+            var wallet = _walletRepository.GetByUserId(sellerId);
+            if (wallet == null)
+                throw new KeyNotFoundException("Không tìm thấy ví của người bán");
+
+            return new Seller_TaoPinDTO
+            {
+                HasPin = wallet.Pin != 0, // Giả sử nếu Pin khác 0 thì đã có PIN
+                CurrentPin = wallet.Pin
+            };
+        }
 
         public void NapTien(int sellerId, Seller_RutNapTienDTO model)
         {
@@ -818,9 +847,8 @@ namespace PBL3.Services
             if (wallet == null)
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
-            // Kiểm tra OTP
-            // if (model.OTP != seller.OTP)
-            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
+            if (model.Pin != wallet.Pin)
+                throw new ArgumentException("Mã PIN không đúng");
 
             // Kiểm tra số tiền nạp
             if (model.AmountMoney <= 0)
@@ -844,9 +872,8 @@ namespace PBL3.Services
             if (wallet == null)
                 throw new KeyNotFoundException("Không tìm thấy ví của người bán");
 
-            // Kiểm tra OTP
-            // if (model.OTP != seller.OTP)
-            //     throw new ArgumentException("OTP không đúng"); // sửa ........................................
+            if (model.Pin != wallet.Pin)
+                throw new ArgumentException("Mã PIN không đúng");
 
             // Kiểm tra số tiền rút
             if (model.AmountMoney <= 0)
@@ -944,6 +971,57 @@ namespace PBL3.Services
             {
                 throw new Exception("Lỗi khi cập nhật sản phẩm: " + ex.Message, ex);
             }
+        }
+        public List<Seller_ReturnExchangeDTO> GetAllBySeller(
+            int sellerId,
+            DateTime? fromDate,
+            DateTime? toDate,
+            ExchangeStatus? status = null)
+        {
+            var all = _returnExchangeRepo.GetAll();
+
+            var filtered = all
+                .Where(x =>
+                    x.Product != null &&
+                    x.Product.SellerId == sellerId &&
+                    (!fromDate.HasValue || x.RequestDate.Date >= fromDate.Value.Date) &&
+                    (!toDate.HasValue || x.RequestDate.Date <= toDate.Value.Date) &&
+                    (!status.HasValue || x.Status == status.Value))
+                .Select(x => new Seller_ReturnExchangeDTO
+                {
+                    ReturnExchangeId = x.ReturnExchangeId,
+                    ProductName = x.Product?.ProductName ?? "[Không xác định]",
+                    Reason = x.Reason,
+                    RequestDate = x.RequestDate,
+                    Status = x.Status,
+                    Quantity = x.Quantity
+                })
+                .ToList();
+
+            return filtered;
+        }
+        public bool UpdateStatus(int id, ExchangeStatus newStatus)
+        {
+            var request = _returnExchangeRepo.GetById(id);
+            if (request == null || request.Status != ExchangeStatus.WaitConfirm)
+                return false;
+
+            request.Status = newStatus;
+            request.ResponseDate = DateTime.Now;
+
+            _returnExchangeRepo.Update(request);
+            return true;
+        }
+
+        public Seller GetInfoSeller(int sellerId)
+        {
+            var seller = _sellerRepository.GetById(sellerId);
+            if (seller == null)
+            {
+                throw new KeyNotFoundException($"Không tìm thấy người bán với ID: {sellerId}");
+            }
+
+            return seller;
         }
     }
 } 

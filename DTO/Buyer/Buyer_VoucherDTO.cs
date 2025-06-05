@@ -11,9 +11,10 @@ namespace PBL3.DTO.Buyer
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal DiscountPercentage { get; set; } // Phần trăm giảm giá
-        public decimal MaxDiscount { get; set; } 
+        public decimal MaxDiscount { get; set; }
         public decimal DiscountAmount { get; set; } // Số tiền giảm
         public bool IsActive { get; set; } // Trạng thái hoạt động của voucher
         public int BuyerId { get; set; } // ID của người mua sở hữu voucher
+        public int SellerId { get; set; } // ID của người bán phát hành voucher
     }
 }

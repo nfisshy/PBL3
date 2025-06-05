@@ -73,7 +73,7 @@ namespace PBL_3.Controllers
 
             return View(model);
         }
-        
+
 
         [HttpPost]
         public IActionResult CompleteProfile(Seller_SignUpDTO model)
@@ -133,7 +133,7 @@ namespace PBL_3.Controllers
             // Get temporary address from TempData if it exists
             string tempAddress = HttpContext.Session.GetString("TempAddress");
             var model = _sellerService.GetSellerAddress(sellerId.Value, tempAddress);
-            
+
             if (model == null)
             {
                 TempData["Error"] = "Không tìm thấy thông tin người bán";
@@ -358,10 +358,10 @@ namespace PBL_3.Controllers
                 }
 
                 var reviews = _sellerService.GetProductReviews(sellerId.Value, productId);
-                
+
                 // Lưu productId vào ViewBag để giữ lại trên form
                 ViewBag.ProductId = productId;
-                
+
                 return View(reviews);
             }
             catch (Exception ex)
@@ -719,17 +719,36 @@ namespace PBL_3.Controllers
         [HttpPost]
         public IActionResult NapTien(Seller_RutNapTienDTO model)
         {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                _logger.LogInformation("22222222222222222222222222222222");
+                foreach (var key in ModelState.Keys)
+                {
+                    var errors = ModelState[key].Errors;
+                    foreach (var error in errors)
+                    {
+                        _logger.LogWarning($"ModelState Error at '{key}': {error.ErrorMessage}");
+                    }
+                }
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
 
+                // Gán lại các giá trị cho model để giữ hiển thị đúng khi trả về view
+                model.WalletBalance = walletInfo.WalletBalance;
+                model.BankName = walletInfo.BankName;
+                model.BankNumber = walletInfo.BankNumber;
+                return View(model);
+            }
+            
             try
             {
-                var sellerId = HttpContext.Session.GetInt32("UserId");
-                if (!sellerId.HasValue)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
 
+                _logger.LogInformation("33333333333333333333333");
                 _sellerService.NapTien(sellerId.Value, model);
                 TempData["Success"] = "Nạp tiền thành công";
                 return RedirectToAction("Wallet");
@@ -774,16 +793,25 @@ namespace PBL_3.Controllers
         [HttpPost]
         public IActionResult RutTien(Seller_RutNapTienDTO model)
         {
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
             if (!ModelState.IsValid)
-                return View(model);
+            {   
+                var walletInfo = _sellerService.GetWalletInfo(sellerId.Value);
 
+                // Gán lại các giá trị cho model để giữ hiển thị đúng khi trả về view
+                model.WalletBalance = walletInfo.WalletBalance;
+                model.BankName = walletInfo.BankName;
+                model.BankNumber = walletInfo.BankNumber;
+                
+                return View(model); // render lại view với model hiện tại
+            }
             try
             {
-                var sellerId = HttpContext.Session.GetInt32("UserId");
-                if (!sellerId.HasValue)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+
 
                 _sellerService.RutTien(sellerId.Value, model);
                 TempData["Success"] = "Rút tiền thành công";
@@ -797,8 +825,8 @@ namespace PBL_3.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult UpdateOTP()
+        [HttpGet]
+        public IActionResult CreatePin()
         {
             try
             {
@@ -808,16 +836,40 @@ namespace PBL_3.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // _sellerService.UpdateOTP(sellerId.Value);
-                // TempData["Success"] = "OTP mới đã được tạo"; // sửa .............................
+                var pinInfo = _sellerService.GetPinStatus(sellerId.Value);
+
+                return View(pinInfo);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi tạo OTP mới");
-                TempData["Error"] = "Có lỗi xảy ra khi tạo OTP mới";
+                _logger.LogError(ex, "Lỗi khi tải trang tạo PIN");
+                TempData["Error"] = "Có lỗi xảy ra khi tải trang tạo PIN";
+                return RedirectToAction("Wallet");
+            }
+        }
+        [HttpPost]
+        public IActionResult CreatePin(Seller_TaoPinDTO model)
+        {
+
+            var sellerId = HttpContext.Session.GetInt32("UserId");
+            if (!sellerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
             }
 
-            return RedirectToAction("Wallet");
+            try
+            {
+                _sellerService.UpdatePin(sellerId.Value, model);
+                TempData["Success"] = "Cập nhật PIN thành công";
+                return RedirectToAction("Wallet");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo PIN");
+                TempData["Error"] = ex.Message;
+                var pinInfo = _sellerService.GetPinStatus(sellerId.Value);
+                return View(pinInfo);
+            }
         }
 
         [HttpGet]
@@ -848,6 +900,7 @@ namespace PBL_3.Controllers
                 return RedirectToAction("Index", "Product");
             }
         }
+
         public IActionResult EditProduct(int id)
         {
             try
@@ -937,6 +990,84 @@ namespace PBL_3.Controllers
             {
                 ModelState.AddModelError("", ex.Message);
                 return View(model);
+            }
+        }
+        [HttpGet]
+        public IActionResult ReturnExchangeManagement(DateTime? fromDate, DateTime? toDate, ExchangeStatus? status)
+        {
+            try
+            {
+                _logger.LogInformation("ReturnExchangeManagement called with FromDate: {FromDate}, ToDate: {ToDate}, Status: {Status}", fromDate, toDate, status);
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    _logger.LogWarning("000000000000000000000000000000000000");
+                    return RedirectToAction("Login", "Account");
+                }
+                _logger.LogInformation("1111111111111111111111111111111111111111");
+                var list = _sellerService.GetAllBySeller(sellerId.Value, fromDate, toDate, status);
+                ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                ViewBag.SelectedStatus = status;
+                return View(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải danh sách đổi trả");
+                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách đổi trả.";
+                return View(new List<Seller_ReturnExchangeDTO>());
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Approve(int id)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập" });
+                }
+
+                var success = _sellerService.UpdateStatus(id, ExchangeStatus.Approved);
+                if (!success)
+                {
+                    return Json(new { success = false, message = "Không thể duyệt yêu cầu đổi trả" });
+                }
+
+                return Json(new { success = true, message = "Đã duyệt yêu cầu đổi trả" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi duyệt yêu cầu đổi trả");
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi duyệt yêu cầu" });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Reject(int id)
+        {
+            try
+            {
+                var sellerId = HttpContext.Session.GetInt32("UserId");
+                if (!sellerId.HasValue)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập" });
+                }
+
+                var success = _sellerService.UpdateStatus(id, ExchangeStatus.Rejected);
+                if (!success)
+                {
+                    return Json(new { success = false, message = "Không thể từ chối yêu cầu đổi trả" });
+                }
+
+                return Json(new { success = true, message = "Đã từ chối yêu cầu đổi trả" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi từ chối yêu cầu đổi trả");
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi từ chối yêu cầu" });
             }
         }
     }

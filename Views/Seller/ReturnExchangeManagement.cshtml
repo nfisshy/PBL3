@@ -1,0 +1,160 @@
+@model List<PBL3.DTO.Seller.Seller_ReturnExchangeDTO>
+@using PBL3.Enums
+@using PBL3.Helpers
+@{
+    ViewBag.Title = "Quản lý đổi trả";
+    Layout = "~/Views/Shared/SellerLayout.cshtml";
+    var statuses = Enum.GetValues(typeof(ExchangeStatus)).Cast<ExchangeStatus>().ToList();
+}
+
+@section Styles {
+    <style>
+        .return-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 16px;
+        }
+
+        .return-table th, .return-table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .badge-status {
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+
+        .status-wait { background-color: #f39c12; color: #fff; }
+        .status-rejected { background-color: #e74c3c; color: #fff; }
+        .status-approved { background-color: #27ae60; color: #fff; }
+
+        .search-form {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            @Html.Partial("_SellerMenuOutsideLayout")
+        </div>
+
+        <div class="col-md-9">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <!-- Form tìm kiếm -->
+            <div class="search-form">
+                <form method="get" action="@Url.Action("ReturnExchangeManagement")" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" name="fromDate" value="@ViewBag.FromDate" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" name="toDate" value="@ViewBag.ToDate" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Trạng thái</label>
+                        <select class="form-select" name="status">
+                            <option value="">Tất cả</option>
+                            @foreach (var status in statuses)
+                            {
+                                <option value="@status" selected="@(ViewBag.SelectedStatus?.ToString() == status.ToString())">
+                                    @EnumHelper.GetDisplayName(status)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                        <a href="@Url.Action("ReturnExchangeManagement")" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="return-table">
+                <h4 class="mb-3">Danh sách yêu cầu đổi trả</h4>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Sản phẩm</th>
+                            <th>SL</th>
+                            <th>Lý do</th>
+                            <th>Ngày yêu cầu</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                var statusClass = item.Status switch
+                                {
+                                    ExchangeStatus.WaitConfirm => "status-wait",
+                                    ExchangeStatus.Rejected => "status-rejected",
+                                    ExchangeStatus.Approved => "status-approved",
+                                    _ => "badge-secondary"
+                                };
+
+                                <tr>
+                                    <td>@item.ReturnExchangeId</td>
+                                    <td>@item.ProductName</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.Reason</td>
+                                    <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
+                                    <td><span class="badge badge-status @statusClass">@EnumHelper.GetDisplayName(item.Status)</span></td>
+                                    <td>
+                                        <a href="@Url.Action("ReturnExchangeDetail", new { id = item.ReturnExchangeId })" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Xem
+                                        </a>
+                                        @if (item.Status == ExchangeStatus.WaitConfirm)
+                                        {
+                                            <form method="post" action="@Url.Action("ProcessReturn")" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.ReturnExchangeId" />
+                                                <input type="hidden" name="approve" value="true" />
+                                                <button class="btn btn-sm btn-success" onclick="return confirm('Duyệt yêu cầu này?')">
+                                                    <i class="fas fa-check"></i> Duyệt
+                                                </button>
+                                            </form>
+                                            <form method="post" action="@Url.Action("ProcessReturn")" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.ReturnExchangeId" />
+                                                <input type="hidden" name="approve" value="false" />
+                                                <button class="btn btn-sm btn-danger" onclick="return confirm('Từ chối yêu cầu này?')">
+                                                    <i class="fas fa-times"></i> Từ chối
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Không có yêu cầu đổi trả nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,6 +11,7 @@ namespace PBL3.DTO.Buyer
         public decimal Price { get; set; }
         public byte[] Image { get; set; }
         public double Rating { get; set; } // danh gia may sao
+        public ProductStatus Status { get; set; } // trang thai san pham
     }
     public class Buyer_SanPhamTheoDanhMucDTO
     {

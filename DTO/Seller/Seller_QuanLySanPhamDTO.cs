@@ -52,6 +52,7 @@ namespace PBL3.DTO.Seller
         public decimal Price { get; set; }
         public TypeProduct ProductType { get; set; }
         public string Description { get; set; }
+        public ProductStatus Status { get; set; }
         public byte[] Image { get; set; }
         public double Rating { get; set; }
         public int SoldQuantity { get; set; }

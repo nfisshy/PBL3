@@ -142,7 +142,7 @@
                                 Xem chi tiết
                             </a>
 
-                            @if (order.OrderStatus == OrdStatus.WaitConfirm || order.OrderStatus == OrdStatus.Pending)
+                            @if (order.OrderStatus == OrdStatus.WaitConfirm)
                             {
                                 <form asp-action="UpdateOrderStatus" method="post" class="inline">
                                     <input type="hidden" name="orderId" value="@order.OrderId" />
