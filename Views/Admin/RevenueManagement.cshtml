@@ -1,0 +1,284 @@
+@model PBL3.Models.Pagination.PaginatedList<PBL3.DTO.Admin.Admin_RevenueManagementDTO>
+@using PBL3.Enums
+@{
+    ViewData["Title"] = "Quản lý doanh thu";
+    Layout = "_AdminLayout";
+    var statistics = ViewBag.Statistics as PBL3.DTO.Admin.RevenueStatisticsDTO;
+}
+
+<div class="container-fluid">
+    <!-- Page Title -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-dollar-sign"></i> Quản lý doanh thu</h2>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase mb-2">Tổng doanh thu</h6>
+                            <h3 class="mb-0">@statistics.TotalRevenue.ToString("N0") đ</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase mb-2">Đơn hàng hoàn thành</h6>
+                            <h3 class="mb-0">@statistics.CompletedOrders</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase mb-2">Giá trị trung bình</h6>
+                            <h3 class="mb-0">@statistics.AverageOrderValue.ToString("N0") đ</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-chart-bar fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form id="filterForm" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text" data-bs-toggle="tooltip" 
+                              title="Tìm theo ID, tên người mua hoặc người bán">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Tìm kiếm..." value="@ViewBag.CurrentSearch">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" name="fromDate" id="fromDate" class="form-control"
+                           placeholder="Từ ngày" value="@ViewBag.CurrentFromDate"
+                           data-bs-toggle="tooltip" title="Lọc doanh thu từ ngày">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" name="toDate" id="toDate" class="form-control"
+                           placeholder="Đến ngày" value="@ViewBag.CurrentToDate"
+                           data-bs-toggle="tooltip" title="Lọc doanh thu đến ngày">
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results Summary -->
+    @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch) || !string.IsNullOrEmpty(ViewBag.CurrentFromDate) || !string.IsNullOrEmpty(ViewBag.CurrentToDate))
+    {
+        <div class="alert alert-info mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-info-circle me-2"></i>
+                    Tìm thấy <strong>@ViewBag.TotalFilteredOrders</strong> đơn hàng
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                    {
+                        <span>với từ khóa "<strong>@ViewBag.CurrentSearch</strong>"</span>
+                    }
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentFromDate) || !string.IsNullOrEmpty(ViewBag.CurrentToDate))
+                    {
+                        <span>trong khoảng thời gian</span>
+                        @if (!string.IsNullOrEmpty(ViewBag.CurrentFromDate))
+                        {
+                            <span>từ <strong>@ViewBag.CurrentFromDate</strong></span>
+                        }
+                        @if (!string.IsNullOrEmpty(ViewBag.CurrentToDate))
+                        {
+                            <span>đến <strong>@ViewBag.CurrentToDate</strong></span>
+                        }
+                    }
+                </span>
+            </div>
+        </div>
+    }
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Người mua</th>
+                        <th>Người bán</th>
+                        <th>Tổng tiền</th>
+                        <th>Giảm giá</th>
+                        <th>Doanh thu (5%)</th>
+                        <th>Ngày đặt</th>
+                        <th>Trạng thái</th>
+                        <th>Thanh toán</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Any())
+                    {
+                        foreach (var order in Model.Items)
+                        {
+                            <tr>
+                                <td>@order.Id</td>
+                                <td>@order.BuyerName</td>
+                                <td>@order.SellerName</td>
+                                <td>@order.TotalAmount.ToString("N0") đ</td>
+                                <td>@order.Discount.ToString("N0") đ</td>
+                                <td>
+                                    @if(order.OrderStatus == OrdStatus.Completed && order.PaymentStatus)
+                                    {
+                                        @(order.Revenue.ToString("N0") + " đ")
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @{
+                                        var (badgeClass, statusText) = order.OrderStatus switch
+                                        {
+                                            OrdStatus.WaitConfirm => ("bg-warning", "Chờ xác nhận"),
+                                            OrdStatus.Pending => ("bg-info", "Đang xử lý"),
+                                            OrdStatus.Delivering => ("bg-primary", "Đang vận chuyển"),
+                                            OrdStatus.Completed => ("bg-success", "Hoàn thành"),
+                                            OrdStatus.Canceled => ("bg-danger", "Đã hủy"),
+                                            _ => ("bg-secondary", "Không xác định")
+                                        };
+                                    }
+                                    <span class="badge rounded-pill @badgeClass">
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill @(order.PaymentStatus ? "bg-success" : "bg-warning")">
+                                        @(order.PaymentStatus ? "Đã thanh toán" : "Chưa thanh toán")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-box-open me-2"></i> Không tìm thấy đơn hàng nào
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="RevenueManagement"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-fromDate="@ViewBag.CurrentFromDate"
+                       asp-route-toDate="@ViewBag.CurrentToDate">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" asp-action="RevenueManagement"
+                           asp-route-page="@i"
+                           asp-route-search="@ViewBag.CurrentSearch"
+                           asp-route-fromDate="@ViewBag.CurrentFromDate"
+                           asp-route-toDate="@ViewBag.CurrentToDate">
+                            @i
+                        </a>
+                    </li>
+                }
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="RevenueManagement"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-fromDate="@ViewBag.CurrentFromDate"
+                       asp-route-toDate="@ViewBag.CurrentToDate">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Date validation
+            $('#fromDate, #toDate').on('change', function () {
+                var fromDate = $('#fromDate').val();
+                var toDate = $('#toDate').val();
+
+                if (fromDate && toDate && fromDate > toDate) {
+                    alert('Ngày bắt đầu không thể lớn hơn ngày kết thúc');
+                    $(this).val('');
+                }
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function () {
+                $('input[name="search"]').val('');
+                $('#fromDate').val('');
+                $('#toDate').val('');
+                $('#filterForm').submit();
+            });
+        });
+    </script>
+}

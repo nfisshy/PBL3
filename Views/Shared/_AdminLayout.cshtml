@@ -73,7 +73,7 @@
                     <div class="dropdown-menu dropdown-menu-end">
                         <form class="dropdown-item" asp-controller="Account" asp-action="Logout" method="post">
                             <button type="submit" class="btn btn-link p-0">
-                                <i class="fas fa-sign-out-alt"></i> Logout
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
                             </button>
                         </form>
                     </div>
@@ -90,31 +90,38 @@
             </div>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")"
                        asp-controller="Admin" asp-action="Dashboard">
                         <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
+                        <span>Bảng điều khiển</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "UserManagement" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserManagement" ? "active" : "")"
                        asp-controller="Admin" asp-action="UserManagement">
                         <i class="fas fa-users"></i>
-                        <span>Users</span>
+                        <span>Người dùng</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ProductManagement" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ProductManagement" ? "active" : "")"
                        asp-controller="Admin" asp-action="ProductManagement">
                         <i class="fas fa-box"></i>
-                        <span>Products</span>
+                        <span>Sản phẩm</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "OrderManagement" ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "OrderManagement" ? "active" : "")"
                        asp-controller="Admin" asp-action="OrderManagement">
                         <i class="fas fa-shopping-cart"></i>
-                        <span>Orders</span>
+                        <span>Đơn hàng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "RevenueManagement" ? "active" : "")"
+                       asp-controller="Admin" asp-action="RevenueManagement">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Doanh thu</span>
                     </a>
                 </li>
             </ul>
