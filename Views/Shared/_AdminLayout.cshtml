@@ -84,9 +84,10 @@
 
     <!-- Sidebar -->
     <nav class="sidebar navbar-dark">
-        <div class="w-100">
-            <div class="text-white p-3 d-none d-md-block">
-                <h5><i class="fas fa-shield-alt"></i> CDT Admin</h5>
+        <div class="w-100">            <div class="text-white p-3 d-none d-md-block">
+                <h5 style="cursor: pointer;" onclick="window.location.href='@Url.Action("Dashboard", "Admin")'">
+                    <i class="fas fa-shield-alt"></i> CDT Admin
+                </h5>
             </div>
             <ul class="nav flex-column">
                 <li class="nav-item">

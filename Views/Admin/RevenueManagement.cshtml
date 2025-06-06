@@ -141,12 +141,10 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
-                    <tr>
-                        <th>ID</th>
+                    <tr>                        <th>ID</th>
                         <th>Người mua</th>
                         <th>Người bán</th>
                         <th>Tổng tiền</th>
-                        <th>Giảm giá</th>
                         <th>Doanh thu (5%)</th>
                         <th>Ngày đặt</th>
                         <th>Trạng thái</th>
@@ -159,15 +157,13 @@
                         foreach (var order in Model.Items)
                         {
                             <tr>
-                                <td>@order.Id</td>
-                                <td>@order.BuyerName</td>
+                                <td>@order.Id</td>                                <td>@order.BuyerName</td>
                                 <td>@order.SellerName</td>
                                 <td>@order.TotalAmount.ToString("N0") đ</td>
-                                <td>@order.Discount.ToString("N0") đ</td>
                                 <td>
                                     @if(order.OrderStatus == OrdStatus.Completed && order.PaymentStatus)
                                     {
-                                        @(order.Revenue.ToString("N0") + " đ")
+                                        @((order.TotalAmount * 0.05m).ToString("N0") + " đ")
                                     }
                                     else
                                     {
