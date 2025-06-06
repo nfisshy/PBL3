@@ -9,21 +9,17 @@
 
 @section Styles {
     <style>
-        .return-table {
+        .search-form, .card-return {
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px #0001;
-            padding: 16px;
-        }
-
-        .return-table th, .return-table td {
-            vertical-align: middle;
-            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 24px;
         }
 
         .badge-status {
             font-weight: 500;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 12px;
         }
 
@@ -31,12 +27,13 @@
         .status-rejected { background-color: #e74c3c; color: #fff; }
         .status-approved { background-color: #27ae60; color: #fff; }
 
-        .search-form {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px #0001;
-            padding: 16px;
-            margin-bottom: 20px;
+        .return-actions button {
+            min-width: 100px;
+        }
+
+        .return-image {
+            max-height: 140px;
+            object-fit: contain;
         }
     </style>
 }
@@ -87,74 +84,95 @@
                 </form>
             </div>
 
-            <div class="return-table">
+            <div>
                 <h4 class="mb-3">Danh sách yêu cầu đổi trả</h4>
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã</th>
-                            <th>Sản phẩm</th>
-                            <th>SL</th>
-                            <th>Lý do</th>
-                            <th>Ngày yêu cầu</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var item in Model)
-                            {
-                                var statusClass = item.Status switch
-                                {
-                                    ExchangeStatus.WaitConfirm => "status-wait",
-                                    ExchangeStatus.Rejected => "status-rejected",
-                                    ExchangeStatus.Approved => "status-approved",
-                                    _ => "badge-secondary"
-                                };
 
-                                <tr>
-                                    <td>@item.ReturnExchangeId</td>
-                                    <td>@item.ProductName</td>
-                                    <td>@item.Quantity</td>
-                                    <td>@item.Reason</td>
-                                    <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
-                                    <td><span class="badge badge-status @statusClass">@EnumHelper.GetDisplayName(item.Status)</span></td>
-                                    <td>
-                                        <a href="@Url.Action("ReturnExchangeDetail", new { id = item.ReturnExchangeId })" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i> Xem
-                                        </a>
-                                        @if (item.Status == ExchangeStatus.WaitConfirm)
-                                        {
-                                            <form method="post" action="@Url.Action("ProcessReturn")" class="d-inline">
-                                                <input type="hidden" name="id" value="@item.ReturnExchangeId" />
-                                                <input type="hidden" name="approve" value="true" />
-                                                <button class="btn btn-sm btn-success" onclick="return confirm('Duyệt yêu cầu này?')">
-                                                    <i class="fas fa-check"></i> Duyệt
-                                                </button>
-                                            </form>
-                                            <form method="post" action="@Url.Action("ProcessReturn")" class="d-inline">
-                                                <input type="hidden" name="id" value="@item.ReturnExchangeId" />
-                                                <input type="hidden" name="approve" value="false" />
-                                                <button class="btn btn-sm btn-danger" onclick="return confirm('Từ chối yêu cầu này?')">
-                                                    <i class="fas fa-times"></i> Từ chối
-                                                </button>
-                                            </form>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        var statusClass = item.Status switch
                         {
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">Không có yêu cầu đổi trả nào</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                            ExchangeStatus.WaitConfirm => "status-wait",
+                            ExchangeStatus.Rejected => "status-rejected",
+                            ExchangeStatus.Approved => "status-approved",
+                            _ => "badge-secondary"
+                        };
+
+                        var imageBase64 = item.Image != null && item.Image.Length > 0
+                            ? $"data:image/png;base64,{Convert.ToBase64String(item.Image)}"
+                            : null;
+
+                        <div class="card-return">
+                            <div class="row align-items-center">
+                                <div class="col-md-3 text-center">
+                                    @if (imageBase64 != null)
+                                    {
+                                        <img src="@imageBase64" alt="Ảnh đổi trả" class="img-fluid rounded return-image" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic">Không có ảnh</span>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-2">@item.ProductName</h5>
+                                    <p class="mb-1"><strong>Số lượng:</strong> @item.Quantity</p>
+                                    <p class="mb-1"><strong>Lý do:</strong> @item.Reason</p>
+                                    <p class="mb-1"><strong>Ngày yêu cầu:</strong> @item.RequestDate.ToString("dd/MM/yyyy")</p>
+                                    <span class="badge badge-status @statusClass">@EnumHelper.GetDisplayName(item.Status)</span>
+                                </div>
+                                <div class="col-md-3 text-end return-actions">
+                                    @if (item.Status == ExchangeStatus.WaitConfirm)
+                                    {
+                                        <!-- Nút duyệt -->
+                                        <button class="btn btn-outline-success me-2 mb-2"
+                                                onclick="handleAction(@item.ReturnExchangeId, true)">
+                                            <i class="fas fa-check-circle"></i> Duyệt
+                                        </button>
+
+                                        <!-- Nút từ chối -->
+                                        <button class="btn btn-outline-danger mb-2"
+                                                onclick="handleAction(@item.ReturnExchangeId, false)">
+                                            <i class="fas fa-times-circle"></i> Từ chối
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted fst-italic">Không có yêu cầu đổi trả nào.</div>
+                }
             </div>
         </div>
     </div>
 </div>
+@section Scripts {
+<script>
+    function handleAction(id, approve) {
+        const actionUrl = approve ? '/Seller/Approve' : '/Seller/Reject';
+
+        if (!confirm(approve ? 'Duyệt yêu cầu này?' : 'Từ chối yêu cầu này?')) return;
+
+        fetch(actionUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Có lỗi xảy ra khi xử lý yêu cầu');
+        });
+    }
+</script>
+}

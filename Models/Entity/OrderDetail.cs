@@ -12,7 +12,7 @@ namespace PBL3.Entity
         private string productName;
         private int quantity;
         private decimal price;
-        private decimal totalNetProfit; // tổng lợi nhuận ròng người bán thu được
+        private decimal totalNetProfit; 
         private byte[]? image;
 
         [Key,Column(Order =0)]

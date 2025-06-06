@@ -17,6 +17,7 @@ namespace PBL3.Repositories
         IEnumerable<Order> GetBySellerId(int sellerId);
         IEnumerable<Order> GetByStatus(OrdStatus status); // lọc theo trạng thái
         IEnumerable<Seller_TopSanPhamDTO> GetTopSellingProducts(int sellerId, DateTime startDate, DateTime endDate, int limit);
+        IEnumerable<Seller_TopSanPhamDTO> GetTopRevenueProducts(int sellerId, DateTime startDate, DateTime endDate, int limit);
         decimal GetTotalRevenue(int sellerId, DateTime startDate, DateTime endDate);
         int GetTotalOrders(int sellerId, DateTime startDate, DateTime endDate);
         public IEnumerable<Order> GetByBuyer_Status(int buyerId, OrdStatus status);

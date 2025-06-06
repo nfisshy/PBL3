@@ -333,13 +333,71 @@
 
 @section Scripts {
     <script>
-        function changeQty(delta) {
+        
+        // Define functions in global scope
+        window.changeQty = function(delta) {
+            console.log("Số lượng đã thay đổi!");
             var qty = document.getElementById('quantity');
             var val = parseInt(qty.value) + delta;
             if (val < 1) val = 1;
             if (val > @Model.Quantity) val = @Model.Quantity;
             qty.value = val;
         }
+
+        window.buyNowAjax = function(event) {
+            event.preventDefault();
+            console.log("buyNowAjax called");
+            const productId = @Model.ProductId;
+            const sellerId = @Model.sellerId;
+            const sellerName = "@Model.StoreName";
+            const quantity = parseInt(document.getElementById("quantity").value);
+            const price = @Model.Price;
+            const imgElement = document.getElementById("productImage");
+            const imageDataUrl = imgElement.src;
+            const base64 = imageDataUrl.split(',')[1];
+
+            const cartItem = {
+                productId: productId,
+                productName: @Html.Raw(JsonConvert.SerializeObject(Model.ProductName)),
+                price: price,
+                quantity: quantity,
+                imageData: base64,
+                isSelected: true,
+                currentQuantity: @Model.Quantity
+            };
+
+            const cartDTO = [{
+                sellerID: sellerId,
+                sellerName: sellerName,
+                cartItems: [cartItem]
+            }];
+
+            fetch("@Url.Action("Order", "Order")", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(cartDTO)
+            })
+            .then(response => {
+                if (response.status === 302 || response.redirected) {
+                    sessionStorage.setItem("buyNowData", JSON.stringify(cartDTO));
+                    window.location.href = "@Url.Action("Login", "Account")";
+                    return;
+                }
+                if (!response.ok) throw new Error("Lỗi khi gửi dữ liệu mua ngay");
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.redirectUrl)
+                    window.location.href = data.redirectUrl;
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Không thể xử lý đơn hàng. Vui lòng thử lại.");
+            });
+        }
+
         function addToCartAjax(e) {
             e.preventDefault();
             var form = document.getElementById('addToCartForm');
@@ -368,69 +426,6 @@
             });
             return false;
         }
-
-        function buyNowAjax(event) {
-            event.preventDefault();
-
-            const productId = @Model.ProductId;
-            const sellerId = @Model.sellerId;
-            const sellerName = "@Model.StoreName";
-            const quantity = parseInt(document.getElementById("quantity").value);
-            const price = @Model.Price;
-            const imgElement = document.getElementById("productImage");
-            const imageDataUrl = imgElement.src; // Đây là chuỗi "data:image/jpeg;base64,..."
-
-            // Nếu bạn muốn tách lấy phần base64
-            const base64 = imageDataUrl.split(',')[1]; // lấy phần sau dấu phẩy
-
-            const cartItem = {
-                productId: productId,
-                productName: @Html.Raw(JsonConvert.SerializeObject(Model.ProductName)),
-                price: price,
-                quantity: quantity,
-                imageData: base64,
-                isSelected: true,
-                currentQuantity: @Model.Quantity
-            };
-
-            const cartDTO = [
-                {
-                    sellerID: sellerId,
-                    sellerName: sellerName,
-                    cartItems: [cartItem]
-                }
-            ];
-
-            fetch("@Url.Action("Order", "Order")", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(cartDTO)
-            })
-            .then(response => {
-                if (response.status === 302 || response.redirected) {
-                    // Người dùng chưa đăng nhập → lưu dữ liệu vào sessionStorage
-                    sessionStorage.setItem("buyNowData", JSON.stringify(cartDTO));
-                    // Điều hướng tới trang đăng nhập
-                    window.location.href = "@Url.Action("Login", "Account")";
-                    return;
-                }
-                if (!response.ok) throw new Error("Lỗi khi gửi dữ liệu mua ngay");
-
-                return response.json();
-            })
-            .then(data => {
-                if (data && data.redirectUrl)
-                    window.location.href = data.redirectUrl;
-            })
-            .catch(error => {
-                console.error(error);
-                alert("Không thể xử lý đơn hàng. Vui lòng thử lại.");
-            });
-        }
-
-
-
     </script>
 }
+

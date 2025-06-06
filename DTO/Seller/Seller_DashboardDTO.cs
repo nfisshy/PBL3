@@ -7,7 +7,7 @@ namespace PBL3.DTO.Seller
     public class Seller_DashboardDTO
     {
         public List<Seller_TopSanPhamDTO> TopSellingProducts { get; set; }
-        public List<Seller_TopSanPhamDTO> TopRatedProducts { get; set; }
+        public List<Seller_TopSanPhamTheoDanhGiaDTO> TopRatedProducts { get; set; }
         public BusinessMetricsDTO BusinessMetrics { get; set; }
     }
 

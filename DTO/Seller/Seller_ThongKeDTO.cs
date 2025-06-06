@@ -23,4 +23,12 @@ namespace PBL3.DTO.Seller
         public decimal TotalRevenue { get; set; } // gắn vào Price của Product
 
     }
+
+    public class Seller_TopSanPhamTheoDanhGiaDTO
+    {
+        public string ProductName { get; set; }
+        public int TotalReview { get; set; } // gắn vào Quantity của Product
+        public decimal AverageRating { get; set; } // gắn vào Price của Product
+
+    }
 }

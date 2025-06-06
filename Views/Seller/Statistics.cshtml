@@ -143,12 +143,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var product in Model.TopProductsByQuantity)
+                                @if (Model.TopProductsByQuantity != null)
+                                {
+                                    foreach (var product in Model.TopProductsByQuantity)
+                                    {
+                                        <tr>
+                                            <td>@product.ProductName</td>
+                                            <td>@product.TotalSold</td>
+                                            <td>@product.TotalRevenue.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                }
+                                else
                                 {
                                     <tr>
-                                        <td>@product.ProductName</td>
-                                        <td>@product.TotalSold</td>
-                                        <td>@product.TotalRevenue.ToString("N0") đ</td>
+                                        <td colspan="3">Không có dữ liệu.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -167,12 +176,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var product in Model.TopProductsByRevenue)
+                                @if (Model.TopProductsByRevenue != null)
+                                {
+                                    foreach (var product in Model.TopProductsByRevenue)
+                                    {
+                                        <tr>
+                                            <td>@product.ProductName</td>
+                                            <td>@product.TotalSold</td>
+                                            <td>@product.TotalRevenue.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                }
+                                else
                                 {
                                     <tr>
-                                        <td>@product.ProductName</td>
-                                        <td>@product.TotalSold</td>
-                                        <td>@product.TotalRevenue.ToString("N0") đ</td>
+                                        <td colspan="3">Không có dữ liệu.</td>
                                     </tr>
                                 }
                             </tbody>

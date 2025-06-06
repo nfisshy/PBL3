@@ -14,7 +14,7 @@ namespace PBL3.Repositories
         void Delete(int reviewId);
         Review GetById(int reviewId);
         IEnumerable<Review> GetByProductId(int productId);
-        IEnumerable<Seller_TopSanPhamDTO> GetTopRatedProducts(int sellerId, int limit);
+        IEnumerable<Seller_TopSanPhamTheoDanhGiaDTO> GetTopRatedProducts(int sellerId, int limit);
         public List<Review> GetByBuyerId(int buyerId);
     }
 }

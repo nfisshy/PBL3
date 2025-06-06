@@ -124,7 +124,7 @@ namespace PBL_3.Migrations
                     b.Property<decimal>("OrderPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("OrderReceivedDate")
+                    b.Property<DateTime>("OrderReceivedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("OrderStatus")
