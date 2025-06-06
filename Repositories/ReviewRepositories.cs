@@ -48,18 +48,19 @@ namespace PBL3.Repositories
             return _context.Reviews.Where(r => r.ProductId == productId).ToList();
         }
 
-        public IEnumerable<Seller_TopSanPhamDTO> GetTopRatedProducts(int sellerId, int limit)
+        public IEnumerable<Seller_TopSanPhamTheoDanhGiaDTO> GetTopRatedProducts(int sellerId, int limit)
         {
+
             return _context.Reviews
-                .Where(r => r.Product.SellerId == sellerId)
+                .Where(r => r.Product.SellerId == sellerId && r.IsActive)
                 .GroupBy(r => new { r.Product.ProductId, r.Product.ProductName })
-                .Select(g => new Seller_TopSanPhamDTO
+                .Select(g => new Seller_TopSanPhamTheoDanhGiaDTO
                 {
                     ProductName = g.Key.ProductName,
-                    TotalSold = g.Count(), // Số lượng đánh giá
-                    TotalRevenue = (decimal)g.Average(r => r.Rating) // Chuyển đổi double sang decimal
+                    TotalReview = g.Count(), // Số lượng đánh giá
+                    AverageRating = (decimal)g.Average(r => r.Rating) // Chuyển đổi double sang decimal
                 })
-                .OrderByDescending(p => p.TotalRevenue)
+                .OrderByDescending(p => p.AverageRating)
                 .Take(limit)
                 .ToList();
         }

@@ -152,11 +152,11 @@ namespace PBL3.Services
 
                 // Get top rated products
                 var topRatedProducts = _reviewRepository.GetTopRatedProducts(sellerId, 3)
-                    .Select(p => new Seller_TopSanPhamDTO
+                    .Select(p => new Seller_TopSanPhamTheoDanhGiaDTO
                     {
                         ProductName = p.ProductName,
-                        TotalSold = p.TotalSold,
-                        TotalRevenue = p.TotalRevenue
+                        TotalReview = p.TotalReview,
+                        AverageRating = p.AverageRating
                     }).ToList();
 
                 // Get business metrics
@@ -364,44 +364,33 @@ namespace PBL3.Services
         {
             try
             {
+
                 // Get all orders for the seller in the date range
                 var orders = _orderRepository.GetBySellerId(sellerId)
-                    .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate && o.OrderStatus == OrdStatus.Completed)
+                    .Where(o => o.OrderReceivedDate >= startDate && o.OrderReceivedDate <= endDate && o.OrderStatus == OrdStatus.Completed)
                     .ToList();
 
                 // Calculate total revenue and orders
-                var totalRevenue = orders.Sum(o => o.OrderPrice - o.OrderPrice * (decimal)0.05 - o.Discount); // Trừ 5% phí platform
+                var totalRevenue = orders.Sum(o => (o.OrderPrice -22000)*0.95m); 
                 var totalOrders = orders.Count;
                 var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-                // Get top products by quantity
-                var topProductsByQuantity = orders
-                    .SelectMany(o => o.OrderDetails) // trải phẳng các nhóm orderdetail theo tất cả các order
-                    .GroupBy(od => new { od.ProductId, od.Product.ProductName }) // nhóm các orderdetail theo productid và productname
-                    .Select(g => new Seller_TopSanPhamDTO  // mỗi g đại diện cho 1 group 
-                    {
-                        ProductName = g.Key.ProductName,  // key này là key của group ở trên 
-                        TotalSold = g.Sum(od => od.Quantity), // nhóm tất cả các orderdetail trong group và tính tổng số lượng
-                        TotalRevenue = g.Sum(od => od.TotalNetProfit)
-                    })
-                    .OrderByDescending(p => p.TotalSold)
-                    .Take(5)
-                    .ToList();
 
-                // Get top products by revenue
-                var topProductsByRevenue = orders
-                    .SelectMany(o => o.OrderDetails)
-                    .GroupBy(od => new { od.ProductId, od.Product.ProductName })
-                    .Select(g => new Seller_TopSanPhamDTO
+                var topProductsByQuantity = _orderRepository.GetTopSellingProducts(sellerId, startDate, endDate, 5)
+                    .Select(p => new Seller_TopSanPhamDTO
                     {
-                        ProductName = g.Key.ProductName,
-                        TotalSold = g.Sum(od => od.Quantity),
-                        TotalRevenue = g.Sum(od => od.TotalNetProfit)
-                    })
-                    .OrderByDescending(p => p.TotalRevenue)
-                    .Take(5)
-                    .ToList();
+                        ProductName = p.ProductName,
+                        TotalSold = p.TotalSold,
+                        TotalRevenue = p.TotalRevenue
+                    }).ToList();
 
+                var topProductsByRevenue = _orderRepository.GetTopRevenueProducts(sellerId, startDate, endDate, 5)
+                    .Select(p => new Seller_TopSanPhamDTO
+                    {
+                        ProductName = p.ProductName,
+                        TotalSold = p.TotalSold,
+                        TotalRevenue = p.TotalRevenue
+                    }).ToList();
                 return new Seller_ThongKeDTO
                 {
                     StartDate = startDate,
@@ -412,6 +401,7 @@ namespace PBL3.Services
                     TopProductsByQuantity = topProductsByQuantity,
                     TopProductsByRevenue = topProductsByRevenue
                 };
+                
             }
             catch (Exception ex)
             {
@@ -605,7 +595,7 @@ namespace PBL3.Services
                     BuyerPhone = buyer?.PhoneNumber ?? "Chưa cập nhật",
                     Address = order.Address,
                     OrderDate = order.OrderDate,
-                    OrderPrice = order.OrderPrice,
+                    OrderPrice = order.OrderPrice - 22000 + order.Discount,
                     Discount = order.Discount,
                     OrderStatus = order.OrderStatus,
                     PaymentMethod = order.PaymentMethod,
@@ -640,6 +630,29 @@ namespace PBL3.Services
 
                 order.OrderStatus = newStatus;
                 _orderRepository.Update(order);
+                decimal originalPrice = order.OrderPrice-22000 + order.Discount;
+                
+                if (newStatus == OrdStatus.Pending)
+                {
+                    var products = _orderDetailRepository.GetByOrderId(orderId);
+                    foreach (var product in products)
+                    {
+                        // Cập nhật số lượng sản phẩm đã bán
+                        var productEntity = _productRepository.GetById(product.ProductId);
+                        if (productEntity != null)
+                        {
+                            productEntity.ProductQuantity -= product.Quantity;
+                            _productRepository.Update(productEntity);
+                        }
+                    }
+                    var orderDetails = _orderDetailRepository.GetByOrderId(orderId);
+                    foreach (var detail in orderDetails)
+                    {
+                        decimal percentageOfDiscountForTypeProduct = (detail.Price * detail.Quantity) / originalPrice;
+                        detail.TotalNetProfit = (order.OrderPrice - 22000) * 0.95m * percentageOfDiscountForTypeProduct;
+                        _orderDetailRepository.Update(detail);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -651,7 +664,8 @@ namespace PBL3.Services
         {
             // Chỉ cho phép chuyển từ WaitConfirm sang Pending, và từ Pending sang Delivering
             return (currentStatus == OrdStatus.WaitConfirm && newStatus == OrdStatus.Pending) ||
-                   (currentStatus == OrdStatus.Pending && newStatus == OrdStatus.Delivering);
+                    (currentStatus == OrdStatus.WaitConfirm && newStatus == OrdStatus.Canceled) ||
+                   (currentStatus == OrdStatus.Pending && newStatus == OrdStatus.Delivering) ;
         }
 
         public Seller_ThongTinCaNhanDTO GetSellerPersonalInfo(int sellerId)
@@ -994,7 +1008,8 @@ namespace PBL3.Services
                     Reason = x.Reason,
                     RequestDate = x.RequestDate,
                     Status = x.Status,
-                    Quantity = x.Quantity
+                    Quantity = x.Quantity,
+                    Image = x.Image
                 })
                 .ToList();
 
@@ -1003,9 +1018,9 @@ namespace PBL3.Services
         public bool UpdateStatus(int id, ExchangeStatus newStatus)
         {
             var request = _returnExchangeRepo.GetById(id);
+
             if (request == null || request.Status != ExchangeStatus.WaitConfirm)
                 return false;
-
             request.Status = newStatus;
             request.ResponseDate = DateTime.Now;
 

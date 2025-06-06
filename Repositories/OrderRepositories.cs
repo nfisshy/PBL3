@@ -68,37 +68,54 @@ namespace PBL3.Repositories
         {
             return _context.OrderDetails
                 .Where(od => od.Order.SellerId == sellerId &&
-                            od.Order.OrderDate >= startDate &&
-                            od.Order.OrderDate <= endDate &&
+                            od.Order.OrderReceivedDate >= startDate &&
+                            od.Order.OrderReceivedDate <= endDate &&
                             od.Order.OrderStatus == OrdStatus.Completed)
                 .GroupBy(od => new { od.Product.ProductId, od.Product.ProductName, od.Product.Price })
                 .Select(g => new Seller_TopSanPhamDTO
                 {
                     ProductName = g.Key.ProductName,
                     TotalSold = g.Sum(od => od.Quantity),
-                    TotalRevenue = g.Sum(od => od.Quantity * g.Key.Price)
+                    TotalRevenue = g.Sum(od => od.TotalNetProfit)
                 })
                 .OrderByDescending(p => p.TotalSold)
                 .Take(limit)
                 .ToList();
         }
-
+        public IEnumerable<Seller_TopSanPhamDTO> GetTopRevenueProducts(int sellerId, DateTime startDate, DateTime endDate, int limit)
+        {
+            return _context.OrderDetails
+                .Where(od => od.Order.SellerId == sellerId &&
+                            od.Order.OrderReceivedDate >= startDate &&
+                            od.Order.OrderReceivedDate <= endDate &&
+                            od.Order.OrderStatus == OrdStatus.Completed)
+                .GroupBy(od => new { od.Product.ProductId, od.Product.ProductName, od.Product.Price })
+                .Select(g => new Seller_TopSanPhamDTO
+                {
+                    ProductName = g.Key.ProductName,
+                    TotalSold = g.Sum(od => od.Quantity),
+                    TotalRevenue = g.Sum(od => od.TotalNetProfit)
+                })
+                .OrderByDescending(p => p.TotalRevenue)
+                .Take(limit)
+                .ToList();
+        }
         public decimal GetTotalRevenue(int sellerId, DateTime startDate, DateTime endDate)
         {
             return _context.OrderDetails
                 .Where(od => od.Order.SellerId == sellerId &&
-                            od.Order.OrderDate >= startDate &&
-                            od.Order.OrderDate <= endDate &&
+                            od.Order.OrderReceivedDate >= startDate &&
+                            od.Order.OrderReceivedDate <= endDate &&
                             od.Order.OrderStatus == OrdStatus.Completed)
-                .Sum(od => od.Quantity * od.Product.Price);
+                .Sum(od =>od.TotalNetProfit);
         }
 
         public int GetTotalOrders(int sellerId, DateTime startDate, DateTime endDate)
         {
             return _context.Orders
                 .Count(o => o.SellerId == sellerId &&
-                           o.OrderDate >= startDate &&
-                           o.OrderDate <= endDate &&
+                           o.OrderReceivedDate >= startDate &&
+                           o.OrderReceivedDate <= endDate &&
                            o.OrderStatus == OrdStatus.Completed);
         }
     }

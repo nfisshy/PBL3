@@ -997,14 +997,12 @@ namespace PBL_3.Controllers
         {
             try
             {
-                _logger.LogInformation("ReturnExchangeManagement called with FromDate: {FromDate}, ToDate: {ToDate}, Status: {Status}", fromDate, toDate, status);
+               
                 var sellerId = HttpContext.Session.GetInt32("UserId");
                 if (!sellerId.HasValue)
                 {
-                    _logger.LogWarning("000000000000000000000000000000000000");
                     return RedirectToAction("Login", "Account");
                 }
-                _logger.LogInformation("1111111111111111111111111111111111111111");
                 var list = _sellerService.GetAllBySeller(sellerId.Value, fromDate, toDate, status);
                 ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
                 ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
@@ -1029,7 +1027,7 @@ namespace PBL_3.Controllers
                 {
                     return Json(new { success = false, message = "Vui lòng đăng nhập" });
                 }
-
+                _logger.LogInformation("Seller ID: {SellerId}, Approving exchange request with ID: {ExchangeId}", sellerId, id);
                 var success = _sellerService.UpdateStatus(id, ExchangeStatus.Approved);
                 if (!success)
                 {

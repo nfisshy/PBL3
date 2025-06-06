@@ -12,8 +12,8 @@ using PBL3.Dbcontext;
 namespace PBL_3.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250602021042_UpdateNew1ByChuong")]
-    partial class UpdateNew1ByChuong
+    [Migration("20250605165318_UpdateFromDB")]
+    partial class UpdateFromDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -127,7 +127,7 @@ namespace PBL_3.Migrations
                     b.Property<decimal>("OrderPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("OrderReceivedDate")
+                    b.Property<DateTime>("OrderReceivedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("OrderStatus")

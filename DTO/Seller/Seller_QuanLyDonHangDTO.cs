@@ -26,9 +26,9 @@ namespace PBL3.DTO.Seller
         public string BuyerPhone { get; set; }
         public string Address { get; set; }
         public DateTime OrderDate { get; set; }
-        public decimal OrderPrice { get; set; }
+        public decimal OrderPrice { get; set; } // giá gốc
         public decimal Discount { get; set; }
-        public decimal FinalPrice => OrderPrice - Discount - (OrderPrice * 0.05m);
+        public decimal FinalPrice => (OrderPrice - Discount) * 0.95m;
         public OrdStatus OrderStatus { get; set; }
         public PayMethod PaymentMethod { get; set; }
         public bool PaymentStatus { get; set; }

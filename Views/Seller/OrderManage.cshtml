@@ -70,12 +70,12 @@
                 <div class="col-md-3">
                     <label class="form-label">Trạng thái</label>
                     <select name="OrderStatus" class="form-select">
-                        <option value="">Tất cả</option>
+                        <option value="" selected="@(string.IsNullOrEmpty(Context.Request.Query["OrderStatus"]) ? "selected" : null)">Tất cả</option>
                             @foreach (var s in statusList)
                             {
-                                var selected = Context.Request.Query["OrderStatus"] == s.Value.ToString() ? "selected" : "";
-                                <option value="@s.Value" selected="@selected">@s.Text</option>
-                            }   
+                                var isSelected = Context.Request.Query["OrderStatus"] == s.Value.ToString();
+                                <option value="@s.Value" selected="@(isSelected ? "selected" : null)">@s.Text</option>
+                            }
                     </select>
                 </div>
                 <div class="col-md-3">
