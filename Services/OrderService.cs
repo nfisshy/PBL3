@@ -17,6 +17,7 @@ namespace PBL3.Services
         private readonly ISellerRepositories _sellerRepository;
         private readonly IBuyerRepositories _buyerRepository;
         private readonly IPlatformWalletRepositories _walletRepository;
+        private readonly IProductRepositories _productRepositories;
 
         private readonly ILogger<OrderService> _logger;
 
@@ -25,7 +26,8 @@ namespace PBL3.Services
                           IBuyerRepositories buyerRepository,
                           ISellerRepositories sellerRepository,
                           ILogger<OrderService> logger,
-                          IPlatformWalletRepositories walletRepository)
+                          IPlatformWalletRepositories walletRepository,
+                          IProductRepositories productRepositories)
         {
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -33,6 +35,7 @@ namespace PBL3.Services
             _sellerRepository = sellerRepository;
             _logger = logger;
             _walletRepository = walletRepository;
+            _productRepositories = productRepositories;
         }
         public PurchaseDTO PreviewOrder(int buyerID, List<Buyer_CartDTO> selectedItem)
         {
@@ -144,31 +147,52 @@ namespace PBL3.Services
 }
 
 
-        public void UpdateOrderStatus(int orderId, int buyerId, OrdStatus newStatus)
+public void UpdateOrderStatus(int orderId, int buyerId, OrdStatus newStatus)
+{
+    var order = _orderRepository.GetById(orderId);
+    if (order != null)
+    {
+        order.OrderStatus = newStatus;
+        
+
+        if (newStatus == OrdStatus.Completed)
         {
-            var order = _orderRepository.GetById(orderId);
-            if (order != null)
+            order.OrderReceivedDate = DateTime.Now;
+            order.PaymentStatus = true;
+            var wallet = _walletRepository.GetByUserId(order.SellerId);
+            if (wallet != null)
             {
-                order.OrderStatus = newStatus;
-                order.PaymentStatus = true;
-
-                if (newStatus == OrdStatus.Completed)
-                {
-                    order.OrderReceivedDate = DateTime.Now; // Cập nhật ngày giao hàng nếu đã hoàn tất
-                }
-                else if (newStatus == OrdStatus.Canceled)
-                {
-                        var wallet = _walletRepository.GetByUserId(buyerId);
-                        if (wallet != null)
-                        {
-                            wallet.WalletBalance += order.OrderPrice;
-                            _walletRepository.Update(wallet);
-                        }
-
-                }
-                _orderRepository.Update(order);
+                wallet.WalletBalance += (order.OrderPrice - 22000)*0.95M;
+                _walletRepository.Update(wallet);
             }
+
+            // Lấy danh sách chi tiết đơn hàng
+                    var orderDetails = _orderDetailRepository.GetByOrderId(orderId);
+
+                    foreach (var detail in orderDetails)
+                    {
+                        var product = _productRepositories.GetById(detail.ProductId);
+                        if (product != null)
+                        {
+                            product.SoldProduct += detail.Quantity;
+                            _productRepositories.Update(product);
+                        }
+                    }
         }
+        else if (newStatus == OrdStatus.Canceled)
+        {
+            var wallet = _walletRepository.GetByUserId(buyerId);
+            if (wallet != null)
+            {
+                wallet.WalletBalance += order.OrderPrice;
+                _walletRepository.Update(wallet);
+            }
+            order.PaymentStatus = false;
+        }
+
+        _orderRepository.Update(order);
+    }
+}
 
         public void UpdatePaymentStatus(int orderId, bool paymentStatus)
         {

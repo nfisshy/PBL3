@@ -4,168 +4,18 @@
 @{
     ViewData["Title"] = "Đánh giá của bạn";
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
-    var primaryColor = "#219150";
-    var lightGray = "#f0f0f0";
-    var darkGray = "#555";
-    var white = "#fff";
-    var starColor = "#ffd700";
 }
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>@ViewData["Title"]</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background-color: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .page-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: @white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-
-        .header-banner {
-            background-color: @primaryColor;
-            color: @white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header-banner h1 {
-            margin: 0;
-            font-size: 1.8em;
-            font-weight: 500;
-        }
-
-        .review-list {
-            padding: 15px;
-        }
-
-        .review-card {
-            background-color: @white;
-            border: 1px solid @lightGray;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            padding: 15px;
-            display: flex;
-            gap: 15px;
-            position: relative;
-        }
-
-        .review-product-image {
-            flex-shrink: 0;
-            width: 100px;
-            height: 120px;
-        }
-
-        .review-product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid @lightGray;
-        }
-
-        .review-product-image .image-placeholder {
-            width: 100%;
-            height: 100%;
-            background-color: @lightGray;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: @darkGray;
-            font-size: 0.8em;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .review-details {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .review-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.1em;
-            color: #333;
-        }
-
-        .rating-stars {
-            margin-bottom: 8px;
-        }
-
-        .rating-stars .star {
-            color: @starColor;
-            font-size: 1.2em;
-        }
-
-        .rating-stars .star.empty {
-            color: @lightGray;
-        }
-
-        .review-text {
-            margin: 0 0 10px 0;
-            font-size: 0.95em;
-            color: #444;
-        }
-
-        .review-meta {
-            font-size: 0.8em;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .edit-review-button {
-            display: inline-block;
-            background-color: @primaryColor;
-            color: @white;
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 0.9em;
-            text-align: center;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .edit-review-button:hover {
-            background-color: #19733f;
-        }
-
-        .review-options {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            color: @darkGray;
-            font-size: 1.2em;
-            padding: 5px;
-        }
-
-        .review-options:hover {
-            color: @primaryColor;
-        }
-
-        .no-reviews {
-            text-align: center;
-            padding: 30px;
-            color: @darkGray;
-        }
-
-        /* Modal styles */
+        /* Giữ nguyên phần modal popup */
         .modal {
             display: none;
             position: fixed;
@@ -203,98 +53,78 @@
             color: black;
             text-decoration: none;
         }
-
-        media (max-width: 600px) {
-            .review-card {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .review-product-image {
-                width: 120px;
-                height: 150px;
-                margin-bottom: 10px;
-            }
-
-            .review-details {
-                align-items: center;
-                text-align: center;
-            }
-
-            .edit-review-button {
-                width: auto;
-                max-width: 200px;
-            }
-
-            .header-banner h1 {
-                font-size: 1.5em;
-            }
-        }
     </style>
 </head>
-<body>
-    <!-- Wrapper layout chia làm 2 cột ngang -->
-    <div class="flex gap-6">
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="flex gap-6 max-w-5xl mx-auto mt-10">
         <!-- Menu bên trái -->
-        <div class="w-1/4 bg-white shadow-md">
+        <div class="w-1/4">
             @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
         </div>
 
         <!-- Nội dung chính -->
-        <div class="w-3/4 p-6 bg-white rounded-xl shadow-md font-[Inter]">
-            <div class="page-container">
-                <div class="header-banner">
-                    <h1>Đánh giá của bạn</h1>
-                </div>
+        <div class="w-3/4 bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+            <div class="bg-green-700 text-white text-center py-4 rounded-md">
+                <h1 class="text-xl font-semibold">Đánh giá của bạn</h1>
+            </div>
 
-                <div class="review-list">
-                    @if (Model != null && Model.Any())
+            <div class="mt-6 space-y-6">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var review in Model)
                     {
-                        @foreach (var review in Model)
-                        {
-                            <div class="review-card">
-                                <div class="review-product-image">
-                                    @if (review.ProductImage != null && review.ProductImage.Length > 0)
-                                    {
-                                        var base64 = Convert.ToBase64String(review.ProductImage);
-                                        var imgSrc = $"data:image/png;base64,{base64}";
-                                        <img src="@imgSrc" alt="@review.ProductName" />
-                                    }
-                                    else
-                                    {
-                                        <div class="image-placeholder">Ảnh sản phẩm</div>
-                                    }
-                                </div>
-                                <div class="review-details">
-                                    <h3>@review.ProductName</h3>
-                                    <div class="rating-stars">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            if (i <= review.Rating)
-                                            {
-                                                <span class="star filled">&#9733;</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="star empty">&#9734;</span>
-                                            }
-                                        }
+                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex gap-4 relative">
+                            <div class="w-[100px] h-[120px] flex-shrink-0">
+                                @if (review.ProductImage != null && review.ProductImage.Length > 0)
+                                {
+                                    var base64 = Convert.ToBase64String(review.ProductImage);
+                                    var imgSrc = $"data:image/png;base64,{base64}";
+                                    <img src="@imgSrc" alt="@review.ProductName" class="w-full h-full object-cover rounded border border-gray-200" />
+                                }
+                                else
+                                {
+                                    <div class="w-full h-full flex items-center justify-center text-sm bg-gray-200 text-gray-600 rounded text-center">
+                                        Ảnh sản phẩm
                                     </div>
-                                    <p class="review-text">@review.Content</p>
-                                    <p class="review-meta">
-                                        Bởi: @review.BuyerName - Ngày: @review.DateReview.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)
-                                    </p>
-
-                                    <button class="edit-review-button" onclick="openEditReview(@review.ReviewId)">Sửa đánh giá</button>
-                                </div>
+                                }
                             </div>
-                        }
+
+                            <div class="flex flex-col flex-grow">
+                                <h3 class="text-lg font-medium mb-1">@review.ProductName</h3>
+
+                                <div class="flex items-center mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= review.Rating)
+                                        {
+                                            <span class="text-yellow-400 text-lg">&#9733;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-gray-300 text-lg">&#9733;</span>
+                                        }
+                                    }
+                                </div>
+
+                                <p class="text-sm text-gray-700 mb-2">@review.Content</p>
+
+                                <p class="text-xs text-gray-500">
+                                    Bởi: @review.BuyerName - Ngày: @review.DateReview.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)
+                                </p>
+
+                                <button class="mt-3 w-fit bg-green-700 hover:bg-green-800 text-white text-sm px-4 py-2 rounded shadow"
+                                        onclick="openEditReview(@review.ReviewId)">
+                                    Sửa đánh giá
+                                </button>
+                            </div>
+                        </div>
                     }
-                    else
-                    {
-                        <p class="no-reviews">Chưa có đánh giá nào để hiển thị.</p>
-                    }
-                </div>
+                }
+                else
+                {
+                    <p class="text-center text-gray-600 py-10">Chưa có đánh giá nào để hiển thị.</p>
+                }
             </div>
         </div>
     </div>
@@ -326,3 +156,4 @@
     </script>
 </body>
 </html>
+

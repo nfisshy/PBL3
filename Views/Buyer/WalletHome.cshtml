@@ -4,71 +4,15 @@
     Layout = "~/Views/Shared/BuyerLayout.cshtml";
     var isInitialized = ViewBag.IsWalletInitialized ?? false;
 }
-
-<style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        margin: 0;
-        background-color: #f9f9f9;
-        color: #333;
-        line-height: 1.6;
-    }
-
-    .page-container {
-        max-width: 900px;
-        margin: 30px auto;
-        background-color: white;
-        box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .header-banner {
-        background-color: #28a745;
-        color: white;
-        padding: 20px;
-        text-align: center;
-    }
-
-    .header-banner h1 {
-        margin: 0;
-        font-size: 1.8em;
-        font-weight: 500;
-    }
-
-    .wallet-content {
-        padding: 25px;
-    }
-
-    .wallet-info {
-        font-size: 1.1em;
-        margin-bottom: 15px;
-    }
-
-    .wallet-info strong {
-        display: inline-block;
-        width: 150px;
-    }
-
-    .edit-review-button {
-        display: inline-block;
-        background-color: #28a745;
-        color: white;
-        padding: 10px 18px;
-        text-decoration: none;
-        border-radius: 6px;
-        font-size: 0.95em;
-        text-align: center;
-        cursor: pointer;
-        border: none;
-        transition: background-color 0.3s ease;
-    }
-
-    .edit-review-button:hover {
-        background-color: #1e7e34;
-    }
-
-    .popup-overlay {
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .theme-green-bg { background-color: #219150; color: #fff }
+        .theme-green-text { color: #219150; }
+        .hover-theme-green-bg:hover { background-color: #219150; color: #fff }
+        .popup-overlay {
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
@@ -79,6 +23,7 @@
         z-index: 9999;
     }
 
+
     .popup {
         background: white;
         padding: 30px;
@@ -88,9 +33,11 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
+
     .popup h2 {
         margin-bottom: 20px;
     }
+
 
     .popup input[type="password"] {
         width: 100%;
@@ -100,6 +47,7 @@
         border: 1px solid #ccc;
         font-size: 1em;
     }
+
 
     .popup button {
         width: 100%;
@@ -112,9 +60,11 @@
         cursor: pointer;
     }
 
+
     .popup button:hover {
         background-color: #1e7e34;
     }
+
 
     .flash-message {
         padding: 10px 20px;
@@ -124,15 +74,19 @@
         text-align: center;
     }
 
+
     .flash-message.success {
         background-color: #d4edda;
         color: #155724;
     }
 
+
     .flash-message.error {
         background-color: #f8d7da;
         color: #721c24;
     }
+
+
 
 
     .wallet-balance {
@@ -142,13 +96,16 @@
         margin-bottom: 20px;
     }
 
+
     .action-buttons {
         margin-top: 20px;
     }
 
+
     .action-buttons button {
         margin-right: 10px;
     }
+
 
     .bank-list {
         margin-top: 20px;
@@ -157,13 +114,16 @@
         border-radius: 6px;
     }
 
+
     .bank-list h4 {
         margin-bottom: 10px;
     }
 
+
     .bank-item {
         margin-bottom: 8px;
     }
+
 
     .wallet-main-flex {
         display: flex;
@@ -171,13 +131,16 @@
         align-items: flex-start;
     }
 
+
     .popup-overlay {
         /* như cũ */
     }
 
+
     .popup {
         width: 400px;
     }
+
 
     select.bank-dropdown {
         width: 100%;
@@ -186,68 +149,66 @@
         border-radius: 5px;
         border: 1px solid #ccc;
         font-size: 1em;
-    }
-</style>
-
+}
+    </style>
+}
 @if (TempData["Success"] != null)
 {
-    <div class="flash-message success">@TempData["Success"]</div>
+    <div class="max-w-5xl mx-auto mt-4 px-4 py-2 text-center bg-green-100 text-green-800 rounded">@TempData["Success"]</div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="flash-message error">@TempData["Error"]</div>
+    <div class="max-w-5xl mx-auto mt-4 px-4 py-2 text-center bg-red-100 text-red-800 rounded">@TempData["Error"]</div>
 }
-<div class="flex gap-6"> <!-- Layout cha: chia menu và nội dung -->
+
+<div class="flex gap-6">
     <!-- Sidebar -->
     <div class="w-1/4">
         @Html.Partial("~/Views/Shared/_BuyerMenuLayout.cshtml")
     </div>
 
     <!-- Nội dung ví -->
-    <div class="w-3/4 page-container">
-        <div class="header-banner">
-            <h1>Ví của bạn</h1>
+    <div class="w-3/4 bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-green-600 text-white text-center py-3">
+            <h1 class="text-xl font-semibold">Ví của bạn</h1>
         </div>
 
         @if (Model != null)
         {
-            <div class="wallet-content">
-                <div class="wallet-main-flex">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
                     <div>
-                        <div class="wallet-info"><strong>Chủ ví:</strong> @Model.BuyerName</div>
-                        <div class="wallet-info wallet-balance">Số dư: @Model.WalletBalance.ToString("N0") VNĐ</div>
+                        <div class="text-lg mb-2"><span class="font-semibold inline-block w-36">Chủ ví:</span> @Model.BuyerName</div>
+                        <div class="text-2xl font-bold text-green-600 mb-4">Số dư: @Model.WalletBalance.ToString("N0") VNĐ</div>
 
-                        <div class="action-buttons">
-                            <button class="edit-review-button" onclick="showPopup('recharge-popup')">Nạp tiền</button>
-                            <button class="edit-review-button" onclick="showPopup('change-pin-popup')">Đổi mã PIN</button>
+                        <div class="space-x-2">
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onclick="showPopup('recharge-popup')">Nạp tiền</button>
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onclick="showPopup('change-pin-popup')">Đổi mã PIN</button>
                         </div>
                     </div>
 
-                    <div class="bank-list">
-                    <h4>Ngân hàng liên kết:</h4>
-                    @if (Model.Banks != null && Model.Banks.Any())
-                    {
-                        foreach (var bank in Model.Banks)
+                    <div class="bg-gray-100 p-4 rounded w-1/2">
+                        <h4 class="text-lg font-medium mb-2">Ngân hàng liên kết:</h4>
+                        @if (Model.Banks != null && Model.Banks.Any())
                         {
-                            var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
-                            <div class="bank-item">@bank.BankName - @maskedAcc</div>
+                            foreach (var bank in Model.Banks)
+                            {
+                                var maskedAcc = new string('*', bank.AccountNumber.Length - 3) + bank.AccountNumber[^3..];
+                                <div class="mb-1">@bank.BankName - @maskedAcc</div>
+                            }
                         }
-                    }
-                    else
-                    {
-                        <div>Không có ngân hàng liên kết</div>
-                    }
-
-                    <!-- Nút thêm ngân hàng -->
-                    <button class="edit-review-button" style="margin-top: 15px;" onclick="showPopup('add-bank-popup')">Thêm ngân hàng</button>
-                </div>
-
+                        else
+                        {
+                            <div>Không có ngân hàng liên kết</div>
+                        }
+                        <button class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onclick="showPopup('add-bank-popup')">Thêm ngân hàng</button>
+                    </div>
                 </div>
             </div>
         }
 
         <!-- POPUP: Nhập mã PIN hoặc thiết lập ví -->
-        @if (Model == null)
+@if (Model == null)
         {
             <div class="popup-overlay">
                 <div class="popup">
@@ -258,6 +219,7 @@
                             @TempData["Error"]
                         </div>
                     }
+
 
                     <form method="post" asp-action="@(isInitialized ? "SubmitPin" : "SetWalletPin")">
                         <input type="password"
@@ -272,6 +234,7 @@
                 </div>
             </div>
         }
+
     </div>
 </div>
 

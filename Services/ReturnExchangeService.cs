@@ -122,7 +122,9 @@ namespace PBL3.Services
                 Quantity = e.Quantity,
                 Status = e.Status,
                 SellerStoreName = seller?.StoreName ?? "N/A",
-                BuyerName = buyer?.Username ?? "N/A"
+                BuyerName = buyer?.Username ?? "N/A",
+                SellerEmail = seller?.EmailGeneral ?? "N/A",
+                SellerPhone = seller?.PhoneNumber ?? "N/A",
             };
         }
     }

@@ -149,6 +149,7 @@ namespace PBL3.Services
                     Rating = CalculateAverageRating(productId),
                     sellerId = product.SellerId,
                     StoreName = seller.StoreName,
+                    StoreAvatar = seller.Avatar,
                     Comments = reviewDTOs
                 };
             }
