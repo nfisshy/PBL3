@@ -32,7 +32,7 @@ namespace PBL3.Controllers
             var completedAndPaidOrders = _context.Orders
                 .Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus)
                 .ToList();
-            var totalRevenue = completedAndPaidOrders.Sum(o => o.OrderPrice * 0.05m); // 5% platform fee
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - 22000m) * 0.05m); // 5% platform fee after subtracting shipping fee
 
             // Chuyển về Dashboard.cshtml
             var dashboardData = new Admin_DashboardDTO
@@ -51,7 +51,7 @@ namespace PBL3.Controllers
             var completedAndPaidOrders = _context.Orders
                 .Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus)
                 .ToList();
-            var totalRevenue = completedAndPaidOrders.Sum(o => o.OrderPrice * 0.05m); // 5% platform fee
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - 22000m) * 0.05m); // 5% platform fee after subtracting shipping fee
 
             var dashboardData = new Admin_DashboardDTO
             {
@@ -593,7 +593,7 @@ namespace PBL3.Controllers
             var allOrders = orders.ToList();
             var totalOrders = allOrders.Count;
             var completedAndPaidOrders = allOrders.Where(o => o.OrderStatus == OrdStatus.Completed && o.PaymentStatus).ToList();
-            var totalRevenue = completedAndPaidOrders.Sum(o => o.OrderPrice * 0.05m); // 5% platform fee
+            var totalRevenue = completedAndPaidOrders.Sum(o => (o.OrderPrice - 22000m) * 0.05m); // 5% platform fee after subtracting shipping fee
             var averageOrderValue = completedAndPaidOrders.Any() ? completedAndPaidOrders.Average(o => o.OrderPrice) : 0;
 
             // Create statistics object
@@ -612,7 +612,7 @@ namespace PBL3.Controllers
                 BuyerName = o.Buyer.Username,
                 SellerName = o.Seller.Username,
                 TotalAmount = o.OrderPrice,
-                Revenue = o.OrderPrice * 0.05m,
+                Revenue = (o.OrderPrice - 22000m) * 0.05m,
                 OrderDate = o.OrderDate,
                 OrderStatus = o.OrderStatus,
                 PaymentStatus = o.PaymentStatus

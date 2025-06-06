@@ -158,12 +158,11 @@
                         {
                             <tr>
                                 <td>@order.Id</td>                                <td>@order.BuyerName</td>
-                                <td>@order.SellerName</td>
-                                <td>@order.TotalAmount.ToString("N0") đ</td>
+                                <td>@order.SellerName</td>                                <td>@order.TotalAmount.ToString("N0") đ</td>
                                 <td>
                                     @if(order.OrderStatus == OrdStatus.Completed && order.PaymentStatus)
                                     {
-                                        @((order.TotalAmount * 0.05m).ToString("N0") + " đ")
+                                        @(order.Revenue.ToString("N0") + " đ")
                                     }
                                     else
                                     {
