@@ -25,7 +25,7 @@ namespace PBL3.DTO.Seller
 
         [Required(ErrorMessage = "Vui lòng nhập giá sản phẩm")]
         [Display(Name = "Giá sản phẩm")]
-        [Range(1000, 1000000000, ErrorMessage = "Giá sản phẩm phải từ 1.000 đến 1.000.000.000 VNĐ")]
+        [Range(1, 1000000000, ErrorMessage = "Giá sản phẩm phải từ 1.000 đến 1.000.000.000 VNĐ")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn loại sản phẩm")]

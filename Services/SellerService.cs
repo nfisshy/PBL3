@@ -339,7 +339,7 @@ namespace PBL3.Services
                     {
                         OrderId = o.OrderId,
                         BuyerName = o.Buyer?.Name ?? "Khách hàng",
-                        TotalProductTypes = o.OrderDetails?.Count ?? 0,
+                        TotalProductTypes = o.QuantityTypeOfProduct,
                         TotalPrice = o.OrderPrice - (o.OrderPrice * (decimal)0.05) - o.Discount,
                         OrderDate = o.OrderDate,
                         OrderStatus = o.OrderStatus

@@ -84,7 +84,9 @@
 
             <!-- Thông tin sản phẩm -->
             <div class="flex gap-6 items-center">
-                <img src="@Model.ProductImage" alt="Ảnh sản phẩm" class="product-image border" />
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.ProductImage)" 
+                alt="Ảnh sản phẩm" 
+                class="product-image border" />
                 <div class="flex flex-col space-y-1">
                     <p class="font-semibold text-lg">@Model.ProductName</p>
                     <p>Mã sản phẩm: @Model.ProductId</p>
